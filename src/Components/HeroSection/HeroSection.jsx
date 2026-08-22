@@ -3,32 +3,73 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import styles from "./HeroSection.module.css";
 
+// Questions/Thoughts list representing student anxiety before medical school
+const THOUGHTS = [
+  { id: 1, text: "هبدأ منين؟", x: "14%", y: "25%", rotate: "-5deg", variant: "card" },
+  { id: 2, text: "هدرس إيه؟", x: "26%", y: "68%", rotate: "3deg", variant: "tag" },
+  { id: 3, text: "أذاكر إزاي؟", x: "40%", y: "20%", rotate: "-2deg", variant: "plain" },
+  { id: 4, text: "هل الطب صعب؟", x: "54%", y: "74%", rotate: "4deg", variant: "card" },
+  { id: 5, text: "هعرف أواكب؟", x: "67%", y: "24%", rotate: "-4deg", variant: "tag" },
+  { id: 6, text: "هعمل صحاب؟", x: "78%", y: "65%", rotate: "5deg", variant: "plain" },
+  { id: 7, text: "نظام الكلية إيه؟", x: "36%", y: "79%", rotate: "-3deg", variant: "card" },
+  { id: 8, text: "هل أنا اخترت صح؟", x: "85%", y: "26%", rotate: "2deg", variant: "tag" },
+];
+
 const HeroSection = () => {
   const containerRef = useRef(null);
   const pathRef = useRef(null);
 
-  // GSAP animation for Scene 01: Drawing the ECG line smoothly
   useGSAP(
     () => {
       const path = pathRef.current;
       if (!path) return;
 
-      // 1. Get the total pixel length of the SVG path
       const pathLength = path.getTotalLength();
 
-      // 2. Set up initial path stroke state (completely hidden)
-      // strokeDasharray creates dash pattern equal to pathLength
-      // strokeDashoffset pushes the visible line off-screen
+      // 1. Prepare initial stroke state for ECG path
       gsap.set(path, {
         strokeDasharray: pathLength,
         strokeDashoffset: pathLength,
       });
 
-      // 3. Animate strokeDashoffset to 0, which draws the ECG line from left to right
-      gsap.to(path, {
+      // 2. Create GSAP Master Timeline for Scene 01 & Scene 02
+      const introTimeline = gsap.timeline();
+
+      // SCENE 01: Draw the ECG heartbeat line
+      introTimeline.to(path, {
         strokeDashoffset: 0,
-        duration: 5,
+        duration: 7,
         ease: "power1.inOut",
+      });
+
+      // SCENE 02: Pop up thought bubbles one by one while ECG is drawing
+      // We use `stagger` so each thought pops up 0.65s after the previous one
+      introTimeline.fromTo(
+        `.${styles.thoughtItem}`,
+        {
+          opacity: 0,
+          scale: 0.6,
+        },
+        {
+          opacity: 1,
+          scale: 1,
+          duration: 0.5,
+          ease: "back.out(1.7)", // Gives elastic "pop" feel
+          stagger: 0.65,
+        },
+        1.0 // Position parameter: start 1 second into ECG drawing
+      );
+
+      // Subtle floating movement for thoughts after appearing (like floating in mind)
+      gsap.utils.toArray(`.${styles.thoughtItem}`).forEach((item, index) => {
+        gsap.to(item, {
+          y: index % 2 === 0 ? "-=8" : "+=8",
+          duration: 2 + (index % 3) * 0.4,
+          repeat: -1,
+          yoyo: true,
+          ease: "sine.inOut",
+          delay: 1.0 + index * 0.65,
+        });
       });
     },
     { scope: containerRef }
@@ -36,6 +77,7 @@ const HeroSection = () => {
 
   return (
     <div ref={containerRef} className={styles.container}>
+      {/* SCENE 01: ECG Path */}
       <div className={styles.svgWrapper}>
         <svg viewBox="0 0 1600 400" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -65,9 +107,27 @@ const HeroSection = () => {
           />
         </svg>
       </div>
+
+      {/* SCENE 02: Floating Thought Popups */}
+      <div className={styles.thoughtsContainer}>
+        {THOUGHTS.map((thought) => (
+          <div
+            key={thought.id}
+            className={`${styles.thoughtItem} ${styles[thought.variant]}`}
+            style={{
+              left: thought.x,
+              top: thought.y,
+              transform: `rotate(${thought.rotate})`,
+            }}
+          >
+            {thought.text}
+          </div>
+        ))}
+      </div>
     </div>
   );
 };
 
 export default HeroSection;
+
 

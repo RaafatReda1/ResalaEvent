@@ -7,6 +7,7 @@
   align-items: center;
   overflow: hidden;
   position: relative;
+  direction: rtl;
 }
 
 .svgWrapper {
@@ -15,9 +16,62 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  position: relative;
+  z-index: 1;
 }
 
 .ecgPath {
   stroke: #00f2fe;
   filter: drop-shadow(0px 0px 8px rgba(0, 242, 254, 0.6));
 }
+
+/* Scene 02: Floating thought popups */
+.thoughtsContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.thoughtItem {
+  position: absolute;
+  font-size: 0.95rem;
+  font-weight: 500;
+  white-space: nowrap;
+  opacity: 0; /* Hidden initially, animated by GSAP */
+  transform-origin: center center;
+  letter-spacing: 0.2px;
+}
+
+/* Variant 1: Subtle dark glass card */
+.card {
+  background: rgba(15, 23, 42, 0.75);
+  color: #f1f5f9;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(8px);
+  padding: 10px 18px;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+/* Variant 2: Accent medical tag */
+.tag {
+  background: rgba(0, 242, 254, 0.08);
+  color: #e0f7fa;
+  border: 1px solid rgba(0, 242, 254, 0.25);
+  backdrop-filter: blur(4px);
+  padding: 7px 15px;
+  border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(0, 242, 254, 0.15);
+}
+
+/* Variant 3: Floating glowing text */
+.plain {
+  color: #cbd5e1;
+  padding: 6px 12px;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8), 0 0 12px rgba(255, 255, 255, 0.2);
+}
+
