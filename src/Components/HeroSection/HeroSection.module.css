@@ -1,4 +1,4 @@
-.container {
+.heroContainer {
   width: 100vw;
   min-height: 100vh;
   background-color: var(--navy-900);
@@ -9,33 +9,31 @@
   position: relative;
   direction: rtl;
   color: var(--text-on-dark-primary);
+  padding: 60px 20px;
 }
 
 /* Background Ambient Lighting */
-.ambientSpotlight {
+.bgSpotlight {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: radial-gradient(
-    circle at var(--spotlight-x, 50%) 50%, 
-    rgba(31, 166, 160, 0.22) 0%, 
-    rgba(10, 21, 38, 0) 65%
-  );
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  height: 80%;
+  background: radial-gradient(circle, rgba(31, 166, 160, 0.15) 0%, rgba(10, 21, 38, 0) 70%);
   pointer-events: none;
   z-index: 0;
 }
 
 .bgGlowLeft {
   position: absolute;
-  top: 20%;
+  top: 15%;
   right: -10%;
-  width: 500px;
-  height: 500px;
+  width: 550px;
+  height: 550px;
   background: radial-gradient(circle, rgba(31, 166, 160, 0.12) 0%, rgba(10, 21, 38, 0) 70%);
   pointer-events: none;
-  filter: blur(40px);
+  filter: blur(50px);
 }
 
 .bgGlowRight {
@@ -46,227 +44,22 @@
   height: 600px;
   background: radial-gradient(circle, rgba(21, 42, 74, 0.25) 0%, rgba(10, 21, 38, 0) 70%);
   pointer-events: none;
-  filter: blur(50px);
+  filter: blur(60px);
 }
 
-/* Skip Intro Control */
-.skipBtn {
-  position: absolute;
-  top: 30px;
-  left: 40px;
-  z-index: 50;
-  background: rgba(14, 30, 53, 0.6);
-  border: 1px solid var(--border-dark);
-  color: var(--text-on-dark-secondary);
-  font-size: 0.82rem;
-  padding: 8px 18px;
-  border-radius: 20px;
-  cursor: pointer;
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
-  letter-spacing: 0.5px;
-}
-
-.skipBtn:hover {
-  background: rgba(31, 166, 160, 0.2);
-  color: var(--teal-200);
-  border-color: var(--teal-400);
-}
-
-/* Intro Overlay Container (Scenes 01 to 08) */
-.introOverlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 10;
-}
-
-.svgWrapper {
-  width: 92%;
-  max-width: 1400px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  z-index: 1;
-}
-
-.svgElement {
-  width: 100%;
-  height: auto;
-  overflow: visible;
-}
-
-.ecgPath {
-  stroke: url(#ecgGradient);
-  stroke-width: 3.5;
-  filter: drop-shadow(0 0 10px var(--teal-300)) 
-          drop-shadow(0 0 28px rgba(58, 185, 172, 0.65));
-}
-
-.timelineTrack {
-  stroke: var(--navy-700);
-  stroke-width: 4;
-  opacity: 0;
-}
-
-.timelineBeam {
-  stroke: url(#timelineGradient);
-  stroke-width: 4;
-  opacity: 0;
-  filter: drop-shadow(0 0 12px var(--teal-300)) 
-          drop-shadow(0 0 30px rgba(31, 166, 160, 0.8));
-}
-
-.energyOrbGroup {
-  opacity: 0;
-}
-
-/* Scene 02: Thoughts Container & Popups */
-.thoughtsContainer {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: 2;
-}
-
-.thoughtItem {
-  position: absolute;
-  font-size: 0.95rem;
-  font-weight: 500;
-  white-space: nowrap;
-  opacity: 0;
-  transform-origin: center center;
-  letter-spacing: 0.2px;
-}
-
-.card {
-  background: rgba(14, 30, 53, 0.85);
-  color: var(--text-on-dark-primary);
-  border: 1px solid var(--border-dark);
-  backdrop-filter: blur(12px);
-  padding: 10px 18px;
-  border-radius: 14px;
-  box-shadow: 0 10px 30px rgba(10, 21, 38, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.15);
-}
-
-.tag {
-  background: rgba(31, 166, 160, 0.12);
-  color: var(--teal-200);
-  border: 1px solid var(--teal-400);
-  backdrop-filter: blur(6px);
-  padding: 7px 16px;
-  border-radius: 20px;
-  box-shadow: 0 4px 20px rgba(31, 166, 160, 0.25);
-}
-
-.plain {
-  color: var(--text-on-dark-secondary);
-  padding: 6px 12px;
-  text-shadow: 0 2px 12px rgba(10, 21, 38, 0.9), 0 0 15px rgba(255, 255, 255, 0.15);
-}
-
-/* Date Badges */
-.dateBadge {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  z-index: 4;
-  opacity: 0;
-  pointer-events: none;
-}
-
-.date03 {
-  left: 3%;
-  background: rgba(14, 30, 53, 0.8);
-  border: 1px solid var(--navy-600);
-  padding: 8px 16px;
-  border-radius: 30px;
-  backdrop-filter: blur(8px);
-}
-
-.date04 {
-  right: 2%;
-  background: rgba(14, 30, 53, 0.9);
-  border: 1.5px solid var(--teal-400);
-  padding: 10px 20px;
-  border-radius: 16px;
-  backdrop-filter: blur(12px);
-  box-shadow: 0 0 25px rgba(31, 166, 160, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
-}
-
-.badgeDot {
-  width: 10px;
-  height: 10px;
-  background: var(--navy-300);
-  border-radius: 50%;
-}
-
-.badgeDotTarget {
-  width: 12px;
-  height: 12px;
-  background: var(--teal-300);
-  border-radius: 50%;
-  box-shadow: 0 0 12px var(--teal-300);
-}
-
-.badgeText {
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: var(--text-on-dark-muted);
-  letter-spacing: 1px;
-}
-
-.dateTextWrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.badgeSub {
-  font-size: 0.65rem;
-  font-weight: 800;
-  letter-spacing: 1.5px;
-  color: var(--teal-400);
-  text-transform: uppercase;
-}
-
-.badgeTextTarget {
-  font-size: 1.15rem;
-  font-weight: 800;
-  color: var(--text-on-dark-primary);
-  letter-spacing: 1px;
-  text-shadow: 0 0 14px rgba(58, 185, 172, 0.6);
-}
-
-/* ==========================================================================
-   SCENE 10: MAIN HERO LAYOUT (Revealed smoothly after intro completion)
-   ========================================================================== */
+/* Hero Split Layout */
 .heroLayout {
   position: relative;
   width: 90%;
   max-width: 1350px;
-  min-height: 80vh;
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: center;
   gap: 60px;
-  z-index: 20;
-  opacity: 0;
+  z-index: 10;
 }
 
-/* LEFT SIDE: Activity Logo NoFill Visual Anchor */
+/* LEFT SIDE: Activity Logo Visual Anchor */
 .heroLeft {
   display: flex;
   justify-content: center;
@@ -287,8 +80,8 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 0 30px var(--teal-300))
-          drop-shadow(0 0 70px rgba(31, 166, 160, 0.55));
+  filter: drop-shadow(0 0 35px var(--teal-300))
+          drop-shadow(0 0 75px rgba(31, 166, 160, 0.55));
   z-index: 2;
 }
 
@@ -302,7 +95,7 @@
   z-index: 1;
 }
 
-/* RIGHT SIDE: Editorial Hero Content & Typography */
+/* RIGHT SIDE: Editorial Content */
 .heroRight {
   display: flex;
   flex-direction: column;
@@ -320,19 +113,19 @@
 }
 
 .messageSub {
-  font-size: 1rem;
+  font-size: 1.05rem;
   color: var(--teal-300);
   font-weight: 600;
 }
 
 .messageMain {
-  font-size: 1.25rem;
+  font-size: 1.3rem;
   color: var(--text-on-dark-primary);
   font-weight: 700;
 }
 
 .heroTitle {
-  font-size: 3rem;
+  font-size: 3.2rem;
   font-weight: 900;
   line-height: 1.15;
   letter-spacing: -0.5px;
@@ -348,7 +141,7 @@
 }
 
 .heroSubtitle {
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   line-height: 1.7;
   color: var(--text-on-dark-secondary);
   max-width: 540px;
@@ -368,7 +161,7 @@
   gap: 10px;
   background: rgba(14, 30, 53, 0.8);
   border: 1px solid var(--navy-600);
-  padding: 12px 22px;
+  padding: 12px 24px;
   border-radius: 30px;
   font-weight: 700;
   font-size: 0.95rem;
@@ -380,9 +173,9 @@
   background: linear-gradient(135deg, var(--red-400) 0%, var(--red-500) 100%);
   color: #ffffff;
   border: none;
-  padding: 14px 32px;
+  padding: 14px 34px;
   border-radius: 30px;
-  font-size: 1rem;
+  font-size: 1.05rem;
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 8px 25px rgba(230, 57, 70, 0.4);
@@ -390,8 +183,8 @@
 }
 
 .ctaButton:hover {
-  transform: translateY(-3px) scale(1.03);
-  box-shadow: 0 12px 35px rgba(230, 57, 70, 0.6);
+  transform: translateY(-3px) scale(1.04);
+  box-shadow: 0 14px 35px rgba(230, 57, 70, 0.6);
 }
 
 /* Mobile Responsiveness */
@@ -413,7 +206,7 @@
     align-items: center;
   }
   .heroTitle {
-    font-size: 2.2rem;
+    font-size: 2.3rem;
   }
   .logoWrapper {
     width: 260px;
