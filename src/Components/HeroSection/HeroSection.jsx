@@ -12,64 +12,59 @@ const HeroSection = () => {
   const logoWrapperRef = useRef(null);
   const logoGlowRef = useRef(null);
   const heroRightRef = useRef(null);
-  const glassPanelRef = useRef(null);
+  const glassCardRef = useRef(null);
 
   useGSAP(
     () => {
-      // ── Logo Reveal ──────────────────────────────────────────
-      gsap.fromTo(
-        logoWrapperRef.current,
-        { opacity: 0, scale: 0.7, filter: "blur(20px)" },
-        { opacity: 1, scale: 1, filter: "blur(0px)", duration: 1.1, ease: "back.out(1.6)", delay: 0.1 }
+      // ── Logo reveal (transform + opacity ONLY — no filter) ──
+      gsap.fromTo(logoWrapperRef.current,
+        { opacity: 0, scale: 0.75 },
+        { opacity: 1, scale: 1, duration: 1.0, ease: "back.out(1.5)", delay: 0.1 }
       );
 
-      // ── Glass Panel Reveal ────────────────────────────────────
-      gsap.fromTo(
-        glassPanelRef.current,
-        { opacity: 0, y: 30, rotate: -10 },
-        { opacity: 1, y: 0, rotate: -6, duration: 1.4, ease: "power3.out", delay: 0.2 }
+      // ── Glass card reveal ────────────────────────────────────
+      gsap.set(glassCardRef.current, { rotate: -8 });
+      gsap.fromTo(glassCardRef.current,
+        { opacity: 0, y: 50 },
+        { opacity: 1, y: 0, duration: 1.4, ease: "power3.out" }
       );
 
-      // ── Right Content: staggered children ────────────────────
-      // Animate heroRight children one by one using stagger on direct children
-      gsap.fromTo(
-        heroRightRef.current.children,
-        { opacity: 0, y: 35, filter: "blur(8px)" },
+      // ── Right children stagger (transform + opacity ONLY) ────
+      const kids = Array.from(heroRightRef.current.children);
+      gsap.fromTo(kids,
+        { opacity: 0, y: 28 },
         {
           opacity: 1,
           y: 0,
-          filter: "blur(0px)",
-          duration: 0.85,
+          duration: 0.7,
           ease: "power3.out",
-          stagger: 0.14,
-          delay: 0.3,
+          stagger: 0.15,
+          delay: 0.2,
         }
       );
 
-      // ── Floating logo loop ────────────────────────────────────
+      // ── Continuous loops (transform + opacity only) ──────────
       gsap.to(logoWrapperRef.current, {
-        y: "-=14",
-        duration: 3.4,
+        y: -14,
+        duration: 3.5,
         repeat: -1,
         yoyo: true,
         ease: "sine.inOut",
       });
 
-      // ── Glow ring pulse loop ──────────────────────────────────
       gsap.to(logoGlowRef.current, {
-        scale: 1.22,
-        opacity: 0.65,
-        duration: 2.4,
+        scale: 1.2,
+        opacity: 0.55,
+        duration: 2.8,
         repeat: -1,
         yoyo: true,
         ease: "sine.inOut",
       });
 
-      // ── Glass panel slow drift ────────────────────────────────
-      gsap.to(glassPanelRef.current, {
-        y: "-=18",
-        rotate: -4,
-        duration: 5,
+      gsap.to(glassCardRef.current, {
+        y: -22,
+        rotate: -5,
+        duration: 6,
         repeat: -1,
         yoyo: true,
         ease: "sine.inOut",
@@ -81,20 +76,19 @@ const HeroSection = () => {
   return (
     <div ref={containerRef} className={styles.heroContainer}>
       {/* Background layers */}
+      <div className={styles.bgBase} />
       <div className={styles.bgGrid} />
-      <div className={styles.bgSpotlight} />
-      <div className={styles.bgGlowLeft} />
-      <div className={styles.bgGlowRight} />
+      <div className={styles.bgCoronaRight} />
+      <div className={styles.bgCoronaLeft} />
+      <div className={styles.bgScanLine} />
+      <div className={styles.bgGlassOrb} />
+      <div className={styles.bgGlassOrb2} />
+      <div ref={glassCardRef} className={styles.bgGlassCard} />
 
-      {/* Floating decorative glass panel */}
-      <div ref={glassPanelRef} className={styles.glassPanelLeft} />
-
-      {/* HERO SPLIT LAYOUT */}
+      {/* Hero split layout */}
       <div className={styles.heroLayout}>
-        {/* LEFT: Activity Logo */}
         <LogoVisual logoWrapperRef={logoWrapperRef} logoGlowRef={logoGlowRef} />
 
-        {/* RIGHT: Editorial Content */}
         <div ref={heroRightRef} className={styles.heroRight}>
           <EmotionalMessage />
           <HeroTitle />

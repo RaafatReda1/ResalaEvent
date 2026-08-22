@@ -12,74 +12,166 @@
   padding: 60px 20px;
 }
 
-/* Background Medical Grid & Ambient Lighting */
+/* ═══════════════════════════════════════════════════
+   BACKGROUND — GPU-safe layers only (transform + opacity)
+   ═══════════════════════════════════════════════════ */
+
+/* Deep diagonal base */
+.bgBase {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, #040d18 0%, #0a1526 45%, #0c1e36 75%, #060e1a 100%);
+  z-index: 0;
+}
+
+/* Dot grid — pure CSS, no animation, masked at edges */
 .bgGrid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(93, 204, 192, 0.16) 1px, transparent 1px);
+  background-size: 38px 38px;
+  pointer-events: none;
+  z-index: 1;
+  /* mask fades the grid at viewport edges */
+  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 100%);
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 100%);
+}
+
+/* Teal corona (top-right) — only transform + opacity in keyframe */
+.bgCoronaRight {
+  position: absolute;
+  top: -15%;
+  right: -10%;
+  width: 700px;
+  height: 700px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(31,166,160,0.3) 0%, rgba(31,166,160,0.08) 50%, transparent 70%);
+  pointer-events: none;
+  z-index: 1;
+  will-change: transform, opacity;
+  animation: floatCorona 9s ease-in-out infinite alternate;
+}
+
+/* Red accent corona (bottom-left) */
+.bgCoronaLeft {
+  position: absolute;
+  bottom: -20%;
+  left: -12%;
+  width: 650px;
+  height: 650px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(230,57,70,0.22) 0%, rgba(180,30,50,0.06) 55%, transparent 70%);
+  pointer-events: none;
+  z-index: 1;
+  will-change: transform, opacity;
+  animation: floatCorona 11s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes floatCorona {
+  0%   { transform: scale(0.9) translateY(0);    opacity: 0.7; }
+  100% { transform: scale(1.1) translateY(-25px); opacity: 1;   }
+}
+
+/* Scan line — uses translateY (GPU) not top */
+.bgScanLine {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%;
-  background-image: 
-    radial-gradient(rgba(31, 166, 160, 0.15) 1px, transparent 1px),
-    linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-  background-size: 36px 36px, 72px 72px, 72px 72px;
+  height: 1.5px;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(93,204,192,0.2) 25%,
+    rgba(93,204,192,0.55) 50%,
+    rgba(93,204,192,0.2) 75%,
+    transparent 100%
+  );
   pointer-events: none;
-  z-index: 0;
-  opacity: 0.8;
+  z-index: 2;
+  will-change: transform, opacity;
+  animation: scanGpu 7s ease-in-out infinite;
 }
 
-.bgSpotlight {
-  position: absolute;
-  top: 40%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 85%;
-  height: 85%;
-  background: radial-gradient(circle, rgba(31, 166, 160, 0.2) 0%, rgba(10, 21, 38, 0) 70%);
-  pointer-events: none;
-  z-index: 0;
+@keyframes scanGpu {
+  0%   { transform: translateY(10vh);  opacity: 0; }
+  10%  { opacity: 0.7; }
+  50%  { transform: translateY(85vh);  opacity: 0.3; }
+  90%  { opacity: 0.7; }
+  100% { transform: translateY(10vh);  opacity: 0; }
 }
 
-.bgGlowLeft {
+/* 3D glass card — no backdrop-filter (kills performance) */
+.bgGlassCard {
   position: absolute;
-  top: 15%;
-  right: -10%;
-  width: 600px;
-  height: 600px;
-  background: radial-gradient(circle, rgba(31, 166, 160, 0.18) 0%, rgba(10, 21, 38, 0) 70%);
-  pointer-events: none;
-  filter: blur(60px);
-}
-
-.bgGlowRight {
-  position: absolute;
-  bottom: 10%;
-  left: -10%;
-  width: 650px;
-  height: 650px;
-  background: radial-gradient(circle, rgba(21, 42, 74, 0.3) 0%, rgba(10, 21, 38, 0) 70%);
-  pointer-events: none;
-  filter: blur(70px);
-}
-
-/* 3D Floating Glass Panels in Background */
-.glassPanelLeft {
-  position: absolute;
-  top: 18%;
-  right: 5%;
+  top: 10%;
+  right: 2%;
   width: 320px;
-  height: 420px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04) 0%, rgba(31, 166, 160, 0.02) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 30px;
-  backdrop-filter: blur(12px);
+  height: 460px;
+  border-radius: 28px;
+  /* Faked glassmorphism without backdrop-filter */
+  background: linear-gradient(
+    135deg,
+    rgba(93,204,192,0.07) 0%,
+    rgba(255,255,255,0.03) 50%,
+    rgba(31,166,160,0.04) 100%
+  );
+  border: 1px solid rgba(93,204,192,0.22);
+  box-shadow: 0 30px 60px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.1);
   pointer-events: none;
-  z-index: 1;
-  transform: rotate(-6deg);
+  z-index: 2;
+  will-change: transform;
+  /* Initial pose set by GSAP */
 }
 
-/* Hero Split Layout */
+/* Two small glass orbs — no backdrop-filter */
+.bgGlassOrb {
+  position: absolute;
+  top: 20%;
+  left: 5%;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%,
+    rgba(255,255,255,0.5) 0%,
+    rgba(93,204,192,0.3) 45%,
+    rgba(31,166,160,0.05) 100%
+  );
+  border: 1px solid rgba(255,255,255,0.28);
+  box-shadow: 0 6px 28px rgba(31,166,160,0.35);
+  pointer-events: none;
+  z-index: 3;
+  will-change: transform;
+  animation: orbFloat 7s ease-in-out infinite alternate;
+}
+
+.bgGlassOrb2 {
+  position: absolute;
+  bottom: 22%;
+  right: 14%;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%,
+    rgba(255,255,255,0.4) 0%,
+    rgba(230,57,70,0.25) 60%,
+    transparent 100%
+  );
+  border: 1px solid rgba(255,255,255,0.22);
+  box-shadow: 0 4px 20px rgba(230,57,70,0.3);
+  pointer-events: none;
+  z-index: 3;
+  will-change: transform;
+  animation: orbFloat 5.5s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes orbFloat {
+  0%   { transform: translateY(0) rotate(0deg); }
+  100% { transform: translateY(-22px) rotate(14deg); }
+}
+
+/* ═══════════════════════════════════════════════════
+   HERO LAYOUT
+   ═══════════════════════════════════════════════════ */
 .heroLayout {
   position: relative;
   width: 90%;
@@ -91,7 +183,7 @@
   z-index: 10;
 }
 
-/* LEFT SIDE: Activity Logo Visual Anchor */
+/* LEFT */
 .heroLeft {
   display: flex;
   justify-content: center;
@@ -113,29 +205,29 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
-  filter: drop-shadow(0 0 35px var(--teal-300))
-          drop-shadow(0 0 75px rgba(31, 166, 160, 0.55));
+  /* Static drop-shadow — not animated */
+  filter: drop-shadow(0 0 30px rgba(93,204,192,0.65))
+          drop-shadow(0 0 70px rgba(31,166,160,0.4));
   z-index: 2;
 }
 
 .logoGlowRing {
   position: absolute;
-  width: 480px;
-  height: 480px;
+  width: 500px;
+  height: 500px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(31, 166, 160, 0.35) 0%, rgba(10, 21, 38, 0) 70%);
-  filter: blur(25px);
+  background: radial-gradient(circle, rgba(31,166,160,0.3) 0%, transparent 70%);
   z-index: 1;
+  will-change: transform, opacity;
 }
 
-/* RIGHT SIDE: Editorial Content & Typography */
+/* RIGHT */
 .heroRight {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 26px;
   text-align: right;
-  will-change: transform, opacity;
 }
 
 .emotionalMessage {
@@ -158,43 +250,44 @@
   font-weight: 700;
 }
 
+/* ═══════════════════════════════════════════════════
+   CALLIGRAPHY TITLE
+   ═══════════════════════════════════════════════════ */
 .titleContainer {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 10px;
   width: 100%;
-  position: relative;
 }
 
 .englishSubtitle {
-  font-size: 0.95rem;
+  font-size: 0.88rem;
   font-weight: 800;
-  letter-spacing: 3.5px;
-  color: var(--teal-300);
+  letter-spacing: 4px;
+  color: var(--teal-400);
   text-transform: uppercase;
   font-family: 'Cairo', system-ui, sans-serif;
 }
 
-/* Authentic Calligraphy Title Artwork Container */
 .calligraphyWrapper {
   position: relative;
   width: 100%;
   max-width: 600px;
   margin: 8px 0;
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
 }
 
 .calligraphyImage {
   width: 100%;
   height: auto;
   object-fit: contain;
-  filter: drop-shadow(0 0 25px rgba(58, 185, 172, 0.6))
-          drop-shadow(0 0 55px rgba(31, 166, 160, 0.4))
-          drop-shadow(0 12px 25px rgba(10, 21, 38, 0.95));
+  /* Static — never animate filter */
+  filter: drop-shadow(0 0 20px rgba(93,204,192,0.55))
+          drop-shadow(0 0 45px rgba(31,166,160,0.38));
+  display: block;
   z-index: 3;
+  position: relative;
+  /* Hover: only transform */
   transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
@@ -202,67 +295,89 @@
   transform: scale(1.025);
 }
 
-/* LIQUID DROPLETS & GLASS ORBS BEHIND THE CALLIGRAPHY TITLE */
+/* Liquid blobs — only transform in keyframe, no border-radius morph */
 .liquidDropletBack {
   position: absolute;
   top: -20px;
-  right: 25%;
-  width: 110px;
-  height: 110px;
-  border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
-  background: radial-gradient(circle at 30% 30%, rgba(58, 185, 172, 0.5) 0%, rgba(31, 166, 160, 0.15) 60%, rgba(10, 21, 38, 0) 100%);
-  border: 1px solid rgba(58, 185, 172, 0.35);
-  box-shadow: 0 0 30px rgba(31, 166, 160, 0.35), inset 0 0 15px rgba(255, 255, 255, 0.3);
-  backdrop-filter: blur(8px);
+  right: 22%;
+  width: 115px;
+  height: 115px;
+  border-radius: 50%;                 /* fixed — no morphing */
+  background: radial-gradient(circle at 30% 30%,
+    rgba(93,204,192,0.5) 0%,
+    rgba(31,166,160,0.18) 60%,
+    transparent 100%
+  );
+  border: 1px solid rgba(93,204,192,0.38);
+  box-shadow: 0 0 28px rgba(31,166,160,0.35);
   pointer-events: none;
   z-index: 1;
-  animation: liquidFloat 6s ease-in-out infinite alternate;
+  will-change: transform;
+  animation: blobFloat 6s ease-in-out infinite alternate;
 }
 
 .liquidDropletFront {
   position: absolute;
-  bottom: -15px;
-  left: 15%;
+  bottom: -14px;
+  left: 8%;
   width: 85px;
   height: 85px;
-  border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%;
-  background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.4) 0%, rgba(31, 166, 160, 0.2) 60%, rgba(10, 21, 38, 0) 100%);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 0 25px rgba(58, 185, 172, 0.4), inset 0 0 12px rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(10px);
+  border-radius: 50%;                 /* fixed — no morphing */
+  background: radial-gradient(circle at 30% 30%,
+    rgba(255,255,255,0.42) 0%,
+    rgba(93,204,192,0.22) 55%,
+    transparent 100%
+  );
+  border: 1px solid rgba(255,255,255,0.3);
+  box-shadow: 0 0 22px rgba(93,204,192,0.4);
   pointer-events: none;
   z-index: 2;
-  animation: liquidFloat 8s ease-in-out infinite alternate-reverse;
+  will-change: transform;
+  animation: blobFloat 8s ease-in-out infinite alternate-reverse;
 }
 
-@keyframes liquidFloat {
-  0% {
-    transform: translateY(0px) rotate(0deg) scale(1);
-    border-radius: 42% 58% 70% 30% / 45% 45% 55% 55%;
-  }
-  50% {
-    transform: translateY(-14px) rotate(10deg) scale(1.06);
-    border-radius: 55% 45% 35% 65% / 35% 65% 35% 65%;
-  }
-  100% {
-    transform: translateY(8px) rotate(-8deg) scale(0.96);
-    border-radius: 38% 62% 60% 40% / 50% 40% 60% 50%;
-  }
+/* Teal diamond accent */
+.liquidAccentDot {
+  position: absolute;
+  top: 38%;
+  left: 53%;
+  width: 13px;
+  height: 13px;
+  background: var(--teal-300);
+  box-shadow: 0 0 14px var(--teal-300), 0 0 28px rgba(93,204,192,0.55);
+  pointer-events: none;
+  z-index: 2;
+  will-change: transform, opacity;
+  animation: diamondPulse 3s ease-in-out infinite;
 }
 
+/* Only translate — no scale/opacity changes in blob keyframes */
+@keyframes blobFloat {
+  0%   { transform: translateY(0) translateX(0); }
+  50%  { transform: translateY(-14px) translateX(4px); }
+  100% { transform: translateY(8px)  translateX(-3px); }
+}
+
+@keyframes diamondPulse {
+  0%, 100% { transform: rotate(45deg) scale(1);   opacity: 0.75; }
+  50%       { transform: rotate(45deg) scale(1.5); opacity: 1; }
+}
+
+/* ═══════════════════════════════════════════════════
+   SUBTITLE & META
+   ═══════════════════════════════════════════════════ */
 .heroSubtitle {
-  font-size: 1.18rem;
-  line-height: 1.75;
+  font-size: 1.15rem;
+  line-height: 1.8;
   color: var(--text-on-dark-secondary);
-  max-width: 540px;
+  max-width: 520px;
 }
 
-/* HIGH-TECH FUTURISTIC CTA & META BADGES */
 .heroMeta {
   display: flex;
   align-items: center;
-  gap: 22px;
-  margin-top: 12px;
+  gap: 20px;
+  margin-top: 8px;
   flex-wrap: wrap;
 }
 
@@ -270,16 +385,15 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  background: rgba(14, 30, 53, 0.85);
-  border: 1px solid var(--navy-600);
+  background: rgba(10,21,38,0.75);
+  border: 1px solid rgba(93,204,192,0.3);
   padding: 14px 26px;
-  border-radius: 35px;
+  border-radius: 40px;
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   color: var(--teal-200);
-  letter-spacing: 1px;
-  box-shadow: 0 8px 25px rgba(10, 21, 38, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(12px);
+  letter-spacing: 1.5px;
+  box-shadow: 0 4px 20px rgba(10,21,38,0.5), inset 0 1px 0 rgba(255,255,255,0.07);
 }
 
 .dateIcon {
@@ -288,111 +402,119 @@
   align-items: center;
 }
 
-/* STATE-OF-THE-ART MAGNETIC CTA BUTTON */
+/* ═══════════════════════════════════════════════════
+   PREMIUM CTA BUTTON — transform + opacity only
+   ═══════════════════════════════════════════════════ */
 .ctaButton {
   position: relative;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 12px;
-  background: linear-gradient(135deg, var(--red-400) 0%, var(--red-500) 100%);
-  color: #ffffff;
-  border: 1.5px solid rgba(255, 255, 255, 0.25);
-  padding: 16px 38px;
-  border-radius: 35px;
-  font-size: 1.1rem;
-  font-weight: 800;
+  border: none;
+  border-radius: 50px;
   cursor: pointer;
   overflow: hidden;
-  box-shadow: 
-    0 10px 30px rgba(230, 57, 70, 0.45),
-    0 0 20px rgba(230, 57, 70, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.35);
-  transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-}
-
-.ctaButton::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.35),
-    transparent
-  );
-  transition: left 0.7s ease;
-}
-
-.ctaButton:hover::before {
-  left: 100%;
+  background: transparent;
+  padding: 0;
+  /* Only animate transform */
+  will-change: transform;
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .ctaButton:hover {
-  transform: translateY(-4px) scale(1.05);
-  box-shadow: 
-    0 16px 40px rgba(230, 57, 70, 0.65),
-    0 0 30px rgba(230, 57, 70, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.5);
-  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-5px) scale(1.06);
 }
 
+/* Outer glow ring — opacity transition (GPU composited) */
+.ctaButton::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 54px;
+  background: linear-gradient(135deg,
+    rgba(230,57,70,0.75),
+    rgba(230,57,70,0.15) 50%,
+    rgba(93,204,192,0.4)
+  );
+  filter: blur(7px);
+  z-index: -1;
+  opacity: 0;
+  will-change: opacity;
+  transition: opacity 0.3s ease;
+}
+
+.ctaButton:hover::before {
+  opacity: 1;
+}
+
+/* Inner face — no transition (parent handles it) */
+.ctaBtnInner {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 17px 40px;
+  border-radius: 50px;
+  background: linear-gradient(135deg, #E63946 0%, #C8202E 55%, #A81728 100%);
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+  overflow: hidden;
+  box-shadow:
+    0 10px 32px rgba(230,57,70,0.5),
+    0 0 18px rgba(230,57,70,0.3),
+    inset 0 1px 0 rgba(255,255,255,0.4),
+    inset 0 -2px 0 rgba(0,0,0,0.2);
+}
+
+/* Shimmer sweep — uses translateX (GPU), not left */
+.ctaBtnShine {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 55%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  transform: translateX(-150%) skewX(-15deg);
+  will-change: transform;
+  transition: transform 0.65s ease;
+  pointer-events: none;
+}
+
+.ctaButton:hover .ctaBtnShine {
+  transform: translateX(280%) skewX(-15deg);
+}
+
+/* Ripple pulse dot — only opacity + transform */
 .btnPulseDot {
-  width: 9px;
-  height: 9px;
-  background-color: #ffffff;
+  flex-shrink: 0;
+  width: 10px;
+  height: 10px;
+  background: #fff;
   border-radius: 50%;
-  box-shadow: 0 0 10px #ffffff;
-  animation: pulseDot 1.5s infinite;
+  will-change: transform, opacity;
+  animation: rippleDot 1.8s ease-out infinite;
 }
 
-@keyframes pulseDot {
-  0% {
-    transform: scale(0.9);
-    opacity: 0.7;
-  }
-  50% {
-    transform: scale(1.3);
-    opacity: 1;
-    box-shadow: 0 0 14px #ffffff;
-  }
-  100% {
-    transform: scale(0.9);
-    opacity: 0.7;
-  }
+@keyframes rippleDot {
+  0%   { transform: scale(1);    opacity: 0.9; box-shadow: 0 0 0 0 rgba(255,255,255,0.8); }
+  60%  { transform: scale(1.25); opacity: 1;   box-shadow: 0 0 0 9px rgba(255,255,255,0); }
+  100% { transform: scale(1);    opacity: 0.9; box-shadow: 0 0 0 0 rgba(255,255,255,0); }
 }
 
-/* Mobile Responsiveness */
+/* ═══════════════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════════════ */
 @media (max-width: 900px) {
-  .heroLayout {
-    grid-template-columns: 1fr;
-    gap: 40px;
-    text-align: center;
-  }
-  .heroRight {
-    align-items: center;
-    text-align: center;
-  }
+  .heroLayout { grid-template-columns: 1fr; gap: 40px; text-align: center; }
+  .heroRight  { align-items: center; text-align: center; }
   .emotionalMessage {
     border-right: none;
     border-bottom: 2px solid var(--teal-400);
-    padding-right: 0;
-    padding-bottom: 14px;
-    align-items: center;
+    padding-right: 0; padding-bottom: 14px; align-items: center;
   }
-  .logoWrapper {
-    width: 270px;
-    height: 270px;
-  }
-  .liquidDropletBack {
-    width: 80px;
-    height: 80px;
-  }
-  .liquidDropletFront {
-    width: 60px;
-    height: 60px;
-  }
+  .logoWrapper   { width: 270px; height: 270px; }
+  .bgGlassCard   { display: none; }
+  .liquidDropletBack  { width: 78px; height: 78px; }
+  .liquidDropletFront { width: 58px; height: 58px; }
 }

@@ -5,19 +5,16 @@ const HeroTitle = () => {
     <div className={styles.titleContainer}>
       <span className={styles.englishSubtitle}>YOUR JOURNEY INTO MEDICINE</span>
 
-      {/* Calligraphy Title with Organic Liquid Glass Droplets */}
+      {/* Calligraphy with organic liquid glass blobs + diamond accent */}
       <div className={styles.calligraphyWrapper}>
-        {/* Background Liquid Glass Droplets */}
         <div className={styles.liquidDropletBack} />
         <div className={styles.liquidDropletFront} />
-
+        <div className={styles.liquidAccentDot} />
         <img
           src="/maWaraaTitle.png"
-          alt="مَا وَرَاءَ الطِّبِّ - Calligraphy Title"
+          alt="مَا وَرَاءَ الطِّبِّ"
           className={styles.calligraphyImage}
-          onError={(e) => {
-            e.currentTarget.src = "/maWaraaTitleOriginal.png";
-          }}
+          onError={(e) => { e.currentTarget.src = "/maWaraaTitleOriginal.png"; }}
         />
       </div>
 

@@ -6,14 +6,20 @@ const HeroMeta = () => {
     <div className={styles.heroMeta}>
       <div className={styles.datePill}>
         <span className={styles.dateIcon}>
-          <CalendarCheck size={18} />
+          <CalendarCheck size={17} />
         </span>
         <span>04 SEPTEMBER 2026</span>
       </div>
 
-      <button className={styles.ctaButton}>
-        <span className={styles.btnPulseDot} />
-        احجز مقعدك الآن
+      {/* Premium Magnetic CTA Button — 3-layer architecture */}
+      <button className={styles.ctaButton} type="button">
+        <span className={styles.ctaBtnInner}>
+          {/* Moving shimmer sweep */}
+          <span className={styles.ctaBtnShine} />
+          {/* Pulse live-dot */}
+          <span className={styles.btnPulseDot} />
+          احجز مقعدك الآن
+        </span>
       </button>
     </div>
   );
