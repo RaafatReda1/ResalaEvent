@@ -2,6 +2,7 @@ import { useRef } from "react";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import styles from "./HeroSection.module.css";
+import SideRays from "./SideRays";
 import LogoVisual from "./components/LogoVisual";
 import EmotionalMessage from "./components/EmotionalMessage";
 import HeroTitle from "./components/HeroTitle";
@@ -77,6 +78,23 @@ const HeroSection = () => {
     <div ref={containerRef} className={styles.heroContainer}>
       {/* Background layers */}
       <div className={styles.bgBase} />
+      {/* SideRays WebGL background */}
+      <div style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: 'none', zIndex: 1, overflow: 'hidden' }}>
+        <SideRays
+          speed={2.5}
+          rayColor1="#EAB308"
+          rayColor2="#96c8ff"
+          intensity={2}
+          spread={2}
+          origin="top-right"
+          tilt={0}
+          saturation={1.5}
+          blend={0.75}
+          falloff={1.6}
+          opacity={1.0}
+        />
+      </div>
+
       <div className={styles.bgGrid} />
       <div className={styles.bgCoronaRight} />
       <div className={styles.bgCoronaLeft} />
