@@ -3,11 +3,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import {
-  Sparkles,
-  Mic,
-  Stethoscope,
-  Award,
-  BookOpen,
+
   MousePointer,
 } from "lucide-react";
 import { CursorDrivenParticleTypography } from "@/components/ui/cursor-driven-particles-typography";
@@ -15,36 +11,6 @@ import "./Agenda.css";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const TEASER_SESSIONS = [
-  {
-    number: "01",
-    title: "الجلسة الافتتاحية",
-    titleEn: "Opening Ceremony",
-    desc: "كلمات ترحيبية واستعراض لأبرز إنجازات وتطلعات النشاط الطبي لجمعية رسالة.",
-    icon: Mic,
-  },
-  {
-    number: "02",
-    title: "المحاضرات الرئيسية",
-    titleEn: "Keynote Sessions",
-    desc: "طروحات طبية متقدمة وتجارب ميدانية ملهمة من قادة وخبراء الرعاية الصحية.",
-    icon: Stethoscope,
-  },
-  {
-    number: "03",
-    title: "الورش التفاعلية",
-    titleEn: "Interactive Workshops",
-    desc: "تدريب عملي ومناقشات حية لتطوير مهارات المتطوعين والفرق الطبية الميدانية.",
-    icon: BookOpen,
-  },
-  {
-    number: "04",
-    title: "حفل التكريم والختام",
-    titleEn: "Honoring & Closing",
-    desc: "الاحتفاء بنجوم العطاء وتكريم النماذج الملهمة في مسيرة النشاط الطبي.",
-    icon: Award,
-  },
-];
 
 export default function Agenda() {
   const [particleText, setParticleText] = useState("SOON");
@@ -74,7 +40,7 @@ export default function Agenda() {
           duration: 0.85,
           ease: "power3.out",
           stagger: 0.15,
-        }
+        },
       )
         .fromTo(
           showcaseRef.current,
@@ -86,7 +52,7 @@ export default function Agenda() {
             duration: 0.9,
             ease: "power3.out",
           },
-          "-=0.4"
+          "-=0.4",
         )
         .fromTo(
           particleBoxRef.current,
@@ -97,7 +63,7 @@ export default function Agenda() {
             duration: 0.8,
             ease: "power3.out",
           },
-          "-=0.5"
+          "-=0.5",
         )
         .fromTo(
           Array.from(cardsRef.current?.children || []),
@@ -110,16 +76,16 @@ export default function Agenda() {
             ease: "back.out(1.2)",
             stagger: 0.12,
           },
-          "-=0.4"
+          "-=0.4",
         )
         .fromTo(
           statusRef.current,
           { opacity: 0, y: 20 },
           { opacity: 1, y: 0, duration: 0.6, ease: "power2.out" },
-          "-=0.3"
+          "-=0.3",
         );
     },
-    { scope: containerRef }
+    { scope: containerRef },
   );
 
   return (
@@ -154,14 +120,17 @@ export default function Agenda() {
               <div className="particleHint">
                 <MousePointer size={14} className="animate-bounce" />
               </div>
-             
             </div>
 
             <div className="particleCanvasContainer">
               <CursorDrivenParticleTypography
                 text={particleText}
                 fontSize={particleText === "قريباً" ? 170 : 150}
-                fontFamily={particleText === "قريباً" ? "Tajawal, sans-serif" : "Inter, sans-serif"}
+                fontFamily={
+                  particleText === "قريباً"
+                    ? "Tajawal, sans-serif"
+                    : "Inter, sans-serif"
+                }
                 color="#3AB9AC"
                 particleSize={1.8}
                 particleDensity={4}
