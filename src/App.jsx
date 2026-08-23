@@ -5,6 +5,7 @@ import HeroSection from './Components/HeroSection/HeroSection';
 import Header from './Components/Header/Header';
 import About from './Components/About/About';
 import Speakers from './Components/Speakers/Speakers';
+import Issues from './Components/Issues/Issues';
 
 function App() {
   const [isIntroComplete, setIsIntroComplete] = useState(false);
@@ -18,6 +19,7 @@ function App() {
           <Header />
           <HeroSection />
           <About />
+          <Issues />
           <Speakers />
         </main>
       )}

@@ -1,0 +1,373 @@
+.issuesSection {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  direction: rtl;
+  padding: 50px 20px;
+  transition: background-color 0.8s cubic-bezier(0.25, 1, 0.5, 1);
+  background-color: #0d0408; /* Default Scene 1 Dark Crimson */
+}
+
+/* Dynamic Background Themes */
+.issuesSection[data-scene="1"] {
+  background-color: #0d0408;
+}
+
+.issuesSection[data-scene="2"] {
+  background-color: #08171d;
+}
+
+.issuesSection[data-scene="3"] {
+  background-color: #041a1c;
+}
+
+/* Ambient Mood Overlays */
+.moodOverlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  transition: opacity 0.8s ease, background 0.8s ease;
+}
+
+.issuesSection[data-scene="1"] .moodOverlay {
+  background: radial-gradient(circle at 50% 50%, rgba(230, 57, 70, 0.22) 0%, rgba(13, 4, 8, 0.95) 75%);
+}
+
+.issuesSection[data-scene="2"] .moodOverlay {
+  background: radial-gradient(circle at 50% 40%, rgba(234, 179, 8, 0.25) 0%, rgba(31, 166, 160, 0.2) 40%, rgba(8, 23, 29, 0.95) 80%);
+}
+
+.issuesSection[data-scene="3"] .moodOverlay {
+  background: radial-gradient(circle at 50% 50%, rgba(31, 166, 160, 0.35) 0%, rgba(15, 118, 110, 0.15) 50%, rgba(4, 26, 28, 0.95) 85%);
+}
+
+/* Background Grid Lines */
+.bgGrid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(93, 204, 192, 0.14) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
+  z-index: 1;
+  -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 40%, transparent 100%);
+  mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 40%, transparent 100%);
+}
+
+/* Header Narrative Badges & Titles */
+.headerWrapper {
+  position: relative;
+  z-index: 10;
+  text-align: center;
+  margin-bottom: 15px;
+  max-width: 750px;
+  min-height: 90px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.sceneBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 20px;
+  border-radius: 30px;
+  font-size: 0.88rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+  backdrop-filter: blur(12px);
+  transition: all 0.5s ease;
+}
+
+.badgeScene1 {
+  background: rgba(230, 57, 70, 0.18);
+  border: 1px solid rgba(230, 57, 70, 0.4);
+  color: #ff6b7a;
+}
+
+.badgeScene2 {
+  background: rgba(234, 179, 8, 0.18);
+  border: 1px solid rgba(234, 179, 8, 0.45);
+  color: #fde047;
+}
+
+.badgeScene3 {
+  background: rgba(93, 204, 192, 0.18);
+  border: 1px solid rgba(93, 204, 192, 0.45);
+  color: var(--teal-200, #a3ece5);
+}
+
+.sceneTitle {
+  font-size: clamp(1.8rem, 3.5vw, 2.5rem);
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1.35;
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.7);
+  transition: opacity 0.4s ease;
+}
+
+/* Scene Visibility Logic */
+.issuesSection[data-scene="1"] .badgeScene2,
+.issuesSection[data-scene="1"] .badgeScene3,
+.issuesSection[data-scene="1"] .titleScene2,
+.issuesSection[data-scene="1"] .titleScene3 {
+  display: none;
+}
+
+.issuesSection[data-scene="2"] .badgeScene1,
+.issuesSection[data-scene="2"] .badgeScene3,
+.issuesSection[data-scene="2"] .titleScene1,
+.issuesSection[data-scene="2"] .titleScene3 {
+  display: none;
+}
+
+.issuesSection[data-scene="3"] .badgeScene1,
+.issuesSection[data-scene="3"] .badgeScene2,
+.issuesSection[data-scene="3"] .titleScene1,
+.issuesSection[data-scene="3"] .titleScene2 {
+  display: none;
+}
+
+/* Stage Layout: Canvas + Floating Popups */
+.stageContainer {
+  position: relative;
+  width: min(100%, 1100px);
+  height: 500px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 10;
+}
+
+/* Rive Canvas Wrapper (Transparent) */
+.riveWrapper {
+  position: relative;
+  width: clamp(290px, 42vw, 450px);
+  height: clamp(290px, 42vw, 450px);
+  z-index: 5;
+  background: transparent;
+  filter: drop-shadow(0 15px 35px rgba(0, 0, 0, 0.5));
+}
+
+.riveCanvas {
+  width: 100%;
+  height: 100%;
+  background: transparent !important;
+}
+
+/* Floating Popups Layer */
+.popupsLayer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 15;
+}
+
+/* Scene 1: Anxiety Popups */
+.anxietyCard {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 22px;
+  background: rgba(20, 10, 15, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(230, 57, 70, 0.45);
+  border-radius: 18px;
+  box-shadow: 0 14px 35px rgba(230, 57, 70, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  font-size: clamp(0.85rem, 1.4vw, 1.02rem);
+  font-weight: 700;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.anxietyIcon {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(230, 57, 70, 0.25);
+  color: #ff6b7a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.cardTopRight {
+  top: 12%;
+  right: 5%;
+}
+
+.cardBottomLeft {
+  bottom: 14%;
+  left: 5%;
+}
+
+.cardCenterRight {
+  top: 50%;
+  right: 3%;
+}
+
+/* Scene 2: Resala Notification Card */
+.notificationCard {
+  position: absolute;
+  top: 8%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(92%, 480px);
+  padding: 18px 24px;
+  background: linear-gradient(135deg, rgba(12, 30, 42, 0.96) 0%, rgba(18, 45, 60, 0.92) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(234, 179, 8, 0.6);
+  border-radius: 24px;
+  box-shadow: 
+    0 20px 60px rgba(234, 179, 8, 0.3),
+    0 0 35px rgba(31, 166, 160, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 25;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.notifIconWrapper {
+  position: relative;
+  flex-shrink: 0;
+  width: 50px;
+  height: 50px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #eab308 0%, #1fa6a0 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  box-shadow: 0 8px 24px rgba(234, 179, 8, 0.5);
+}
+
+.notifPulse {
+  position: absolute;
+  inset: -5px;
+  border-radius: 20px;
+  border: 2px solid rgba(234, 179, 8, 0.8);
+  animation: notifPing 1.8s infinite ease-out;
+}
+
+@keyframes notifPing {
+  0% { transform: scale(1); opacity: 0.9; }
+  100% { transform: scale(1.4); opacity: 0; }
+}
+
+.notifContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.notifTitle {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #fde047;
+}
+
+.notifBody {
+  font-size: 0.86rem;
+  color: #f1f5f9;
+  line-height: 1.45;
+}
+
+/* Scene 3: Hope & Activity Cards */
+.hopeCard {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 22px;
+  background: rgba(8, 30, 36, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(93, 204, 192, 0.4);
+  border-radius: 20px;
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  opacity: 0;
+  will-change: transform, opacity;
+}
+
+.hopeIcon {
+  flex-shrink: 0;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: rgba(93, 204, 192, 0.2);
+  color: var(--teal-300, #5dccc0);
+  border: 1px solid rgba(93, 204, 192, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hopeTextTitle {
+  font-size: 0.96rem;
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.hopeTextDesc {
+  font-size: 0.8rem;
+  color: #a7f3d0;
+}
+
+.hopePos1 {
+  top: 10%;
+  right: 4%;
+}
+
+.hopePos2 {
+  top: 10%;
+  left: 4%;
+}
+
+.hopePos3 {
+  bottom: 12%;
+  right: 5%;
+}
+
+.hopePos4 {
+  bottom: 12%;
+  left: 5%;
+}
+
+/* Responsive Styles */
+@media (max-width: 900px) {
+  .stageContainer {
+    height: 460px;
+  }
+  .cardTopRight, .cardBottomLeft, .cardCenterRight {
+    position: relative;
+    top: auto; right: auto; bottom: auto; left: auto;
+    margin: 8px 0;
+  }
+  .hopePos1, .hopePos2, .hopePos3, .hopePos4 {
+    position: relative;
+    top: auto; right: auto; bottom: auto; left: auto;
+    margin: 8px 0;
+  }
+  .popupsLayer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+}
