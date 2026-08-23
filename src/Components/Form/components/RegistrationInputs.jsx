@@ -1,4 +1,4 @@
-﻿import { User, Mail, Phone, GraduationCap } from "lucide-react";
+import { User, Mail, Phone, GraduationCap } from "lucide-react";
 import styles from "../Form.module.css";
 
 const RegistrationInputs = ({ form, onChange }) => {
@@ -82,14 +82,14 @@ const RegistrationInputs = ({ form, onChange }) => {
           <span className={styles.labelIcon}>
             <GraduationCap size={16} />
           </span>
-          <span>الجامعة / الكلية *</span>
+          <span>الجامعة*</span>
         </label>
         <div className={styles.inputWrapper}>
           <input
             type="text"
             name="university"
             value={form.university}
-            placeholder="مثال: طب قصر العيني / صيدلة القاهرة"
+            placeholder="مثال: طب حلوان"
             onChange={onChange}
             required
             className={styles.inputField}

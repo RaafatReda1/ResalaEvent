@@ -13,7 +13,7 @@ const ImageUploadDropzone = ({
         <span className={styles.labelIcon}>
           <ImageIcon size={16} />
         </span>
-        <span>الصورة الشخصية (اختياري لكارنيه الحضور)</span>
+        <span>صورة بطاقه الترشيح او ما يثبت وجودك في الفرقه الاولي</span>
       </label>
 
       {filePreview ? (
