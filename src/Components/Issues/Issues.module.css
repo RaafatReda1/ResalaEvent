@@ -9,49 +9,37 @@
   overflow: hidden;
   direction: rtl;
   padding: 40px 20px;
-  background-color: #080306;
-  transition: background-color 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  background-color: #060911;
 }
 
-/* Background Themes based on data-act */
-.issuesSection[data-act="1"] {
-  background-color: #0a0408;
-}
-
-.issuesSection[data-act="2"] {
-  background-color: #0b151e;
-}
-
-.issuesSection[data-act="3"] {
-  background-color: #04181a;
-}
-
-/* Dynamic Ambient Mood Glows */
-.moodOverlay {
+/* Background Mood Overlays Controlled by GSAP opacity */
+.moodBg {
   position: absolute;
   inset: 0;
   pointer-events: none;
   z-index: 1;
-  transition: opacity 0.8s ease, background 0.8s ease;
+  opacity: 0;
+  transition: opacity 0.8s ease;
 }
 
-.issuesSection[data-act="1"] .moodOverlay {
-  background: radial-gradient(circle at 50% 45%, rgba(230, 57, 70, 0.2) 0%, rgba(16, 8, 20, 0.8) 50%, rgba(10, 4, 8, 0.98) 85%);
+.moodAnxiety {
+  background: radial-gradient(circle at 50% 45%, rgba(230, 57, 70, 0.16) 0%, rgba(20, 8, 16, 0.85) 50%, rgba(6, 9, 17, 0.98) 85%);
+  opacity: 1; /* Default active */
 }
 
-.issuesSection[data-act="2"] .moodOverlay {
-  background: radial-gradient(circle at 50% 45%, rgba(234, 179, 8, 0.28) 0%, rgba(31, 166, 160, 0.2) 45%, rgba(11, 21, 30, 0.98) 85%);
+.moodNotification {
+  background: radial-gradient(circle at 50% 45%, rgba(234, 179, 8, 0.2) 0%, rgba(31, 166, 160, 0.15) 45%, rgba(6, 9, 17, 0.98) 85%);
 }
 
-.issuesSection[data-act="3"] .moodOverlay {
-  background: radial-gradient(circle at 50% 45%, rgba(31, 166, 160, 0.35) 0%, rgba(234, 179, 8, 0.15) 50%, rgba(4, 24, 26, 0.98) 85%);
+.moodCelebration {
+  background: radial-gradient(circle at 50% 45%, rgba(31, 166, 160, 0.25) 0%, rgba(234, 179, 8, 0.1) 50%, rgba(6, 9, 17, 0.98) 85%);
 }
 
 /* Background Grid Lines */
 .bgGrid {
   position: absolute;
   inset: 0;
-  background-image: radial-gradient(rgba(93, 204, 192, 0.15) 1px, transparent 1px);
+  background-image: radial-gradient(rgba(93, 204, 192, 0.12) 1px, transparent 1px);
   background-size: 36px 36px;
   pointer-events: none;
   z-index: 1;
@@ -65,26 +53,39 @@
   z-index: 10;
   text-align: center;
   margin-bottom: 25px;
-  max-width: 800px;
-  min-height: 100px;
+  width: min(100%, 820px);
+  min-height: 110px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Header Scene Groups */
+.headerScene {
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+  padding: 0 10px;
 }
 
-.badge {
+.sceneBadge {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 8px 22px;
+  padding: 7px 20px;
   border-radius: 30px;
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   font-weight: 800;
   letter-spacing: 0.5px;
-  margin-bottom: 12px;
-  backdrop-filter: blur(14px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+  margin-bottom: 10px;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
 .badgeAct1 {
@@ -106,36 +107,14 @@
 }
 
 .mainTitle {
-  font-size: clamp(1.8rem, 3.8vw, 2.7rem);
+  font-size: clamp(1.4rem, 3.8vw, 2.5rem);
   font-weight: 900;
   color: #ffffff;
   line-height: 1.35;
-  text-shadow: 0 4px 25px rgba(0, 0, 0, 0.8);
+  text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
 }
 
-/* Act-dependent Header Visibility */
-.issuesSection[data-act="1"] .badgeAct2,
-.issuesSection[data-act="1"] .badgeAct3,
-.issuesSection[data-act="1"] .titleAct2,
-.issuesSection[data-act="1"] .titleAct3 {
-  display: none;
-}
-
-.issuesSection[data-act="2"] .badgeAct1,
-.issuesSection[data-act="2"] .badgeAct3,
-.issuesSection[data-act="2"] .titleAct1,
-.issuesSection[data-act="2"] .titleAct3 {
-  display: none;
-}
-
-.issuesSection[data-act="3"] .badgeAct1,
-.issuesSection[data-act="3"] .badgeAct2,
-.issuesSection[data-act="3"] .titleAct1,
-.issuesSection[data-act="3"] .titleAct2 {
-  display: none;
-}
-
-/* Central Stage Container */
+/* Stage Container */
 .stageContainer {
   position: relative;
   width: min(100%, 1150px);
@@ -146,55 +125,36 @@
   z-index: 10;
 }
 
-/* Center Avatar Stage (3D Glowing Orb & Emoji Hero) */
+/* Central Glowing Avatar Stage */
 .heroAvatarStage {
   position: relative;
-  width: clamp(180px, 25vw, 240px);
-  height: clamp(180px, 25vw, 240px);
+  width: clamp(160px, 24vw, 230px);
+  height: clamp(160px, 24vw, 230px);
   border-radius: 50%;
   display: flex;
   justify-content: center;
   align-items: center;
   z-index: 5;
-  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.issuesSection[data-act="1"] .heroAvatarStage {
-  background: radial-gradient(circle at 35% 35%, rgba(230, 57, 70, 0.35) 0%, rgba(230, 57, 70, 0.05) 70%);
-  border: 2px solid rgba(230, 57, 70, 0.45);
-  box-shadow: 0 0 50px rgba(230, 57, 70, 0.3), inset 0 0 30px rgba(230, 57, 70, 0.2);
-}
-
-.issuesSection[data-act="2"] .heroAvatarStage {
-  background: radial-gradient(circle at 35% 35%, rgba(234, 179, 8, 0.4) 0%, rgba(31, 166, 160, 0.1) 70%);
-  border: 2px solid rgba(234, 179, 8, 0.6);
-  box-shadow: 0 0 60px rgba(234, 179, 8, 0.4), inset 0 0 35px rgba(234, 179, 8, 0.3);
-}
-
-.issuesSection[data-act="3"] .heroAvatarStage {
-  background: radial-gradient(circle at 35% 35%, rgba(93, 204, 192, 0.45) 0%, rgba(31, 166, 160, 0.1) 70%);
-  border: 2px solid rgba(93, 204, 192, 0.6);
-  box-shadow: 0 0 70px rgba(93, 204, 192, 0.45), inset 0 0 40px rgba(93, 204, 192, 0.3);
+  background: radial-gradient(circle at 35% 35%, rgba(93, 204, 192, 0.3) 0%, rgba(31, 166, 160, 0.08) 70%);
+  border: 2px solid rgba(93, 204, 192, 0.45);
+  box-shadow: 0 0 50px rgba(31, 166, 160, 0.3);
+  transition: border-color 0.6s ease, box-shadow 0.6s ease;
 }
 
 .emojiAvatar {
-  font-size: clamp(4.5rem, 8vw, 6.5rem);
-  filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5));
+  font-size: clamp(4rem, 8vw, 6.2rem);
+  filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.5));
   will-change: transform, opacity;
-  transition: transform 0.4s ease;
+  transition: transform 0.3s ease;
 }
 
 .avatarPulseRing {
   position: absolute;
   inset: -12px;
   border-radius: 50%;
-  border: 2px dashed rgba(93, 204, 192, 0.3);
-  animation: rotateRing 20s linear infinite;
+  border: 2px dashed rgba(93, 204, 192, 0.35);
+  animation: rotateRing 22s linear infinite;
   pointer-events: none;
-}
-
-.issuesSection[data-act="1"] .avatarPulseRing {
-  border-color: rgba(230, 57, 70, 0.4);
 }
 
 @keyframes rotateRing {
@@ -202,105 +162,128 @@
   to { transform: rotate(360deg); }
 }
 
-/* Floating Layer */
+/* Floating Elements Layer */
 .floatingLayer {
   position: absolute;
   inset: 0;
-  pointer-events: none;
+  pointer-events: auto;
   z-index: 15;
 }
 
-/* Act 1: Anxiety Popups */
+/* Act 1: Professional Challenge Cards */
 .anxietyCard {
   position: absolute;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 14px;
-  padding: 16px 24px;
-  background: rgba(18, 10, 15, 0.9);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(230, 57, 70, 0.5);
+  padding: 18px 22px;
+  max-width: 370px;
+  background: rgba(16, 12, 18, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(230, 57, 70, 0.45);
   border-radius: 20px;
-  box-shadow: 0 16px 40px rgba(230, 57, 70, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5);
   color: #ffffff;
-  font-size: clamp(0.9rem, 1.4vw, 1.05rem);
-  font-weight: 700;
   opacity: 0;
   will-change: transform, opacity;
+  cursor: pointer;
+  transition: transform 0.3s ease, border-color 0.3s ease;
 }
 
-.anxietyBadgeIcon {
+.anxietyCard:hover {
+  transform: translateY(-4px) scale(1.02) !important;
+  border-color: rgba(230, 57, 70, 0.85);
+}
+
+.anxietyIconBox {
   flex-shrink: 0;
-  font-size: 1.6rem;
   width: 42px;
   height: 42px;
   border-radius: 12px;
   background: rgba(230, 57, 70, 0.2);
+  border: 1px solid rgba(230, 57, 70, 0.4);
+  color: #ff6b7a;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid rgba(230, 57, 70, 0.35);
+}
+
+.cardTitleText {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 3px;
+}
+
+.cardBodyText {
+  font-size: 0.82rem;
+  color: #cbd5e1;
+  line-height: 1.45;
 }
 
 .anxietyPos1 {
-  top: 10%;
-  right: 4%;
-}
-
-.anxietyPos2 {
-  bottom: 12%;
-  left: 4%;
-}
-
-.anxietyPos3 {
-  top: 48%;
+  top: 6%;
   right: 2%;
 }
 
-/* Act 2: Resala Golden Invitation Ticket */
+.anxietyPos2 {
+  bottom: 8%;
+  left: 2%;
+}
+
+.anxietyPos3 {
+  top: 50%;
+  right: 1%;
+}
+
+/* Act 2: VIP Resala Conference Invitation Ticket */
 .ticketCard {
   position: absolute;
-  top: 10%;
+  top: 12%;
   left: 50%;
   transform: translateX(-50%);
   width: min(94%, 520px);
-  padding: 22px 28px;
-  background: linear-gradient(135deg, rgba(14, 28, 42, 0.97) 0%, rgba(20, 48, 65, 0.95) 100%);
-  backdrop-filter: blur(24px);
-  border: 1.5px solid rgba(234, 179, 8, 0.7);
-  border-radius: 28px;
-  box-shadow: 
-    0 25px 70px rgba(234, 179, 8, 0.35),
-    0 0 40px rgba(93, 204, 192, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  padding: 22px 26px;
+  background: linear-gradient(135deg, rgba(12, 28, 44, 0.97) 0%, rgba(18, 48, 66, 0.95) 100%);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1.5px solid rgba(234, 179, 8, 0.75);
+  border-radius: 26px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
   display: flex;
   align-items: center;
   gap: 18px;
   z-index: 25;
   opacity: 0;
   will-change: transform, opacity;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.ticketCard:hover {
+  transform: translateX(-50%) translateY(-4px) scale(1.02) !important;
 }
 
 .ticketIconBox {
   position: relative;
   flex-shrink: 0;
-  width: 56px;
-  height: 56px;
-  border-radius: 18px;
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
   background: linear-gradient(135deg, #eab308 0%, #1fa6a0 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   color: #ffffff;
-  box-shadow: 0 10px 28px rgba(234, 179, 8, 0.5);
-  font-size: 1.8rem;
+  box-shadow: 0 8px 24px rgba(234, 179, 8, 0.4);
+  font-size: 1.7rem;
 }
 
 .ticketPulse {
   position: absolute;
-  inset: -6px;
-  border-radius: 22px;
+  inset: -5px;
+  border-radius: 20px;
   border: 2px solid rgba(234, 179, 8, 0.8);
   animation: ticketPing 1.8s infinite ease-out;
 }
@@ -313,99 +296,222 @@
 .ticketContent {
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: 4px;
 }
 
 .ticketTitle {
-  font-size: 1.08rem;
+  font-size: 1.05rem;
   font-weight: 900;
   color: #fde047;
 }
 
 .ticketBody {
-  font-size: 0.88rem;
+  font-size: 0.86rem;
   color: #f1f5f9;
   line-height: 1.45;
 }
 
-/* Act 3: Hope Feature Cards */
+/* Act 3: Professional Feature Pillars */
 .hopeCard {
   position: absolute;
   display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 18px 24px;
-  background: rgba(8, 28, 34, 0.92);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px 22px;
+  max-width: 370px;
+  background: rgba(8, 28, 36, 0.94);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   border: 1.5px solid rgba(93, 204, 192, 0.45);
-  border-radius: 24px;
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  border-radius: 22px;
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.55);
   color: #ffffff;
   opacity: 0;
   will-change: transform, opacity;
+  cursor: pointer;
+  transition: transform 0.3s ease, border-color 0.3s ease;
 }
 
-.hopeBadgeIcon {
+.hopeCard:hover {
+  transform: translateY(-4px) scale(1.02) !important;
+  border-color: var(--teal-300, #5dccc0);
+}
+
+.hopeIconBox {
   flex-shrink: 0;
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
   background: rgba(93, 204, 192, 0.22);
   color: var(--teal-300, #5dccc0);
   border: 1px solid rgba(93, 204, 192, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.4rem;
 }
 
 .hopeTextTitle {
-  font-size: 1.02rem;
+  font-size: 1rem;
   font-weight: 800;
   color: #ffffff;
+  margin-bottom: 3px;
 }
 
 .hopeTextDesc {
   font-size: 0.82rem;
   color: #a7f3d0;
-  margin-top: 2px;
+  line-height: 1.45;
 }
 
 .hopePos1 {
-  top: 8%;
-  right: 3%;
+  top: 4%;
+  right: 2%;
 }
 
 .hopePos2 {
-  top: 8%;
-  left: 3%;
+  top: 4%;
+  left: 2%;
 }
 
 .hopePos3 {
-  bottom: 8%;
-  right: 4%;
+  bottom: 4%;
+  right: 3%;
 }
 
 .hopePos4 {
-  bottom: 8%;
-  left: 4%;
+  bottom: 4%;
+  left: 3%;
 }
 
-/* Responsive Rules */
+/* ═════════════════════════════════════════════════════════════ */
+/* SMOOTH OPTIMIZED MOBILE LAYOUT (< 900px) */
+/* ═════════════════════════════════════════════════════════════ */
+
 @media (max-width: 900px) {
+  .issuesSection {
+    padding: 20px 12px;
+  }
+
+  .headerWrapper {
+    min-height: 90px;
+    margin-bottom: 10px;
+  }
+
+  .sceneBadge {
+    padding: 5px 14px;
+    font-size: 0.78rem;
+    margin-bottom: 6px;
+  }
+
+  .mainTitle {
+    font-size: clamp(1.2rem, 4.5vw, 1.6rem);
+    line-height: 1.3;
+  }
+
   .stageContainer {
-    height: 480px;
-  }
-  .anxietyPos1, .anxietyPos2, .anxietyPos3, .hopePos1, .hopePos2, .hopePos3, .hopePos4 {
-    position: relative;
-    top: auto; right: auto; bottom: auto; left: auto;
-    margin: 8px 0;
-  }
-  .floatingLayer {
-    display: flex;
+    height: 520px;
     flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
+    padding-top: 10px;
+  }
+
+  .heroAvatarStage {
+    width: 105px;
+    height: 105px;
+    margin-bottom: 0;
+  }
+
+  .emojiAvatar {
+    font-size: 2.6rem;
+  }
+
+  /* Optimized Mobile Floating Layer */
+  .floatingLayer {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  .anxietyCard, .hopeCard {
+    width: min(94vw, 350px);
+    max-width: 94vw;
+    padding: 12px 16px;
+    gap: 10px;
+    border-radius: 16px;
+    left: 0 !important;
+    right: 0 !important;
+    margin: 0 auto !important;
+  }
+
+  .cardTitleText, .hopeTextTitle {
+    font-size: 0.9rem;
+  }
+
+  .cardBodyText, .hopeTextDesc {
+    font-size: 0.76rem;
+    line-height: 1.35;
+  }
+
+  .anxietyIconBox, .hopeIconBox {
+    width: 34px;
+    height: 34px;
+    border-radius: 10px;
+  }
+
+  /* Act 1 Mobile Stack - Clean vertical offset without overlapping hero avatar */
+  .anxietyPos1 {
+    top: 120px;
+  }
+
+  .anxietyPos2 {
+    top: 225px;
+    bottom: auto;
+  }
+
+  .anxietyPos3 {
+    top: 330px;
+  }
+
+  /* Act 2 Mobile Ticket Card */
+  .ticketCard {
+    width: min(94vw, 350px);
+    padding: 14px 18px;
+    gap: 12px;
+    border-radius: 18px;
+    top: 150px;
+  }
+
+  .ticketIconBox {
+    width: 44px;
+    height: 44px;
+    font-size: 1.4rem;
+  }
+
+  .ticketTitle {
+    font-size: 0.94rem;
+  }
+
+  .ticketBody {
+    font-size: 0.78rem;
+    line-height: 1.35;
+  }
+
+  /* Act 3 Mobile Feature Pillars Stack */
+  .hopePos1 {
+    top: 115px;
+  }
+
+  .hopePos2 {
+    top: 200px;
+  }
+
+  .hopePos3 {
+    top: 285px;
+    bottom: auto;
+  }
+
+  .hopePos4 {
+    top: 370px;
+    bottom: auto;
   }
 }

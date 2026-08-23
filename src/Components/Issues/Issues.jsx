@@ -24,7 +24,7 @@ const Issues = () => {
         scrollTrigger: {
           trigger: containerRef.current,
           start: 'top top',
-          end: '+=300%', // 300vh scroll distance for full narrative pacing
+          end: '+=350%', // 350vh scroll distance for full smooth narrative pacing
           scrub: 1,
           pin: true,
           pinSpacing: true,
@@ -43,9 +43,6 @@ const Issues = () => {
               act = 3;
             }
 
-            if (containerRef.current) {
-              containerRef.current.setAttribute('data-act', String(act));
-            }
             setCurrentAct(act);
           },
         },
@@ -55,6 +52,17 @@ const Issues = () => {
       // ACT 1: ANXIETY & STUDENT STRUGGLES (0.00 ➔ 0.30)
       // ═════════════════════════════════════════════════════════════
 
+      // Header 1 Fades In
+      tl.fromTo(
+        '.headerScene1',
+        { opacity: 0, y: 25 },
+        { opacity: 1, y: 0, duration: 0.1, ease: 'power3.out' },
+        0
+      );
+
+      // Background Crimson Glow
+      tl.fromTo('.moodAnxietyBg', { opacity: 0 }, { opacity: 1, duration: 0.1 }, 0);
+
       // Avatar scale & wiggle
       tl.fromTo(
         '.emojiAvatarItem',
@@ -63,116 +71,149 @@ const Issues = () => {
         0
       );
 
-      // Anxiety Cards enter
+      // Anxiety Cards enter with stagger — no filter blur for mobile perf
       tl.fromTo(
         '.cardAnxiety1',
-        { opacity: 0, y: 40, scale: 0.85, filter: 'blur(10px)' },
-        { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', duration: 0.08, ease: 'power3.out' },
+        { opacity: 0, y: 30, scale: 0.9 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.08, ease: 'power3.out' },
         0.02
       );
 
       tl.fromTo(
         '.cardAnxiety2',
-        { opacity: 0, y: 40, scale: 0.85, filter: 'blur(10px)' },
-        { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', duration: 0.08, ease: 'power3.out' },
+        { opacity: 0, y: 30, scale: 0.9 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.08, ease: 'power3.out' },
         0.09
       );
 
       tl.fromTo(
         '.cardAnxiety3',
-        { opacity: 0, y: 40, scale: 0.85, filter: 'blur(10px)' },
-        { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', duration: 0.08, ease: 'power3.out' },
+        { opacity: 0, y: 30, scale: 0.9 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.08, ease: 'power3.out' },
         0.16
       );
 
-      // Fade out ALL Anxiety Cards before Act 2
+      // Smooth Fade Out of Act 1 Header & Cards before Act 2
       tl.to(
         ['.cardAnxiety1', '.cardAnxiety2', '.cardAnxiety3'],
         {
           opacity: 0,
-          y: -25,
-          scale: 0.9,
-          filter: 'blur(8px)',
+          y: -20,
+          scale: 0.92,
           duration: 0.06,
-          stagger: 0.02,
+          stagger: 0.015,
           ease: 'power2.in',
         },
         0.26
       );
 
+      tl.to(
+        '.headerScene1',
+        { opacity: 0, y: -18, duration: 0.06 },
+        0.26
+      );
+
+      tl.to('.moodAnxietyBg', { opacity: 0, duration: 0.08 }, 0.26);
+
       // ═════════════════════════════════════════════════════════════
       // ACT 2: THE GOLDEN RESALA INVITATION (0.30 ➔ 0.60)
       // ═════════════════════════════════════════════════════════════
 
-      // Avatar bounce
-      tl.to(
-        '.emojiAvatarItem',
-        { scale: 1.15, rotate: 10, duration: 0.08, ease: 'bounce.out' },
+      // Header 2 Fades In
+      tl.fromTo(
+        '.headerScene2',
+        { opacity: 0, y: 25 },
+        { opacity: 1, y: 0, duration: 0.1, ease: 'power3.out' },
         0.30
       );
 
-      // Golden Ticket enters
+      // Background Notification Gold Flash
+      tl.fromTo('.moodNotifBg', { opacity: 0 }, { opacity: 1, duration: 0.1 }, 0.30);
+
+      // Avatar bounce
+      tl.to(
+        '.emojiAvatarItem',
+        { scale: 1.18, rotate: 10, duration: 0.08, ease: 'bounce.out' },
+        0.30
+      );
+
+      // Golden Ticket enters with spring pop
       tl.fromTo(
         '.resalaTicketCard',
-        { opacity: 0, y: -60, scale: 0.7, filter: 'blur(12px)' },
-        { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', duration: 0.12, ease: 'back.out(1.8)' },
+        { opacity: 0, y: -40, scale: 0.82 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.12, ease: 'back.out(1.8)' },
         0.32
       );
 
-      // Golden Ticket fades out before Act 3
+      // Smooth Fade Out of Act 2 Ticket & Header before Act 3
       tl.to(
         '.resalaTicketCard',
         {
           opacity: 0,
-          y: -30,
-          scale: 0.85,
-          filter: 'blur(8px)',
+          y: -20,
+          scale: 0.9,
           duration: 0.08,
           ease: 'power2.in',
         },
         0.54
       );
 
+      tl.to(
+        '.headerScene2',
+        { opacity: 0, y: -18, duration: 0.06 },
+        0.54
+      );
+
+      tl.to('.moodNotifBg', { opacity: 0, duration: 0.08 }, 0.54);
+
       // ═════════════════════════════════════════════════════════════
-      // ACT 3: CELEBRATION & EVENT FEATURES (0.60 ➔ 1.00)
+      // ACT 3: CELEBRATION & EVENT PILLARS (0.60 ➔ 1.00)
       // ═════════════════════════════════════════════════════════════
+
+      // Header 3 Fades In
+      tl.fromTo(
+        '.headerScene3',
+        { opacity: 0, y: 25 },
+        { opacity: 1, y: 0, duration: 0.1, ease: 'power3.out' },
+        0.60
+      );
+
+      // Background Emerald Celebration Glow
+      tl.fromTo('.moodCelebBg', { opacity: 0 }, { opacity: 1, duration: 0.1 }, 0.60);
 
       // Avatar joy scale
       tl.to(
         '.emojiAvatarItem',
-        { scale: 1.25, rotate: 0, duration: 0.08, ease: 'power2.out' },
+        { scale: 1.2, rotate: 0, duration: 0.08, ease: 'power2.out' },
         0.60
       );
 
-      // Feature Card 1 enters (Top Right)
+      // Feature Cards enter — no blur for mobile perf
       tl.fromTo(
         '.cardHope1',
-        { opacity: 0, y: 40, scale: 0.8, filter: 'blur(10px)' },
-        { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', duration: 0.08, ease: 'power3.out' },
+        { opacity: 0, y: 30, scale: 0.88 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.08, ease: 'power3.out' },
         0.62
       );
 
-      // Feature Card 2 enters (Top Left)
       tl.fromTo(
         '.cardHope2',
-        { opacity: 0, y: 40, scale: 0.8, filter: 'blur(10px)' },
-        { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', duration: 0.08, ease: 'power3.out' },
+        { opacity: 0, y: 30, scale: 0.88 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.08, ease: 'power3.out' },
         0.70
       );
 
-      // Feature Card 3 enters (Bottom Right)
       tl.fromTo(
         '.cardHope3',
-        { opacity: 0, y: 40, scale: 0.8, filter: 'blur(10px)' },
-        { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', duration: 0.08, ease: 'power3.out' },
+        { opacity: 0, y: 30, scale: 0.88 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.08, ease: 'power3.out' },
         0.78
       );
 
-      // Feature Card 4 enters (Bottom Left)
       tl.fromTo(
         '.cardHope4',
-        { opacity: 0, y: 40, scale: 0.8, filter: 'blur(10px)' },
-        { opacity: 1, y: 0, scale: 1, filter: 'blur(0px)', duration: 0.08, ease: 'power3.out' },
+        { opacity: 0, y: 30, scale: 0.88 },
+        { opacity: 1, y: 0, scale: 1, duration: 0.08, ease: 'power3.out' },
         0.86
       );
 
@@ -188,29 +229,41 @@ const Issues = () => {
   );
 
   return (
-    <section ref={containerRef} className={styles.issuesSection} data-act="1">
-      {/* Dynamic Ambient Glow & Background Grid */}
-      <div className={styles.moodOverlay} />
+    <section ref={containerRef} className={styles.issuesSection}>
+      {/* Background Mood Glow Overlays */}
+      <div className={`moodAnxietyBg ${styles.moodBg} ${styles.moodAnxiety}`} />
+      <div className={`moodNotifBg ${styles.moodBg} ${styles.moodNotification}`} />
+      <div className={`moodCelebBg ${styles.moodBg} ${styles.moodCelebration}`} />
       <div className={styles.bgGrid} />
 
-      {/* Header Narrative Badges & Titles */}
+      {/* Header Narrative Scenes (Smooth Morphing via GSAP) */}
       <div className={styles.headerWrapper}>
-        <div className={`${styles.badge} ${styles.badgeAct1}`}>
-          <AlertTriangle size={16} />
-          <span>التحديات والأوهام في سنة أولى طب</span>
-        </div>
-        <div className={`${styles.badge} ${styles.badgeAct2}`}>
-          <Bell size={16} />
-          <span>إشعار هام من حدث "ما وراء الطب"</span>
-        </div>
-        <div className={`${styles.badge} ${styles.badgeAct3}`}>
-          <Sparkles size={16} />
-          <span>ماذا يقدم لك حدث "ما وراء الطب"؟</span>
+        {/* Header Scene 1 */}
+        <div className={`headerScene1 ${styles.headerScene}`}>
+          <div className={`${styles.sceneBadge} ${styles.badgeAct1}`}>
+            <AlertTriangle size={16} />
+            <span>رحلة الطالب في سنة أولى طب</span>
+          </div>
+          <h2 className={styles.mainTitle}>ضغوط البدايات والتخبط الأكاديمي</h2>
         </div>
 
-        <h2 className={`${styles.mainTitle} ${styles.titleAct1}`}>تائه في بداية طريق الطب؟ لست وحدك!</h2>
-        <h2 className={`${styles.mainTitle} ${styles.titleAct2}`}>وصلتك الدعوة للحضور الأكبر! 🎉</h2>
-        <h2 className={`${styles.mainTitle} ${styles.titleAct3}`}>دليلك الشامل لتحويل الحيرة إلى ثقة ونجاح ✨</h2>
+        {/* Header Scene 2 */}
+        <div className={`headerScene2 ${styles.headerScene}`}>
+          <div className={`${styles.sceneBadge} ${styles.badgeAct2}`}>
+            <Bell size={16} />
+            <span>نقطة التحول والفرصة الحقيقية</span>
+          </div>
+          <h2 className={styles.mainTitle}>دعوة خاصة لتحويل الحيرة إلى تميز 🎉</h2>
+        </div>
+
+        {/* Header Scene 3 */}
+        <div className={`headerScene3 ${styles.headerScene}`}>
+          <div className={`${styles.sceneBadge} ${styles.badgeAct3}`}>
+            <Sparkles size={16} />
+            <span>ركائز النجاح مع حدث "ما وراء الطب"</span>
+          </div>
+          <h2 className={styles.mainTitle}>كيف يُشكل هذا الحدث مستقبلك؟ ✨</h2>
+        </div>
       </div>
 
       {/* Central Interactive Stage */}
@@ -225,20 +278,35 @@ const Issues = () => {
 
         {/* Floating Narrative Cards Layer */}
         <div className={styles.floatingLayer}>
-          {/* ACT 1: Anxiety Popups */}
+          {/* ACT 1: Professional Challenge Cards */}
           <div className={`cardAnxiety1 ${styles.anxietyCard} ${styles.anxietyPos1}`}>
-            <span className={styles.anxietyBadgeIcon}>💔</span>
-            <span>"المواد ضخمة جداً ومش قادر أظبط وقتي!"</span>
+            <div className={styles.anxietyIconBox}>💔</div>
+            <div>
+              <div className={styles.cardTitleText}>تراكم المواد الأكاديمية</div>
+              <div className={styles.cardBodyText}>
+                صعوبة تنظيم الوقت بين التكليفات والكم الرهيب للمناهج السريرية.
+              </div>
+            </div>
           </div>
 
           <div className={`cardAnxiety2 ${styles.anxietyCard} ${styles.anxietyPos2}`}>
-            <span className={styles.anxietyBadgeIcon}>📉</span>
-            <span>"خايف أسقط في الكويزات وأحس إني مش قد الكلية..."</span>
+            <div className={styles.anxietyIconBox}>📉</div>
+            <div>
+              <div className={styles.cardTitleText}>الرهبة من نظام الامتحانات</div>
+              <div className={styles.cardBodyText}>
+                التوتر المستمر من الكويزات الخاطفة والخوف من تدني الدرجات.
+              </div>
+            </div>
           </div>
 
           <div className={`cardAnxiety3 ${styles.anxietyCard} ${styles.anxietyPos3}`}>
-            <span className={styles.anxietyBadgeIcon}>🌀</span>
-            <span>"تايه في سنة أولى ومش عارف مين يوجهني صح!"</span>
+            <div className={styles.anxietyIconBox}>🌀</div>
+            <div>
+              <div className={styles.cardTitleText}>غياب الخطة الموجهة</div>
+              <div className={styles.cardBodyText}>
+                السير بدون بوصلة أكاديمية أو مرشد يوضح لك خطوتك التالية.
+              </div>
+            </div>
           </div>
 
           {/* ACT 2: Golden Resala Invitation Ticket */}
@@ -248,43 +316,51 @@ const Issues = () => {
               <div className={styles.ticketPulse} />
             </div>
             <div className={styles.ticketContent}>
-              <span className={styles.ticketTitle}>دعوة خاصة لحدث "ما وراء الطب" 🎉</span>
+              <span className={styles.ticketTitle}>دعوة خاصة لحضور مؤتمر "ما وراء الطب" 🎉</span>
               <span className={styles.ticketBody}>
-                أكبر مؤتمر توجيه طبي متكامل لطلاب كلية الطب — خطتك للنجاح والتفوق تبدأ هنا!
+                انضم لأقوى حدث توجيهي طبي يبني رؤيتك الأكاديمية والشخصية ويصلك بنخبة قادة المجال.
               </span>
             </div>
           </div>
 
-          {/* ACT 3: Hope & Activity Feature Cards */}
+          {/* ACT 3: Professional Feature Pillars */}
           <div className={`cardHope1 ${styles.hopeCard} ${styles.hopePos1}`}>
-            <div className={styles.hopeBadgeIcon}>🗺️</div>
+            <div className={styles.hopeIconBox}>🗺️</div>
             <div>
-              <div className={styles.hopeTextTitle}>خارطة طريق السنوات الأولى</div>
-              <div className={styles.hopeTextDesc}>خطط تنظيم وقت واستراتيجيات مذاكرة مجربة</div>
+              <div className={styles.hopeTextTitle}>خارطة طريق الأوائل</div>
+              <div className={styles.hopeTextDesc}>
+                استراتيجيات مذاكرة مجربة وخطط إدارة الوقت في السنوات الأولى.
+              </div>
             </div>
           </div>
 
           <div className={`cardHope2 ${styles.hopeCard} ${styles.hopePos2}`}>
-            <div className={styles.hopeBadgeIcon}>👥</div>
+            <div className={styles.hopeIconBox}>👥</div>
             <div>
-              <div className={styles.hopeTextTitle}>جلسات توجيه فردية (Mentorship)</div>
-              <div className={styles.hopeTextDesc}>تواصل مباشر مع استشاريين وأطباء كبار</div>
+              <div className={styles.hopeTextTitle}>جلسات توجيه مباشر (Mentorship)</div>
+              <div className={styles.hopeTextDesc}>
+                حوارات شخصية ونقاشات مفتوحة مع أطباء واستشاريين كبار.
+              </div>
             </div>
           </div>
 
           <div className={`cardHope3 ${styles.hopeCard} ${styles.hopePos3}`}>
-            <div className={styles.hopeBadgeIcon}>🔬</div>
+            <div className={styles.hopeIconBox}>🔬</div>
             <div>
-              <div className={styles.hopeTextTitle}>ورش عمل تفاعلية وطبية</div>
-              <div className={styles.hopeTextDesc}>تطوير المهارات العلمية والعملية والشخصية</div>
+              <div className={styles.hopeTextTitle}>ورش عمل تطبيقية وطبية</div>
+              <div className={styles.hopeTextDesc}>
+                بناء المهارات الطبية والشخصية والبحث العلمي المبكر.
+              </div>
             </div>
           </div>
 
           <div className={`cardHope4 ${styles.hopeCard} ${styles.hopePos4}`}>
-            <div className={styles.hopeBadgeIcon}>🛡️</div>
+            <div className={styles.hopeIconBox}>🛡️</div>
             <div>
-              <div className={styles.hopeTextTitle}>مجتمع طبي محفز وداعِم</div>
-              <div className={styles.hopeTextDesc}>زملاء يشاركونك الشغف ويساندونك طوال الطريق</div>
+              <div className={styles.hopeTextTitle}>مجتمع طبي داعم ومحفز</div>
+              <div className={styles.hopeTextDesc}>
+                بيئة تفاعلية تجمعك بزملاء ونخبة يشاركونك الشغف ويساندونك.
+              </div>
             </div>
           </div>
         </div>
