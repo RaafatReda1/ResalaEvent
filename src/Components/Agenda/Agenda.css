@@ -1,0 +1,425 @@
+/* ═══════════════════════════════════════════════════
+   AGENDA COMING SOON — Cinematic Dark Teaser
+   ═══════════════════════════════════════════════════ */
+
+.agendaSection {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(60px, 9vh, 120px) clamp(16px, 4vw, 60px);
+  background: linear-gradient(160deg, #040d18 0%, #081325 45%, #0c1e36 75%, #050a14 100%);
+  overflow: hidden;
+  direction: rtl;
+  color: #ffffff;
+}
+
+/* ── Background layers ── */
+.bgGrid {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(58, 185, 172, 0.12) 1px, transparent 1px);
+  background-size: clamp(28px, 3.5vw, 42px) clamp(28px, 3.5vw, 42px);
+  pointer-events: none;
+  z-index: 1;
+  -webkit-mask-image: radial-gradient(ellipse 85% 80% at 50% 50%, black 20%, transparent 100%);
+  mask-image: radial-gradient(ellipse 85% 80% at 50% 50%, black 20%, transparent 100%);
+}
+
+.bgCoronaLeft {
+  position: absolute;
+  bottom: -20%;
+  left: -12%;
+  width: min(700px, 80vw);
+  height: min(700px, 80vw);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(58, 185, 172, 0.2) 0%, rgba(31, 166, 160, 0.05) 50%, transparent 70%);
+  pointer-events: none;
+  z-index: 1;
+  animation: coronaFloat 11s ease-in-out infinite alternate;
+}
+
+.bgCoronaRight {
+  position: absolute;
+  top: -18%;
+  right: -10%;
+  width: min(650px, 75vw);
+  height: min(650px, 75vw);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(234, 179, 8, 0.14) 0%, rgba(230, 57, 70, 0.05) 55%, transparent 70%);
+  pointer-events: none;
+  z-index: 1;
+  animation: coronaFloat 13s ease-in-out infinite alternate-reverse;
+}
+
+@keyframes coronaFloat {
+  0%   { transform: scale(0.9) translateY(0);    opacity: 0.7; }
+  100% { transform: scale(1.1) translateY(-25px); opacity: 1; }
+}
+
+.bgScanLine {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 1.5px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(58, 185, 172, 0.18) 25%,
+    rgba(58, 185, 172, 0.5) 50%,
+    rgba(58, 185, 172, 0.18) 75%,
+    transparent 100%
+  );
+  pointer-events: none;
+  z-index: 2;
+  animation: scanLine 8s ease-in-out infinite;
+}
+
+@keyframes scanLine {
+  0%   { transform: translateY(8vh);  opacity: 0; }
+  10%  { opacity: 0.6; }
+  50%  { transform: translateY(88vh); opacity: 0.25; }
+  90%  { opacity: 0.6; }
+  100% { transform: translateY(8vh);  opacity: 0; }
+}
+
+/* ── Content Container ── */
+.agendaContent {
+  position: relative;
+  z-index: 10;
+  max-width: 1150px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: clamp(24px, 4vh, 44px);
+}
+
+/* ── Section Heading ── */
+.sectionHeader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(10px, 1.6vh, 18px);
+}
+
+.badgePill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(10, 21, 38, 0.75);
+  border: 1px solid rgba(58, 185, 172, 0.35);
+  padding: clamp(8px, 1.4vh, 12px) clamp(20px, 3vw, 32px);
+  border-radius: 40px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.badgeDot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #3ab9ac;
+  box-shadow: 0 0 12px #3ab9ac, 0 0 24px rgba(58, 185, 172, 0.8);
+  animation: pulseDot 2s infinite;
+}
+
+@keyframes pulseDot {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.4); opacity: 0.6; }
+}
+
+.badgeText {
+  font-size: clamp(0.78rem, 1.3vw, 0.95rem);
+  font-weight: 800;
+  letter-spacing: clamp(2px, 0.4vw, 4px);
+  color: var(--teal-300, #5dccc0);
+  text-transform: uppercase;
+}
+
+.mainTitle {
+  font-size: clamp(2.4rem, 6vw, 4.2rem);
+  font-weight: 900;
+  line-height: 1.15;
+  background: linear-gradient(135deg, #ffffff 0%, #d8e5f5 50%, #3ab9ac 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  filter: drop-shadow(0 6px 20px rgba(0, 0, 0, 0.6));
+}
+
+.subtitle {
+  font-size: clamp(0.95rem, 1.8vw, 1.25rem);
+  color: rgba(199, 213, 229, 0.85);
+  max-width: 680px;
+  line-height: 1.8;
+  font-weight: 400;
+}
+
+/* ── Main Glass Showcase Card ── */
+.showcaseCard {
+  position: relative;
+  width: 100%;
+  border-radius: clamp(20px, 3vw, 32px);
+  background: linear-gradient(
+    135deg,
+    rgba(14, 28, 48, 0.75) 0%,
+    rgba(10, 21, 38, 0.85) 50%,
+    rgba(6, 14, 26, 0.92) 100%
+  );
+  border: 1px solid rgba(58, 185, 172, 0.25);
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 0 50px rgba(58, 185, 172, 0.1);
+  padding: clamp(30px, 5vh, 60px) clamp(20px, 4vw, 50px);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(28px, 4vh, 48px);
+}
+
+.showcaseCard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(58, 185, 172, 0.08) 50%,
+    transparent 100%
+  );
+  transform: skewX(-20deg);
+  animation: cardShimmer 6s infinite ease-in-out;
+  pointer-events: none;
+}
+
+@keyframes cardShimmer {
+  0%   { left: -100%; }
+  40%, 100% { left: 200%; }
+}
+
+/* ── Timeline Skeleton Cards ── */
+.timelineGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: clamp(14px, 2vw, 24px);
+  width: 100%;
+}
+
+.timelineCard {
+  position: relative;
+  background: rgba(16, 32, 54, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: clamp(14px, 2vw, 20px);
+  padding: clamp(20px, 3vh, 32px) clamp(16px, 2vw, 24px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: right;
+  gap: 12px;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.timelineCard:hover {
+  transform: translateY(-6px);
+  background: rgba(21, 42, 74, 0.7);
+  border-color: rgba(58, 185, 172, 0.4);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.5), 0 0 25px rgba(58, 185, 172, 0.2);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.cardNumber {
+  font-size: clamp(1.4rem, 2.5vw, 1.9rem);
+  font-weight: 900;
+  color: var(--teal-400, #3ab9ac);
+  letter-spacing: -1px;
+}
+
+.cardIcon {
+  width: clamp(32px, 4vw, 42px);
+  height: clamp(32px, 4vw, 42px);
+  border-radius: 12px;
+  background: rgba(58, 185, 172, 0.12);
+  border: 1px solid rgba(58, 185, 172, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #3ab9ac;
+  font-size: 1.1rem;
+}
+
+.cardTitle {
+  font-size: clamp(1.05rem, 1.6vw, 1.28rem);
+  font-weight: 800;
+  color: #ffffff;
+  margin-top: 4px;
+}
+
+.cardDesc {
+  font-size: clamp(0.78rem, 1.2vw, 0.9rem);
+  color: rgba(199, 213, 229, 0.7);
+  line-height: 1.6;
+}
+
+.cardPlaceholderLine {
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(90deg, rgba(58, 185, 172, 0.6), transparent);
+  border-radius: 2px;
+  margin-top: 6px;
+}
+
+/* ── Callout / Status Bar ── */
+.statusBar {
+  display: inline-flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(8, 18, 32, 0.8);
+  border: 1px solid rgba(234, 179, 8, 0.3);
+  padding: clamp(12px, 1.8vh, 16px) clamp(24px, 3vw, 40px);
+  border-radius: 50px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(234, 179, 8, 0.15);
+}
+
+.statusIcon {
+  color: #eab308;
+  font-size: 1.2rem;
+  display: flex;
+  align-items: center;
+}
+
+.statusText {
+  font-size: clamp(0.85rem, 1.4vw, 1.05rem);
+  font-weight: 700;
+  color: #f1f5f9;
+  letter-spacing: 0.3px;
+}
+
+/* ── Particle Typography Showcase ── */
+.particleTypographyWrapper {
+  width: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  background: rgba(10, 20, 36, 0.6);
+  border: 1px solid rgba(58, 185, 172, 0.2);
+  border-radius: clamp(16px, 2.5vw, 24px);
+  padding: clamp(16px, 3vh, 24px) clamp(16px, 3vw, 24px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08), 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.particleControls {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  z-index: 10;
+}
+
+.particleHint {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: clamp(0.75rem, 1.2vw, 0.88rem);
+  font-weight: 600;
+  color: var(--teal-300, #5dccc0);
+  background: rgba(58, 185, 172, 0.1);
+  border: 1px solid rgba(58, 185, 172, 0.25);
+  padding: 6px 14px;
+  border-radius: 20px;
+}
+
+.textSwitchGroup {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(6, 14, 26, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 3px;
+  border-radius: 30px;
+  gap: 4px;
+}
+
+.switchBtn {
+  background: transparent;
+  border: none;
+  color: rgba(199, 213, 229, 0.7);
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: clamp(0.78rem, 1.2vw, 0.88rem);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.switchBtn:hover {
+  color: #ffffff;
+}
+
+.activeSwitch {
+  background: linear-gradient(135deg, #1fa6a0 0%, #3ab9ac 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 10px rgba(58, 185, 172, 0.4);
+}
+
+.particleCanvasContainer {
+  width: 100%;
+  height: clamp(260px, 38vh, 360px);
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+/* ── Responsive breakpoints ── */
+@media (max-width: 1024px) {
+  .timelineGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .timelineGrid {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+  
+  .statusBar {
+    flex-direction: column;
+    text-align: center;
+    gap: 8px;
+    border-radius: 20px;
+    padding: 16px 20px;
+  }
+
+  .particleControls {
+    justify-content: center;
+  }
+  
+  .particleCanvasContainer {
+    height: 220px;
+  }
+}
+

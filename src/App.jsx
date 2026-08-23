@@ -6,7 +6,7 @@ import Header from './Components/Header/Header';
 import About from './Components/About/About';
 import Speakers from './Components/Speakers/Speakers';
 import Issues from './Components/Issues/Issues';
-
+import Agenda from './Components/Agenda/Agenda';
 function App() {
   const [isIntroComplete, setIsIntroComplete] = useState(false);
 
@@ -21,6 +21,7 @@ function App() {
           <About />
           <Issues />
           <Speakers />
+          <Agenda></Agenda>
         </main>
       )}
     </div>
