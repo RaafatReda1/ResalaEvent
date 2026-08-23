@@ -643,6 +643,258 @@
   box-shadow: 0 0 10px #ffffff;
 }
 
+/* ── Profile & Ticket View ── */
+.profileCardContainer {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(20px, 3vh, 32px);
+  width: 100%;
+}
+
+.profileHeader {
+  display: flex;
+  align-items: center;
+  gap: clamp(16px, 2.5vw, 24px);
+  padding-bottom: clamp(16px, 2.5vh, 24px);
+  border-bottom: 1px solid rgba(58, 185, 172, 0.2);
+}
+
+.profileAvatarWrapper {
+  position: relative;
+  width: clamp(70px, 10vw, 92px);
+  height: clamp(70px, 10vw, 92px);
+  border-radius: 50%;
+  padding: 3px;
+  background: linear-gradient(135deg, #3ab9ac 0%, #eab308 50%, #e63946 100%);
+  box-shadow: 0 0 25px rgba(58, 185, 172, 0.4);
+  flex-shrink: 0;
+}
+
+.profileAvatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #0a1526;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #3ab9ac;
+}
+
+.profileMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: flex-start;
+}
+
+.profileName {
+  font-size: clamp(1.3rem, 2.4vw, 1.85rem);
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.profileBadgesRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.profileBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--teal-300, #5dccc0);
+  background: rgba(58, 185, 172, 0.15);
+  border: 1px solid rgba(58, 185, 172, 0.35);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.ticketBadge {
+  color: #eab308;
+  background: rgba(234, 179, 8, 0.15);
+  border-color: rgba(234, 179, 8, 0.35);
+}
+
+/* ── Profile Details Grid ── */
+.profileGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: clamp(14px, 2vw, 20px);
+  width: 100%;
+}
+
+.profileItem {
+  background: rgba(14, 28, 48, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: clamp(14px, 2vh, 18px) clamp(14px, 2vw, 20px);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  transition: border-color 0.3s ease, background 0.3s ease;
+}
+
+.profileItem:hover {
+  background: rgba(20, 40, 68, 0.7);
+  border-color: rgba(58, 185, 172, 0.3);
+}
+
+.profileItemIcon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(58, 185, 172, 0.12);
+  border: 1px solid rgba(58, 185, 172, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #3ab9ac;
+  flex-shrink: 0;
+}
+
+.profileItemContent {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  text-align: right;
+}
+
+.profileItemLabel {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: rgba(199, 213, 229, 0.6);
+  text-transform: uppercase;
+}
+
+.profileItemValue {
+  font-size: clamp(0.88rem, 1.2vw, 1rem);
+  font-weight: 800;
+  color: #ffffff;
+  word-break: break-word;
+}
+
+/* ── QR Notification Banner ── */
+.qrNoticeCard {
+  background: linear-gradient(
+    135deg,
+    rgba(234, 179, 8, 0.12) 0%,
+    rgba(14, 28, 48, 0.75) 100%
+  );
+  border: 1px solid rgba(234, 179, 8, 0.35);
+  border-radius: 18px;
+  padding: clamp(16px, 2.5vh, 22px) clamp(16px, 2.5vw, 24px);
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4), 0 0 20px rgba(234, 179, 8, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.qrNoticeIconBox {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(234, 179, 8, 0.2);
+  border: 1px solid rgba(234, 179, 8, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #eab308;
+  flex-shrink: 0;
+  box-shadow: 0 0 15px rgba(234, 179, 8, 0.3);
+}
+
+.qrNoticeContent {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: right;
+}
+
+.qrNoticeTitle {
+  font-size: clamp(0.95rem, 1.4vw, 1.1rem);
+  font-weight: 800;
+  color: #fde047;
+}
+
+.qrNoticeText {
+  font-size: clamp(0.82rem, 1.1vw, 0.92rem);
+  color: rgba(241, 245, 249, 0.9);
+  line-height: 1.6;
+}
+
+/* ── Profile Actions ── */
+.profileActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding-top: 10px;
+}
+
+.editBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: linear-gradient(135deg, #1fa6a0 0%, #3ab9ac 100%);
+  color: #060e1a;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 30px;
+  font-size: 0.92rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 18px rgba(58, 185, 172, 0.4);
+  transition: all 0.25s ease;
+}
+
+.editBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(58, 185, 172, 0.6);
+  color: #000000;
+}
+
+.cancelBtn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #e2e8f0;
+  padding: 12px 22px;
+  border-radius: 30px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cancelBtn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+.clearRegBtn {
+  background: transparent;
+  border: none;
+  color: rgba(230, 57, 70, 0.85);
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.2s ease;
+}
+
+.clearRegBtn:hover {
+  color: #ff6b6b;
+}
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .inputsGrid {
@@ -653,8 +905,22 @@
     grid-template-columns: repeat(2, 1fr);
   }
 
+  .profileGrid {
+    grid-template-columns: 1fr;
+  }
+
   .glassFormCard {
     padding: 24px 16px;
+  }
+
+  .profileHeader {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
+
+  .profileMeta {
+    align-items: center;
   }
 }
 
@@ -663,3 +929,4 @@
     grid-template-columns: 1fr;
   }
 }
+
