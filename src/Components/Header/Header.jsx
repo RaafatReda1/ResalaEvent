@@ -27,7 +27,6 @@ const Header = () => {
           start: "+=150px",
           end: "+=600px",
           scrub: true,
-          markers: true,
         },
       },
     );
