@@ -13,7 +13,7 @@ const speakers = [
     title: "رئيسة النشاط الطبي",
     titleEn: "Head of Medical Activity",
     imageSrc: "./drNagalaa.png",
-    bgImage: "./drNagalaa.jpeg",
+    bgImage: "./drNaglaaFill.jpeg",
     accent: "#3AB9AC",
     accentRgb: "58,185,172",
     number: "01",
@@ -24,48 +24,59 @@ const speakers = [
     title: "رئيسة النشاط الطبي",
     titleEn: "Head of Medical Activity",
     imageSrc: "./drRania.png",
-    bgImage: "./drRania.jpeg",
+    bgImage: "./drRaniaFill.jpeg",
     accent: "#E63946",
     accentRgb: "230,57,70",
     number: "02",
   },
   {
-    name: "أ. معتصم",
-    nameEn: "Br. Mo3tasem",
+    name: "د. عمرو البركي",
+    nameEn: "Dr. Amr Al-Braky",
     title: "المدير التنفيذي",
     titleEn: "Executive Director",
-    imageSrc: "./mon3mBlack.jpeg",
-    bgImage: "./mon3mBg.jpeg",
+    imageSrc: "./amrNofill.png",
+    bgImage: "./amrFilled.png",
     accent: "#EAB308",
     accentRgb: "234,179,8",
     number: "03",
   },
   {
-    name: "أ. حسيب",
-    nameEn: "Br. Hassib",
+    name: "د. حسام عيسي",
+    nameEn: "Dr. Hassam Eissa",
     title: "مدير البرامج",
     titleEn: "Programs Director",
-    imageSrc: "./hassibBlack.jpeg",
-    bgImage: "./hassibBg.jpeg",
+    imageSrc: "./hossamNoFill.png",
+    bgImage: "./hossamFill.png",
     accent: "#8B5CF6",
     accentRgb: "139,92,246",
     number: "04",
   },
+  {
+    name: "د. منصور",
+    nameEn: "Dr. Mansour",
+    title: "مدير البرامج",
+    titleEn: "Programs Director",
+    imageSrc: "./drMansour.png",
+    bgImage: "./drMansour.png",
+    accent: "#2889ff",
+    accentRgb: "139,92,246",
+    number: "05",
+  },
 ];
 
 const SpeakerCard = ({ speaker, index, activeIndex, onHover, onLeave }) => {
-  const cardRef   = useRef(null);
-  const imgRef    = useRef(null);
-  const infoRef   = useRef(null);
+  const cardRef = useRef(null);
+  const imgRef = useRef(null);
+  const infoRef = useRef(null);
   const numberRef = useRef(null);
-  const glowRef   = useRef(null);
+  const glowRef = useRef(null);
   const isActive = activeIndex === index;
 
   useGSAP(
     () => {
-      const img  = imgRef.current;
+      const img = imgRef.current;
       const info = infoRef.current;
-      const num  = numberRef.current;
+      const num = numberRef.current;
       const glow = glowRef.current;
 
       if (!img || !info || !num || !glow) return;
@@ -268,7 +279,7 @@ const Speakers = () => {
   );
 
   return (
-    <section ref={sectionRef} className={styles.speakersSection}>
+    <section ref={sectionRef} className={styles.speakersSection} id="speakers">
       {/* Background environment */}
       <div className={styles.bgBase} />
       <div className={styles.bgGrid} />

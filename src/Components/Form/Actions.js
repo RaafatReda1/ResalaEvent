@@ -5,15 +5,17 @@ const BUCKET = "studentImg";
 /**
  * Upload student image and return its public URL
  */
-export const uploadImg = async (file, studentName) => {
+export const uploadImg = async (file, studentName = "student") => {
   if (!file) {
     throw new Error("No image selected");
   }
 
   const fileExt = file.name.split(".").pop();
   const fileName = `${crypto.randomUUID()}.${fileExt}`;
-
-  const filePath = `${studentName}/${fileName}`;
+  
+  // Safe folder key (Supabase storage prefers ASCII/URI-safe keys)
+  const safeName = encodeURIComponent((studentName || "student").trim().replace(/\s+/g, "_"));
+  const filePath = `${safeName}/${fileName}`;
 
   const { error } = await supabase.storage
     .from(BUCKET)

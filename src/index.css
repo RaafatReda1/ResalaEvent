@@ -1,6 +1,11 @@
 @import url("https://fonts.googleapis.com/css2?family=Tajawal:wght@200;300;400;500;700;800;900&display=swap");
 @import "tailwindcss";
 
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: clamp(70px, 10vh, 100px);
+}
+
 * {
   margin: 0;
   padding: 0;

@@ -214,7 +214,7 @@ const Issues = () => {
   );
 
   return (
-    <section ref={containerRef} className={styles.issuesSection}>
+    <section ref={containerRef} className={styles.issuesSection} id="issues">
       {/* Background Mood Auras */}
       <div className={`moodAnxietyBg ${styles.moodBg} ${styles.moodAnxiety}`} />
       <div className={`moodNotifBg ${styles.moodBg} ${styles.moodNotification}`} />

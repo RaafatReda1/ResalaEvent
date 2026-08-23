@@ -89,7 +89,7 @@ export default function Agenda() {
   );
 
   return (
-    <section ref={containerRef} className="agendaSection">
+    <section ref={containerRef} className="agendaSection" id="agenda">
       {/* ── Background Environment Layers ── */}
       <div className="bgGrid" />
       <div className="bgCoronaLeft" />

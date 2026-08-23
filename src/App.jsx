@@ -7,6 +7,10 @@ import About from './Components/About/About';
 import Speakers from './Components/Speakers/Speakers';
 import Issues from './Components/Issues/Issues';
 import Agenda from './Components/Agenda/Agenda';
+import Form from './Components/Form/Form';
+import Footer from './Components/Footer/Footer';
+import FloatingWhatsApp from './Components/FloatingWhatsApp/FloatingWhatsApp';
+
 function App() {
   const [isIntroComplete, setIsIntroComplete] = useState(false);
 
@@ -15,14 +19,19 @@ function App() {
       {!isIntroComplete ? (
         <Loader onComplete={() => setIsIntroComplete(true)} />
       ) : (
-        <main>
-          <Header />
-          <HeroSection />
-          <About />
-          <Issues />
-          <Speakers />
-          <Agenda></Agenda>
-        </main>
+        <>
+          <main>
+            <Header />
+            <HeroSection />
+            <About />
+            <Issues />
+            <Speakers />
+            <Agenda />
+            <Form />
+            <Footer />
+          </main>
+          <FloatingWhatsApp />
+        </>
       )}
     </div>
   );

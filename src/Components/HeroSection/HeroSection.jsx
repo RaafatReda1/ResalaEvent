@@ -75,7 +75,7 @@ const HeroSection = () => {
   );
 
   return (
-    <div ref={containerRef} className={styles.heroContainer}>
+    <div ref={containerRef} className={styles.heroContainer} id="home">
       {/* Background layers */}
       <div className={styles.bgBase} />
       {/* SideRays WebGL background */}

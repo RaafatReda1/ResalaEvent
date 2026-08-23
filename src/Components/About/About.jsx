@@ -127,7 +127,7 @@ const About = () => {
   return (
     <div
       className={styles.aboutContainer}
-      id="aboutSection"
+      id="about"
       ref={aboutSectionRef}
     >
 

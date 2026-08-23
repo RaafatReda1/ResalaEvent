@@ -12,7 +12,16 @@ const HeroMeta = () => {
       </div>
 
       {/* Premium Magnetic CTA Button — 3-layer architecture */}
-      <button className={styles.ctaButton} type="button">
+      <button
+        className={styles.ctaButton}
+        type="button"
+        onClick={() => {
+          const target = document.getElementById("register");
+          if (target) {
+            target.scrollIntoView({ behavior: "smooth" });
+          }
+        }}
+      >
         <span className={styles.ctaBtnInner}>
           {/* Moving shimmer sweep */}
           <span className={styles.ctaBtnShine} />
