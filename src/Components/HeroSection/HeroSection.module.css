@@ -9,14 +9,13 @@
   position: relative;
   direction: rtl;
   color: var(--text-on-dark-primary);
-  padding: 60px 20px;
+  padding: clamp(30px, 6vh, 80px) clamp(16px, 4vw, 40px);
 }
 
 /* ═══════════════════════════════════════════════════
-   BACKGROUND — GPU-safe layers only (transform + opacity)
+   BACKGROUND — Multi-layer cinematic environment
    ═══════════════════════════════════════════════════ */
 
-/* Deep diagonal base */
 .bgBase {
   position: absolute;
   inset: 0;
@@ -24,26 +23,23 @@
   z-index: 0;
 }
 
-/* Dot grid — pure CSS, no animation, masked at edges */
 .bgGrid {
   position: absolute;
   inset: 0;
   background-image: radial-gradient(rgba(93, 204, 192, 0.16) 1px, transparent 1px);
-  background-size: 38px 38px;
+  background-size: clamp(24px, 3vw, 38px) clamp(24px, 3vw, 38px);
   pointer-events: none;
   z-index: 1;
-  /* mask fades the grid at viewport edges */
   -webkit-mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 100%);
   mask-image: radial-gradient(ellipse 80% 70% at 50% 50%, black 30%, transparent 100%);
 }
 
-/* Teal corona (top-right) — only transform + opacity in keyframe */
 .bgCoronaRight {
   position: absolute;
   top: -15%;
   right: -10%;
-  width: 700px;
-  height: 700px;
+  width: min(700px, 80vw);
+  height: min(700px, 80vw);
   border-radius: 50%;
   background: radial-gradient(circle, rgba(31,166,160,0.3) 0%, rgba(31,166,160,0.08) 50%, transparent 70%);
   pointer-events: none;
@@ -52,13 +48,12 @@
   animation: floatCorona 9s ease-in-out infinite alternate;
 }
 
-/* Red accent corona (bottom-left) */
 .bgCoronaLeft {
   position: absolute;
   bottom: -20%;
   left: -12%;
-  width: 650px;
-  height: 650px;
+  width: min(650px, 75vw);
+  height: min(650px, 75vw);
   border-radius: 50%;
   background: radial-gradient(circle, rgba(230,57,70,0.22) 0%, rgba(180,30,50,0.06) 55%, transparent 70%);
   pointer-events: none;
@@ -72,7 +67,6 @@
   100% { transform: scale(1.1) translateY(-25px); opacity: 1;   }
 }
 
-/* Scan line — uses translateY (GPU) not top */
 .bgScanLine {
   position: absolute;
   top: 0;
@@ -100,15 +94,13 @@
   100% { transform: translateY(10vh);  opacity: 0; }
 }
 
-/* 3D glass card — no backdrop-filter (kills performance) */
 .bgGlassCard {
   position: absolute;
   top: 10%;
   right: 2%;
-  width: 320px;
-  height: 460px;
-  border-radius: 28px;
-  /* Faked glassmorphism without backdrop-filter */
+  width: min(320px, 30vw);
+  height: min(460px, 45vw);
+  border-radius: clamp(18px, 3vw, 28px);
   background: linear-gradient(
     135deg,
     rgba(93,204,192,0.07) 0%,
@@ -120,16 +112,14 @@
   pointer-events: none;
   z-index: 2;
   will-change: transform;
-  /* Initial pose set by GSAP */
 }
 
-/* Two small glass orbs — no backdrop-filter */
 .bgGlassOrb {
   position: absolute;
   top: 20%;
   left: 5%;
-  width: 76px;
-  height: 76px;
+  width: clamp(40px, 6vw, 76px);
+  height: clamp(40px, 6vw, 76px);
   border-radius: 50%;
   background: radial-gradient(circle at 35% 30%,
     rgba(255,255,255,0.5) 0%,
@@ -148,8 +138,8 @@
   position: absolute;
   bottom: 22%;
   right: 14%;
-  width: 48px;
-  height: 48px;
+  width: clamp(28px, 4vw, 48px);
+  height: clamp(28px, 4vw, 48px);
   border-radius: 50%;
   background: radial-gradient(circle at 35% 30%,
     rgba(255,255,255,0.4) 0%,
@@ -174,12 +164,12 @@
    ═══════════════════════════════════════════════════ */
 .heroLayout {
   position: relative;
-  width: 90%;
+  width: 100%;
   max-width: 1350px;
   display: grid;
   grid-template-columns: 1fr 1.15fr;
   align-items: center;
-  gap: 60px;
+  gap: clamp(24px, 4vw, 60px);
   z-index: 10;
 }
 
@@ -189,12 +179,13 @@
   justify-content: center;
   align-items: center;
   position: relative;
+  width: 100%;
 }
 
 .logoWrapper {
   position: relative;
-  width: 380px;
-  height: 380px;
+  width: clamp(200px, 32vw, 380px);
+  height: clamp(200px, 32vw, 380px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -205,7 +196,6 @@
   width: 100%;
   height: 100%;
   object-fit: contain;
-  /* Static drop-shadow — not animated */
   filter: drop-shadow(0 0 30px rgba(93,204,192,0.65))
           drop-shadow(0 0 70px rgba(31,166,160,0.4));
   z-index: 2;
@@ -213,8 +203,8 @@
 
 .logoGlowRing {
   position: absolute;
-  width: 500px;
-  height: 500px;
+  width: 130%;
+  height: 130%;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(31,166,160,0.3) 0%, transparent 70%);
   z-index: 1;
@@ -226,26 +216,27 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 26px;
+  gap: clamp(14px, 2.5vh, 26px);
   text-align: right;
+  width: 100%;
 }
 
 .emotionalMessage {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: clamp(3px, 0.8vh, 6px);
   border-right: 3px solid var(--teal-400);
-  padding-right: 18px;
+  padding-right: clamp(10px, 1.8vw, 18px);
 }
 
 .messageSub {
-  font-size: 1.05rem;
+  font-size: clamp(0.85rem, 1.6vw, 1.05rem);
   color: var(--teal-300);
   font-weight: 600;
 }
 
 .messageMain {
-  font-size: 1.35rem;
+  font-size: clamp(1.05rem, 2.2vw, 1.35rem);
   color: var(--text-on-dark-primary);
   font-weight: 700;
 }
@@ -257,14 +248,14 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: 10px;
+  gap: clamp(6px, 1vh, 10px);
   width: 100%;
 }
 
 .englishSubtitle {
-  font-size: 0.88rem;
+  font-size: clamp(0.72rem, 1.4vw, 0.88rem);
   font-weight: 800;
-  letter-spacing: 4px;
+  letter-spacing: clamp(2px, 0.4vw, 4px);
   color: var(--teal-400);
   text-transform: uppercase;
   font-family: 'Cairo', system-ui, sans-serif;
@@ -273,21 +264,19 @@
 .calligraphyWrapper {
   position: relative;
   width: 100%;
-  max-width: 600px;
-  margin: 8px 0;
+  max-width: clamp(260px, 50vw, 600px);
+  margin: clamp(4px, 1vh, 8px) 0;
 }
 
 .calligraphyImage {
   width: 100%;
   height: auto;
   object-fit: contain;
-  /* Static — never animate filter */
   filter: drop-shadow(0 0 20px rgba(93,204,192,0.55))
           drop-shadow(0 0 45px rgba(31,166,160,0.38));
   display: block;
   z-index: 3;
   position: relative;
-  /* Hover: only transform */
   transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
@@ -295,14 +284,14 @@
   transform: scale(1.025);
 }
 
-/* Liquid blobs — only transform in keyframe, no border-radius morph */
+/* Liquid blobs behind calligraphy */
 .liquidDropletBack {
   position: absolute;
   top: -20px;
-  right: 22%;
-  width: 115px;
-  height: 115px;
-  border-radius: 50%;                 /* fixed — no morphing */
+  right: 20%;
+  width: clamp(60px, 12vw, 115px);
+  height: clamp(60px, 12vw, 115px);
+  border-radius: 50%;
   background: radial-gradient(circle at 30% 30%,
     rgba(93,204,192,0.5) 0%,
     rgba(31,166,160,0.18) 60%,
@@ -320,9 +309,9 @@
   position: absolute;
   bottom: -14px;
   left: 8%;
-  width: 85px;
-  height: 85px;
-  border-radius: 50%;                 /* fixed — no morphing */
+  width: clamp(45px, 9vw, 85px);
+  height: clamp(45px, 9vw, 85px);
+  border-radius: 50%;
   background: radial-gradient(circle at 30% 30%,
     rgba(255,255,255,0.42) 0%,
     rgba(93,204,192,0.22) 55%,
@@ -336,13 +325,12 @@
   animation: blobFloat 8s ease-in-out infinite alternate-reverse;
 }
 
-/* Teal diamond accent */
 .liquidAccentDot {
   position: absolute;
   top: 38%;
   left: 53%;
-  width: 13px;
-  height: 13px;
+  width: clamp(8px, 1.5vw, 13px);
+  height: clamp(8px, 1.5vw, 13px);
   background: var(--teal-300);
   box-shadow: 0 0 14px var(--teal-300), 0 0 28px rgba(93,204,192,0.55);
   pointer-events: none;
@@ -351,7 +339,6 @@
   animation: diamondPulse 3s ease-in-out infinite;
 }
 
-/* Only translate — no scale/opacity changes in blob keyframes */
 @keyframes blobFloat {
   0%   { transform: translateY(0) translateX(0); }
   50%  { transform: translateY(-14px) translateX(4px); }
@@ -367,8 +354,8 @@
    SUBTITLE & META
    ═══════════════════════════════════════════════════ */
 .heroSubtitle {
-  font-size: 1.15rem;
-  line-height: 1.8;
+  font-size: clamp(0.92rem, 1.6vw, 1.15rem);
+  line-height: 1.75;
   color: var(--text-on-dark-secondary);
   max-width: 520px;
 }
@@ -376,23 +363,24 @@
 .heroMeta {
   display: flex;
   align-items: center;
-  gap: 20px;
-  margin-top: 8px;
+  gap: clamp(12px, 2vw, 20px);
+  margin-top: clamp(6px, 1vh, 12px);
   flex-wrap: wrap;
+  width: 100%;
 }
 
 .datePill {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: clamp(8px, 1vw, 12px);
   background: rgba(10,21,38,0.75);
   border: 1px solid rgba(93,204,192,0.3);
-  padding: 14px 26px;
+  padding: clamp(10px, 1.6vh, 14px) clamp(16px, 2.5vw, 26px);
   border-radius: 40px;
   font-weight: 700;
-  font-size: 0.92rem;
+  font-size: clamp(0.8rem, 1.4vw, 0.92rem);
   color: var(--teal-200);
-  letter-spacing: 1.5px;
+  letter-spacing: clamp(0.8px, 0.15vw, 1.5px);
   box-shadow: 0 4px 20px rgba(10,21,38,0.5), inset 0 1px 0 rgba(255,255,255,0.07);
 }
 
@@ -403,7 +391,7 @@
 }
 
 /* ═══════════════════════════════════════════════════
-   PREMIUM CTA BUTTON — transform + opacity only
+   PREMIUM CTA BUTTON
    ═══════════════════════════════════════════════════ */
 .ctaButton {
   position: relative;
@@ -415,16 +403,14 @@
   overflow: hidden;
   background: transparent;
   padding: 0;
-  /* Only animate transform */
   will-change: transform;
   transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .ctaButton:hover {
-  transform: translateY(-5px) scale(1.06);
+  transform: translateY(-4px) scale(1.04);
 }
 
-/* Outer glow ring — opacity transition (GPU composited) */
 .ctaButton::before {
   content: '';
   position: absolute;
@@ -446,17 +432,17 @@
   opacity: 1;
 }
 
-/* Inner face — no transition (parent handles it) */
 .ctaBtnInner {
   position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 14px;
-  padding: 17px 40px;
+  justify-content: center;
+  gap: clamp(10px, 1.5vw, 14px);
+  padding: clamp(13px, 1.8vh, 17px) clamp(24px, 3.5vw, 40px);
   border-radius: 50px;
   background: linear-gradient(135deg, #E63946 0%, #C8202E 55%, #A81728 100%);
   color: #fff;
-  font-size: 1.1rem;
+  font-size: clamp(0.92rem, 1.6vw, 1.1rem);
   font-weight: 800;
   letter-spacing: 0.3px;
   overflow: hidden;
@@ -467,7 +453,6 @@
     inset 0 -2px 0 rgba(0,0,0,0.2);
 }
 
-/* Shimmer sweep — uses translateX (GPU), not left */
 .ctaBtnShine {
   position: absolute;
   top: 0;
@@ -485,11 +470,10 @@
   transform: translateX(280%) skewX(-15deg);
 }
 
-/* Ripple pulse dot — only opacity + transform */
 .btnPulseDot {
   flex-shrink: 0;
-  width: 10px;
-  height: 10px;
+  width: clamp(7px, 1vw, 10px);
+  height: clamp(7px, 1vw, 10px);
   background: #fff;
   border-radius: 50%;
   will-change: transform, opacity;
@@ -503,18 +487,140 @@
 }
 
 /* ═══════════════════════════════════════════════════
-   RESPONSIVE
+   MEDIA QUERIES FOR ALL VIEWPORTS
    ═══════════════════════════════════════════════════ */
-@media (max-width: 900px) {
-  .heroLayout { grid-template-columns: 1fr; gap: 40px; text-align: center; }
-  .heroRight  { align-items: center; text-align: center; }
+
+/* 4K / Ultra-wide (> 1600px) */
+@media (min-width: 1600px) {
+  .heroLayout {
+    max-width: 1550px;
+    gap: 80px;
+  }
+  .logoWrapper {
+    width: 440px;
+    height: 440px;
+  }
+  .calligraphyWrapper {
+    max-width: 680px;
+  }
+}
+
+/* Laptops / Desktops (1024px - 1440px) */
+@media (max-width: 1440px) {
+  .heroLayout {
+    gap: 40px;
+  }
+}
+
+/* Tablets Landscape & Portrait (768px - 1023px) */
+@media (max-width: 1023px) {
+  .heroContainer {
+    padding: 50px 24px;
+    min-height: auto;
+  }
+  .heroLayout {
+    grid-template-columns: 1fr;
+    gap: 36px;
+    text-align: center;
+  }
+  .heroRight {
+    align-items: center;
+    text-align: center;
+  }
   .emotionalMessage {
     border-right: none;
     border-bottom: 2px solid var(--teal-400);
-    padding-right: 0; padding-bottom: 14px; align-items: center;
+    padding-right: 0;
+    padding-bottom: 12px;
+    align-items: center;
   }
-  .logoWrapper   { width: 270px; height: 270px; }
-  .bgGlassCard   { display: none; }
-  .liquidDropletBack  { width: 78px; height: 78px; }
-  .liquidDropletFront { width: 58px; height: 58px; }
+  .titleContainer {
+    align-items: center;
+  }
+  .calligraphyWrapper {
+    justify-content: center;
+    max-width: 460px;
+  }
+  .heroMeta {
+    justify-content: center;
+  }
+  .bgGlassCard {
+    display: none;
+  }
+}
+
+/* Mobile Landscape & Phablets (481px - 767px) */
+@media (max-width: 767px) {
+  .heroContainer {
+    padding: 36px 18px;
+  }
+  .heroLayout {
+    gap: 28px;
+  }
+  .logoWrapper {
+    width: 240px;
+    height: 240px;
+  }
+  .calligraphyWrapper {
+    max-width: 360px;
+  }
+  .heroMeta {
+    flex-direction: column;
+    width: 100%;
+  }
+  .datePill, .ctaButton {
+    width: 100%;
+    justify-content: center;
+  }
+  .ctaBtnInner {
+    width: 100%;
+  }
+}
+
+/* Mobile Portrait (360px - 480px) */
+@media (max-width: 480px) {
+  .heroContainer {
+    padding: 28px 14px;
+  }
+  .heroLayout {
+    gap: 24px;
+  }
+  .logoWrapper {
+    width: 190px;
+    height: 190px;
+  }
+  .calligraphyWrapper {
+    max-width: 290px;
+  }
+  .heroSubtitle {
+    font-size: 0.9rem;
+    line-height: 1.65;
+  }
+  .datePill {
+    font-size: 0.78rem;
+    padding: 10px 18px;
+  }
+  .ctaBtnInner {
+    font-size: 0.95rem;
+    padding: 12px 24px;
+  }
+}
+
+/* Extra Small Phones (< 360px) */
+@media (max-width: 359px) {
+  .logoWrapper {
+    width: 160px;
+    height: 160px;
+  }
+  .calligraphyWrapper {
+    max-width: 240px;
+  }
+  .datePill {
+    font-size: 0.72rem;
+    padding: 8px 14px;
+  }
+  .ctaBtnInner {
+    font-size: 0.88rem;
+    padding: 10px 18px;
+  }
 }
