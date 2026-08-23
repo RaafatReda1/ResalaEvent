@@ -1,10 +1,13 @@
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import styles from "./Header.module.css";
 import gsap from "gsap";
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
-
+import useIsMobile from "../../Hooks/useIsMobile";
+import { QrCode } from "lucide-react";
 const Header = () => {
+  const isMobile = useIsMobile();
+
   gsap.registerPlugin(ScrollTrigger);
   const contaienrRef = useRef(null);
   useGSAP(() => {
@@ -64,8 +67,7 @@ const Header = () => {
 
         {/* Action Button */}
         <button className={styles.ctaBtn} type="button">
-          <span className={styles.liveDot} />
-          احجز مقعدك
+          {isMobile ? (<QrCode />) : (<><span className={styles.liveDot} /> احجز مقعدك الان</>)}
         </button>
       </div>
     </header>
