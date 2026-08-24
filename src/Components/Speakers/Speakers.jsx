@@ -1,7 +1,9 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect, useCallback } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import useIsMobile from "../../hooks/useIsMobile";
+import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import styles from "./Speakers.module.css";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -12,8 +14,8 @@ const speakers = [
     nameEn: "Dr. Naglaa Farouk",
     title: "رئيسة النشاط الطبي",
     titleEn: "Head of Medical Activity",
-    imageSrc: "./drNagalaa.png",
-    bgImage: "./drNaglaaFill.jpeg",
+    imageSrc: "/drNagalaa.png",
+    bgImage: "/drNaglaaFill.jpeg",
     accent: "#3AB9AC",
     accentRgb: "58,185,172",
     number: "01",
@@ -23,8 +25,8 @@ const speakers = [
     nameEn: "Dr. Rania Abd Al-Galil",
     title: "رئيسة النشاط الطبي",
     titleEn: "Head of Medical Activity",
-    imageSrc: "./drRania.png",
-    bgImage: "./drRaniaFill.jpeg",
+    imageSrc: "/drRania.png",
+    bgImage: "/drRaniaFill.jpeg",
     accent: "#E63946",
     accentRgb: "230,57,70",
     number: "02",
@@ -34,19 +36,19 @@ const speakers = [
     nameEn: "Dr. Amr Al-Braky",
     title: "المدير التنفيذي",
     titleEn: "Executive Director",
-    imageSrc: "./amrNofill.png",
-    bgImage: "./amrFilled.png",
+    imageSrc: "/amrNofill.png",
+    bgImage: "/amrFilled.png",
     accent: "#EAB308",
     accentRgb: "234,179,8",
     number: "03",
   },
   {
     name: "د. حسام عيسي",
-    nameEn: "Dr. Hassam Eissa",
+    nameEn: "Dr. Hossam Eissa",
     title: "مدير البرامج",
     titleEn: "Programs Director",
-    imageSrc: "./hossamNoFill.png",
-    bgImage: "./hossamFill.png",
+    imageSrc: "/hossamNoFill.png",
+    bgImage: "/hossamFill.png",
     accent: "#8B5CF6",
     accentRgb: "139,92,246",
     number: "04",
@@ -56,152 +58,82 @@ const speakers = [
     nameEn: "Dr. Mansour",
     title: "مدير البرامج",
     titleEn: "Programs Director",
-    imageSrc: "./drMansour.png",
-    bgImage: "./drMansour.png",
+    imageSrc: "/drMansour.png",
+    bgImage: "/drMansour.png",
     accent: "#2889ff",
-    accentRgb: "139,92,246",
+    accentRgb: "40,137,255",
     number: "05",
   },
 ];
 
-const SpeakerCard = ({ speaker, index, activeIndex, onHover, onLeave }) => {
-  const cardRef = useRef(null);
-  const imgRef = useRef(null);
-  const infoRef = useRef(null);
-  const numberRef = useRef(null);
-  const glowRef = useRef(null);
+const SpeakerCard = ({ speaker, index, activeIndex, onHover, onLeave, isMobile }) => {
   const isActive = activeIndex === index;
-
-  useGSAP(
-    () => {
-      const img = imgRef.current;
-      const info = infoRef.current;
-      const num = numberRef.current;
-      const glow = glowRef.current;
-
-      if (!img || !info || !num || !glow) return;
-
-      // Only kill tweens on the inner elements — NEVER on cardRef
-      // so the parent ScrollTrigger entrance animation is never interrupted.
-      gsap.killTweensOf([img, info, num, glow]);
-
-      if (isActive) {
-        gsap.to(img, {
-          scale: 1.08,
-          filter: "brightness(1) contrast(1.05) saturate(1.1)",
-          duration: 0.6,
-          ease: "power3.out",
-          overwrite: "auto",
-        });
-        gsap.to(glow, {
-          opacity: 1,
-          duration: 0.5,
-          ease: "power2.out",
-          overwrite: "auto",
-        });
-        gsap.to(info, {
-          opacity: 1,
-          y: 0,
-          duration: 0.55,
-          ease: "power3.out",
-          delay: 0.06,
-          overwrite: "auto",
-        });
-        gsap.to(num, {
-          opacity: 0.07,
-          scale: 1.25,
-          duration: 0.4,
-          ease: "power2.out",
-          overwrite: "auto",
-        });
-      } else {
-        gsap.to(img, {
-          scale: 1,
-          filter: "brightness(0.3) contrast(1) saturate(0.7)",
-          duration: 0.5,
-          ease: "power3.out",
-          overwrite: "auto",
-        });
-        gsap.to(glow, {
-          opacity: 0,
-          duration: 0.35,
-          ease: "power2.in",
-          overwrite: "auto",
-        });
-        gsap.to(info, {
-          opacity: 0,
-          y: 20,
-          duration: 0.25,
-          ease: "power2.in",
-          overwrite: "auto",
-        });
-        gsap.to(num, {
-          opacity: 0.35,
-          scale: 1,
-          duration: 0.35,
-          ease: "power2.out",
-          overwrite: "auto",
-        });
-      }
-    },
-    { dependencies: [isActive], scope: cardRef },
-  );
 
   return (
     <div
-      ref={cardRef}
       className={`${styles.speakerCard} ${isActive ? styles.speakerCardActive : ""}`}
-      onMouseEnter={() => onHover(index)}
-      onMouseLeave={onLeave}
+      onMouseEnter={() => !isMobile && onHover(index)}
+      onMouseLeave={() => !isMobile && onLeave()}
+      onClick={() => isMobile && onHover(index)}
       style={{ "--accent": speaker.accent, "--accent-rgb": speaker.accentRgb }}
     >
-      {/* Background photo */}
+      {/* Background photo layer */}
       <div
         className={styles.cardBgLayer}
         style={{ backgroundImage: `url(${speaker.bgImage})` }}
       />
 
-      {/* Accent glow */}
+      {/* Dynamic accent glow overlay */}
       <div
-        ref={glowRef}
         className={styles.cardGlowOverlay}
         style={{
-          background: `radial-gradient(ellipse at bottom, rgba(${speaker.accentRgb},0.5) 0%, transparent 68%)`,
+          background: `radial-gradient(ellipse at bottom, rgba(${speaker.accentRgb},0.65) 0%, rgba(${speaker.accentRgb},0.15) 50%, transparent 75%)`,
         }}
       />
 
-      {/* Dark scrim */}
+      {/* Dark gradient scrim */}
       <div className={styles.cardScrim} />
 
-      {/* Portrait — wrapper handles centering so GSAP scale never
-           conflicts with CSS translateX(-50%) on the same element */}
+      {/* Speaker Portrait */}
       <div className={styles.speakerImgWrapper}>
         <img
-          ref={imgRef}
           src={speaker.imageSrc}
           alt={speaker.nameEn}
           className={styles.speakerImg}
+          loading="lazy"
         />
       </div>
 
       {/* Number watermark */}
-      <span ref={numberRef} className={styles.cardNumber}>
+      <span className={styles.cardNumber}>
         {speaker.number}
       </span>
 
-      {/* Bottom accent bar */}
+      {/* Collapsed Speaker Tag (Visible on desktop when not expanded) */}
+      <div className={styles.speakerCollapsedLabel}>
+        <span
+          className={styles.collapsedBadge}
+          style={{ borderColor: `rgba(${speaker.accentRgb},0.5)`, color: speaker.accent }}
+        >
+          {speaker.number}
+        </span>
+        <span className={styles.collapsedName}>{speaker.name}</span>
+      </div>
+
+      {/* Bottom accent glow bar */}
       <div
         className={styles.accentBar}
-        style={{ background: speaker.accent }}
+        style={{ background: `linear-gradient(90deg, transparent, ${speaker.accent}, transparent)` }}
       />
 
-      {/* Info panel */}
-      <div ref={infoRef} className={styles.speakerInfo}>
+      {/* Expanded Full Info Panel */}
+      <div className={styles.speakerInfo}>
         <span
           className={styles.speakerBadge}
           style={{
             color: speaker.accent,
-            borderColor: `rgba(${speaker.accentRgb},0.35)`,
+            borderColor: `rgba(${speaker.accentRgb},0.5)`,
+            background: `rgba(${speaker.accentRgb},0.14)`,
           }}
         >
           {speaker.titleEn}
@@ -220,14 +152,18 @@ const SpeakerCard = ({ speaker, index, activeIndex, onHover, onLeave }) => {
   );
 };
 
+
 const Speakers = () => {
-  const [activeIndex, setActiveIndex] = useState(null);
+  const isMobile = useIsMobile(768);
+  const [activeIndex, setActiveIndex] = useState(0);
   const sectionRef = useRef(null);
   const headingRef = useRef(null);
   const subtitleRef = useRef(null);
   const cardsRef = useRef(null);
   const decorRef = useRef(null);
+  const carouselTrackRef = useRef(null);
 
+  // ── GSAP Entrance Animation ──
   useGSAP(
     () => {
       const tl = gsap.timeline({
@@ -263,20 +199,67 @@ const Speakers = () => {
         )
         .fromTo(
           Array.from(cardsRef.current?.children || []),
-          { opacity: 0, y: 70, scale: 0.93 },
+          { opacity: 0, y: 50, scale: 0.94 },
           {
             opacity: 1,
             y: 0,
             scale: 1,
             duration: 0.8,
             ease: "power3.out",
-            stagger: 0.14,
+            stagger: 0.12,
           },
           "-=0.4",
         );
     },
     { scope: sectionRef },
   );
+
+  // ── Mobile Carousel Scroll Listener for Active Index Sync ──
+  const handleCarouselScroll = useCallback(() => {
+    if (!carouselTrackRef.current) return;
+    const track = carouselTrackRef.current;
+    const scrollLeft = Math.abs(track.scrollLeft);
+    const cardWidth = track.firstElementChild?.offsetWidth || 280;
+    const gap = 14;
+    const newIndex = Math.round(scrollLeft / (cardWidth + gap));
+    if (newIndex >= 0 && newIndex < speakers.length && newIndex !== activeIndex) {
+      setActiveIndex(newIndex);
+    }
+  }, [activeIndex]);
+
+  useEffect(() => {
+    const track = carouselTrackRef.current;
+    if (!track || !isMobile) return;
+
+    track.addEventListener("scroll", handleCarouselScroll, { passive: true });
+    return () => track.removeEventListener("scroll", handleCarouselScroll);
+  }, [isMobile, handleCarouselScroll]);
+
+  // ── Scroll to specific speaker on mobile ──
+  const scrollToSpeaker = (index) => {
+    setActiveIndex(index);
+    if (carouselTrackRef.current) {
+      const track = carouselTrackRef.current;
+      const card = track.children[index];
+      if (card) {
+        card.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+          inline: "center",
+        });
+      }
+    }
+  };
+
+  const handleNext = () => {
+    const nextIdx = (activeIndex + 1) % speakers.length;
+    scrollToSpeaker(nextIdx);
+  };
+
+  const handlePrev = () => {
+    const prevIdx = (activeIndex - 1 + speakers.length) % speakers.length;
+    scrollToSpeaker(prevIdx);
+  };
 
   return (
     <section ref={sectionRef} className={styles.speakersSection} id="speakers">
@@ -300,8 +283,39 @@ const Speakers = () => {
         </h2>
       </div>
 
-      {/* Speaker cards */}
-      <div ref={cardsRef} className={styles.speakersContainer}>
+      {/* Mobile Quick Selector Tabs */}
+      {isMobile && (
+        <div className={styles.mobileTabsWrapper}>
+          {speakers.map((spk, idx) => {
+            const isTabActive = activeIndex === idx;
+            return (
+              <button
+                key={idx}
+                type="button"
+                className={`${styles.mobileTabPill} ${isTabActive ? styles.mobileTabPillActive : ""}`}
+                onClick={() => scrollToSpeaker(idx)}
+                style={{
+                  "--accent": spk.accent,
+                  "--accent-rgb": spk.accentRgb,
+                }}
+              >
+                <span className={styles.tabNumber}>{spk.number}</span>
+                <span className={styles.tabName}>{spk.name}</span>
+                {isTabActive && <span className={styles.tabGlow} />}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Speaker cards container (Desktop row / Mobile swipeable track) */}
+      <div
+        ref={(el) => {
+          cardsRef.current = el;
+          carouselTrackRef.current = el;
+        }}
+        className={styles.speakersContainer}
+      >
         {speakers.map((speaker, index) => (
           <SpeakerCard
             key={index}
@@ -309,12 +323,56 @@ const Speakers = () => {
             index={index}
             activeIndex={activeIndex}
             onHover={setActiveIndex}
-            onLeave={() => setActiveIndex(null)}
+            onLeave={() => !isMobile && setActiveIndex(0)}
+            isMobile={isMobile}
           />
         ))}
       </div>
+
+      {/* Mobile Navigation Controls: Dots & Arrows */}
+      {isMobile && (
+        <div className={styles.mobileNavControls}>
+          <button
+            type="button"
+            className={styles.mobileNavArrow}
+            onClick={handlePrev}
+            aria-label="المتحدث السابق"
+          >
+            <ChevronRight size={20} />
+          </button>
+
+          <div className={styles.mobileDotsWrap}>
+            {speakers.map((spk, idx) => {
+              const isDotActive = activeIndex === idx;
+              return (
+                <button
+                  key={idx}
+                  type="button"
+                  className={`${styles.mobileDot} ${isDotActive ? styles.mobileDotActive : ""}`}
+                  onClick={() => scrollToSpeaker(idx)}
+                  aria-label={`انتقل إلى ${spk.name}`}
+                  style={{
+                    backgroundColor: isDotActive ? spk.accent : undefined,
+                    boxShadow: isDotActive ? `0 0 10px ${spk.accent}` : undefined,
+                  }}
+                />
+              );
+            })}
+          </div>
+
+          <button
+            type="button"
+            className={styles.mobileNavArrow}
+            onClick={handleNext}
+            aria-label="المتحدث التالي"
+          >
+            <ChevronLeft size={20} />
+          </button>
+        </div>
+      )}
     </section>
   );
 };
 
 export default Speakers;
+

@@ -55,7 +55,7 @@ const HeroMeta = () => {
         <span className={styles.dateIcon}>
           <CalendarCheck size={17} />
         </span>
-        <span>04 SEPTEMBER 2026</span>
+        <span> 04 SEPTEMBER </span>
       </div>
 
       {/* Premium Magnetic CTA Button */}

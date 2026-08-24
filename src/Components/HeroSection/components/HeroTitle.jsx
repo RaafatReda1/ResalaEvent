@@ -14,12 +14,14 @@ const HeroTitle = () => {
           src="/mawaraanew.png"
           alt="مَا وَرَاءَ الطِّبِّ"
           className={styles.calligraphyImage}
-          onError={(e) => { e.currentTarget.src = "/maWaraaTitleOriginal.png"; }}
+          onError={(e) => {
+            e.currentTarget.src = "/maWaraaTitleOriginal.png";
+          }}
         />
       </div>
 
       <p className={styles.heroSubtitle}>
-        تجربة التوجيه الطبي الأكثر تكاملاً والمصممة خصيصاً لجيل المستقبل من طلاب كلية الطب.
+        خَلفَ كُل طَبيب… رِحْلة وَخَلف كُل رِحلَة… حِكَاية
       </p>
     </div>
   );

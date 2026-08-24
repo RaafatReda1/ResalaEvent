@@ -13,6 +13,7 @@
   padding: clamp(60px, 8vh, 120px) clamp(16px, 4vw, 60px);
   overflow: hidden;
   direction: rtl;
+  font-family: 'Cairo', system-ui, sans-serif;
 }
 
 /* ── Background layers ─────────────────────────── */
@@ -137,7 +138,7 @@
   position: relative;
   z-index: 10;
   text-align: center;
-  margin-bottom: clamp(32px, 5vh, 64px);
+  margin-bottom: clamp(24px, 4vh, 48px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -153,56 +154,113 @@
 }
 
 .sectionSubtitle {
-  font-size: clamp(0.65rem, 1.2vw, 0.82rem);
+  font-size: clamp(0.68rem, 1.2vw, 0.84rem);
   font-weight: 800;
   letter-spacing: clamp(3px, 0.6vw, 6px);
   color: var(--teal-400, #3AB9AC);
   text-transform: uppercase;
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
 .sectionTitle {
-  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-size: clamp(2.2rem, 5vw, 3.8rem);
   font-weight: 900;
   color: #ffffff;
   line-height: 1.1;
   text-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
 }
 
-/* ── Cards container (accordion row) ──────────── */
+/* ── Mobile Quick Tabs Selector ─────────────────── */
+.mobileTabsWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  width: 100%;
+  max-width: 500px;
+  overflow-x: auto;
+  padding: 4px 12px 14px 12px;
+  margin-bottom: 12px;
+  z-index: 10;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobileTabsWrapper::-webkit-scrollbar {
+  display: none;
+}
+
+.mobileTabPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: 30px;
+  background: rgba(10, 21, 38, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #94a3b8;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.25s ease;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.mobileTabPillActive {
+  background: rgba(var(--accent-rgb), 0.18);
+  border-color: var(--accent);
+  color: #ffffff;
+  box-shadow: 0 0 16px rgba(var(--accent-rgb), 0.35);
+}
+
+.tabNumber {
+  font-size: 0.7rem;
+  font-weight: 800;
+  opacity: 0.65;
+}
+
+.tabName {
+  font-weight: 800;
+}
+
+/* ── Cards container (Desktop Row / Mobile Snap Carousel) ── */
 .speakersContainer {
   position: relative;
   z-index: 10;
   display: flex;
   flex-direction: row;
   align-items: stretch;
-  gap: clamp(10px, 1.5vw, 18px);
+  gap: clamp(12px, 1.5vw, 20px);
   width: 100%;
   max-width: 1300px;
-  height: clamp(460px, 60vh, 640px);
+  height: clamp(480px, 62vh, 660px);
 }
 
 /* ── Individual card ───────────────────────────── */
 .speakerCard {
   position: relative;
   flex: 1;
-  border-radius: clamp(16px, 2vw, 24px);
+  border-radius: clamp(18px, 2.2vw, 26px);
   overflow: hidden;
   cursor: pointer;
-  transition: flex 0.6s cubic-bezier(0.4, 0, 0.2, 1),
-              border-color 0.4s ease,
-              box-shadow 0.5s ease;
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  transition: flex 0.55s cubic-bezier(0.25, 1, 0.5, 1),
+              border-color 0.35s ease,
+              box-shadow 0.45s ease,
+              transform 0.4s ease;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #07111e;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
   will-change: flex, box-shadow;
   min-width: 0;
 }
 
 .speakerCard:hover,
 .speakerCardActive {
-  flex: 3.5;
-  border-color: rgba(var(--accent-rgb), 0.35);
-  box-shadow: 0 0 60px rgba(var(--accent-rgb), 0.35), 0 30px 80px rgba(0, 0, 0, 0.6);
+  flex: 3.8;
+  border-color: rgba(var(--accent-rgb), 0.55);
+  box-shadow: 0 0 55px rgba(var(--accent-rgb), 0.32), 0 24px 64px rgba(0, 0, 0, 0.65);
 }
 
 /* ── Card background photo ─────────────────────── */
@@ -215,8 +273,9 @@
   z-index: 0;
 }
 
-.speakerCardActive .cardBgLayer {
-  transform: scale(1.04);
+.speakerCardActive .cardBgLayer,
+.speakerCard:hover .cardBgLayer {
+  transform: scale(1.05);
 }
 
 /* ── Accent glow (bottom) ─────────────────────── */
@@ -229,28 +288,35 @@
   pointer-events: none;
 }
 
+.speakerCardActive .cardGlowOverlay,
+.speakerCard:hover .cardGlowOverlay {
+  opacity: 1;
+}
+
 /* ── Dark scrim ───────────────────────────────── */
 .cardScrim {
   position: absolute;
   inset: 0;
   background: linear-gradient(
     to top,
-    rgba(4, 10, 20, 0.92) 0%,
-    rgba(4, 10, 20, 0.6) 40%,
-    rgba(4, 10, 20, 0.2) 100%
+    rgba(4, 10, 20, 0.95) 0%,
+    rgba(4, 10, 20, 0.65) 45%,
+    rgba(4, 10, 20, 0.25) 100%
   );
   z-index: 2;
 }
 
-/* ── Portrait wrapper ────────────────────────────────── */
-/* Wrapper owns the centering transform so that GSAP animating
-   scale on the <img> never clobbers translateX(-50%).          */
+/* ── Portrait wrapper ────────────────────────── */
 .speakerImgWrapper {
   position: absolute;
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  height: 85%;
+  height: 86%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
   z-index: 3;
   pointer-events: none;
 }
@@ -258,32 +324,87 @@
 .speakerImg {
   height: 100%;
   width: auto;
-  max-width: none;
+  max-width: 100%;
   object-fit: contain;
-  object-position: bottom;
+  object-position: bottom center;
   display: block;
-  /* Initial filter set by GSAP on mount — this is just a fallback */
-  filter: brightness(0.3) contrast(1) saturate(0.7);
+  filter: brightness(0.65) contrast(1.02) saturate(0.85);
   will-change: transform, filter;
   transform-origin: bottom center;
+  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1),
+              filter 0.45s ease;
+}
+
+.speakerCardActive .speakerImg,
+.speakerCard:hover .speakerImg {
+  filter: brightness(1.05) contrast(1.05) saturate(1.1);
+  transform: scale(1.06);
 }
 
 /* ── Number watermark ─────────────────────────── */
 .cardNumber {
   position: absolute;
-  top: clamp(10px, 2vh, 20px);
-  left: clamp(12px, 2vw, 22px);
-  font-size: clamp(3rem, 6vw, 5.5rem);
+  top: clamp(12px, 2vh, 22px);
+  left: clamp(14px, 2vw, 24px);
+  font-size: clamp(3.2rem, 6vw, 5.5rem);
   font-weight: 900;
   color: #ffffff;
-  opacity: 0.35;
+  opacity: 0.3;
   line-height: 1;
   z-index: 4;
   pointer-events: none;
   letter-spacing: -2px;
-  will-change: opacity, transform;
-  transition: none;
   font-variant-numeric: tabular-nums;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.speakerCardActive .cardNumber,
+.speakerCard:hover .cardNumber {
+  opacity: 0.08;
+  transform: scale(1.15);
+}
+
+/* ── Collapsed Speaker Tag on Desktop ────────── */
+.speakerCollapsedLabel {
+  position: absolute;
+  bottom: 22px;
+  right: 16px;
+  left: 16px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  pointer-events: none;
+  direction: rtl;
+}
+
+.speakerCardActive .speakerCollapsedLabel,
+.speakerCard:hover .speakerCollapsedLabel {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+.collapsedBadge {
+  font-size: 0.68rem;
+  font-weight: 800;
+  border: 1px solid;
+  border-radius: 12px;
+  padding: 2px 7px;
+  background: rgba(10, 24, 44, 0.85);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.collapsedName {
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
 }
 
 /* ── Bottom accent bar ────────────────────────── */
@@ -292,89 +413,98 @@
   bottom: 0;
   left: 0;
   width: 100%;
-  height: 3px;
+  height: 3.5px;
   z-index: 6;
-  opacity: 0.85;
+  opacity: 0.9;
 }
 
-/* ── Info panel (shown on hover) ──────────────── */
+/* ── Info panel (expanded state) ──────────────── */
 .speakerInfo {
   position: absolute;
   bottom: 0;
-  padding: 100px;
   left: 0;
   right: 0;
-  padding: 0 clamp(16px, 2.5vw, 28px);
+  padding: 0 clamp(16px, 2.5vw, 30px) clamp(18px, 2.5vh, 28px);
   z-index: 5;
   opacity: 0;
-  will-change: opacity, transform;
+  transform: translateY(20px);
+  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.45s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: clamp(3px, 0.6vh, 6px);
-}
-.speakerInfo::before{
-    content:"";
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-    background: rgb(14, 14, 14);
-    filter: blur(50px);
-}
-.speakerBadge {
-  display: inline-block;
-  font-size: clamp(0.6rem, 0.9vw, 0.75rem);
-  font-weight: 700;
-  letter-spacing: clamp(1.5px, 0.25vw, 3px);
-  text-transform: uppercase;
-  border: 1px solid;
-  border-radius: 30px;
-  padding: 3px 12px;
-  margin-bottom: 4px;
-  white-space: nowrap;
+  gap: 4px;
+  pointer-events: none;
 }
 
-.speakerName {
-  font-size: clamp(1.25rem, 2.2vw, 1.9rem);
-  font-weight: 900;
+.speakerCardActive .speakerInfo,
+.speakerCard:hover .speakerInfo {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+/* ── Mobile Navigation Controls ──────────────── */
+.mobileNavControls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 18px;
+  z-index: 10;
+}
+
+.mobileNavArrow {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(10, 24, 44, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #e2e8f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4);
+}
+
+.mobileNavArrow:active {
+  transform: scale(0.92);
+  background: rgba(31, 166, 160, 0.3);
+  border-color: #3ab9ac;
   color: #ffffff;
-  line-height: 1.15;
-  white-space: nowrap;
-  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6);
 }
 
-.speakerNameEn {
-  font-size: clamp(0.7rem, 1vw, 0.88rem);
-  font-weight: 500;
-  color: rgba(199, 213, 229, 0.75);
-  white-space: nowrap;
-  letter-spacing: 0.3px;
+.mobileDotsWrap {
+  display: flex;
+  align-items: center;
+  gap: 7px;
 }
 
-.speakerTitle {
-  font-size: clamp(0.8rem, 1.1vw, 0.98rem);
-  font-weight: 600;
-  color: rgba(199, 213, 229, 0.9);
-  white-space: nowrap;
+.mobileDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.speakerDivider {
-  width: clamp(32px, 5vw, 56px);
-  height: 2px;
-  border-radius: 2px;
-  margin-top: clamp(4px, 0.8vh, 8px);
+.mobileDotActive {
+  width: 24px;
+  border-radius: 12px;
 }
 
 /* ═══════════════════════════════════════════════════
-   RESPONSIVE
+   RESPONSIVE (TABLETS & MOBILE PHONES)
    ═══════════════════════════════════════════════════ */
 
 @media (max-width: 900px) {
   .speakersContainer {
-    height: clamp(380px, 52vh, 520px);
+    height: clamp(420px, 55vh, 540px);
   }
 
   .speakerCard:hover,
@@ -383,43 +513,110 @@
   }
 }
 
-@media (max-width: 600px) {
+/* ── Mobile Phone & Small Screens (<= 768px) ────── */
+@media (max-width: 768px) {
   .speakersSection {
-    padding: 48px 14px;
+    padding: clamp(40px, 6vh, 60px) 12px;
   }
 
+  .sectionHeading {
+    margin-bottom: 20px;
+  }
+
+  /* Carousel horizontal snap track */
   .speakersContainer {
-    flex-direction: column;
+    flex-direction: row;
     height: auto;
-    gap: 12px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    gap: 14px;
+    padding: 10px 14px 20px 14px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100vw;
   }
 
+  .speakersContainer::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Single Card in Mobile Carousel */
   .speakerCard {
-    flex: none;
-    width: 100%;
-    height: 180px;
-    border-radius: 16px;
-    transition: height 0.55s cubic-bezier(0.4, 0, 0.2, 1),
-                border-color 0.4s ease;
+    flex: 0 0 clamp(270px, 78vw, 320px);
+    width: clamp(270px, 78vw, 320px);
+    height: clamp(420px, 60vh, 470px);
+    scroll-snap-align: center;
+    border-radius: 24px;
+    border: 1.5px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   }
 
-  .speakerCard:hover,
   .speakerCardActive {
-    flex: none;
-    height: 340px;
+    border-color: rgba(var(--accent-rgb), 0.6);
+    box-shadow: 0 0 30px rgba(var(--accent-rgb), 0.35), 0 16px 40px rgba(0, 0, 0, 0.7);
+    transform: scale(1.02);
   }
 
+  .cardGlowOverlay {
+    opacity: 1 !important;
+  }
+
+  .speakerImgWrapper {
+    height: 84%;
+  }
+
+  /* Always keep speaker photo bright & clear on mobile */
   .speakerImg {
-    height: 90%;
-    bottom: 0;
+    filter: brightness(0.95) contrast(1.05) saturate(1.1) !important;
+  }
+
+  .cardNumber {
+    font-size: 3.5rem;
+    top: 12px;
+    left: 14px;
+    opacity: 0.25;
+  }
+
+  /* Always keep info panel visible and readable on mobile */
+  .speakerInfo {
+    opacity: 1 !important;
+    transform: none !important;
+    padding: 0 18px 20px 18px;
+    background: linear-gradient(
+      to top,
+      rgba(4, 10, 20, 0.96) 0%,
+      rgba(4, 10, 20, 0.75) 60%,
+      transparent 100%
+    );
   }
 
   .speakerName {
+    font-size: 1.45rem;
     white-space: normal;
   }
 
-  .speakerNameEn,
+  .speakerNameEn {
+    font-size: 0.78rem;
+    white-space: normal;
+  }
+
   .speakerTitle {
+    font-size: 0.88rem;
     white-space: normal;
   }
 }
+
+/* Extra Small Phones (<= 380px) */
+@media (max-width: 380px) {
+  .speakerCard {
+    flex: 0 0 85vw;
+    width: 85vw;
+    height: 400px;
+  }
+
+  .speakerName {
+    font-size: 1.3rem;
+  }
+}
+
