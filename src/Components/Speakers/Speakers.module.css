@@ -170,20 +170,38 @@
   text-shadow: 0 4px 24px rgba(0, 0, 0, 0.5);
 }
 
-/* ── Mobile Quick Tabs Selector ─────────────────── */
+/* ── Mobile Quick Tabs Selector ───────────────── */
 .mobileTabsWrapper {
   display: flex;
   align-items: center;
+  /* LTR so pills 01→05 read left-to-right, matching LTR card scroll order */
+  direction: ltr;
   justify-content: flex-start;
   gap: 8px;
   width: 100%;
-  max-width: 500px;
+  max-width: 100%;
   overflow-x: auto;
-  padding: 4px 12px 14px 12px;
-  margin-bottom: 12px;
+  /* Fade edges so overflow looks polished rather than hard-cut */
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0px,
+    black 24px,
+    black calc(100% - 24px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    to right,
+    transparent 0px,
+    black 24px,
+    black calc(100% - 24px),
+    transparent 100%
+  );
+  padding: 4px 20px 14px 20px;
+  margin-bottom: 8px;
   z-index: 10;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
+  position: relative;
 }
 
 .mobileTabsWrapper::-webkit-scrollbar {
@@ -193,32 +211,37 @@
 .mobileTabPill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
+  gap: 5px;
+  padding: 5px 12px;
   border-radius: 30px;
-  background: rgba(10, 21, 38, 0.7);
+  background: rgba(10, 21, 38, 0.75);
   border: 1px solid rgba(255, 255, 255, 0.12);
   color: #94a3b8;
-  font-size: 0.8rem;
+  font-size: 0.76rem;
   font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
-  transition: all 0.25s ease;
+  transition: background 0.2s ease, border-color 0.2s ease,
+              color 0.2s ease, box-shadow 0.2s ease;
   position: relative;
   flex-shrink: 0;
+  /* Keep Arabic text RTL inside each pill */
+  direction: rtl;
+  will-change: background, box-shadow;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .mobileTabPillActive {
   background: rgba(var(--accent-rgb), 0.18);
   border-color: var(--accent);
   color: #ffffff;
-  box-shadow: 0 0 16px rgba(var(--accent-rgb), 0.35);
+  box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.32);
 }
 
 .tabNumber {
-  font-size: 0.7rem;
+  font-size: 0.66rem;
   font-weight: 800;
-  opacity: 0.65;
+  opacity: 0.6;
 }
 
 .tabName {
@@ -238,14 +261,14 @@
   height: clamp(480px, 62vh, 660px);
 }
 
-/* ── Individual card ───────────────────────────── */
+/* ── Individual card (Base Rest State) ─────────── */
 .speakerCard {
   position: relative;
   flex: 1;
   border-radius: clamp(18px, 2.2vw, 26px);
   overflow: hidden;
   cursor: pointer;
-  transition: flex 0.55s cubic-bezier(0.25, 1, 0.5, 1),
+  transition: flex 0.5s cubic-bezier(0.25, 1, 0.5, 1),
               border-color 0.35s ease,
               box-shadow 0.45s ease,
               transform 0.4s ease;
@@ -254,13 +277,6 @@
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45);
   will-change: flex, box-shadow;
   min-width: 0;
-}
-
-.speakerCard:hover,
-.speakerCardActive {
-  flex: 3.8;
-  border-color: rgba(var(--accent-rgb), 0.55);
-  box-shadow: 0 0 55px rgba(var(--accent-rgb), 0.32), 0 24px 64px rgba(0, 0, 0, 0.65);
 }
 
 /* ── Card background photo ─────────────────────── */
@@ -273,12 +289,7 @@
   z-index: 0;
 }
 
-.speakerCardActive .cardBgLayer,
-.speakerCard:hover .cardBgLayer {
-  transform: scale(1.05);
-}
-
-/* ── Accent glow (bottom) ─────────────────────── */
+/* ── Accent glow overlay (bottom) ──────────────── */
 .cardGlowOverlay {
   position: absolute;
   inset: 0;
@@ -286,11 +297,6 @@
   opacity: 0;
   transition: opacity 0.5s ease;
   pointer-events: none;
-}
-
-.speakerCardActive .cardGlowOverlay,
-.speakerCard:hover .cardGlowOverlay {
-  opacity: 1;
 }
 
 /* ── Dark scrim ───────────────────────────────── */
@@ -328,17 +334,11 @@
   object-fit: contain;
   object-position: bottom center;
   display: block;
-  filter: brightness(0.65) contrast(1.02) saturate(0.85);
+  filter: brightness(0.8) contrast(1.02) saturate(0.9);
   will-change: transform, filter;
   transform-origin: bottom center;
-  transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1),
-              filter 0.45s ease;
-}
-
-.speakerCardActive .speakerImg,
-.speakerCard:hover .speakerImg {
-  filter: brightness(1.05) contrast(1.05) saturate(1.1);
-  transform: scale(1.06);
+  transition: transform 0.5s cubic-bezier(0.25, 1, 0.5, 1),
+              filter 0.4s ease;
 }
 
 /* ── Number watermark ─────────────────────────── */
@@ -349,19 +349,13 @@
   font-size: clamp(3.2rem, 6vw, 5.5rem);
   font-weight: 900;
   color: #ffffff;
-  opacity: 0.3;
+  opacity: 0.22;
   line-height: 1;
   z-index: 4;
   pointer-events: none;
   letter-spacing: -2px;
   font-variant-numeric: tabular-nums;
   transition: opacity 0.4s ease, transform 0.4s ease;
-}
-
-.speakerCardActive .cardNumber,
-.speakerCard:hover .cardNumber {
-  opacity: 0.08;
-  transform: scale(1.15);
 }
 
 /* ── Collapsed Speaker Tag on Desktop ────────── */
@@ -379,12 +373,6 @@
   transition: opacity 0.35s ease, transform 0.35s ease;
   pointer-events: none;
   direction: rtl;
-}
-
-.speakerCardActive .speakerCollapsedLabel,
-.speakerCard:hover .speakerCollapsedLabel {
-  opacity: 0;
-  transform: translateY(12px);
 }
 
 .collapsedBadge {
@@ -437,11 +425,96 @@
   pointer-events: none;
 }
 
-.speakerCardActive .speakerInfo,
-.speakerCard:hover .speakerInfo {
-  opacity: 1;
-  transform: translateY(0);
-  pointer-events: auto;
+.speakerBadge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  border: 1px solid;
+  margin-bottom: 2px;
+}
+
+.speakerName {
+  font-size: clamp(1.3rem, 2vw, 1.75rem);
+  font-weight: 900;
+  color: #ffffff;
+  line-height: 1.2;
+  margin: 0;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.6);
+}
+
+.speakerNameEn {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #94a3b8;
+  margin: 0 0 2px 0;
+  letter-spacing: 0.5px;
+}
+
+.speakerTitle {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: #cbd5e1;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.speakerDivider {
+  width: clamp(40px, 6vw, 70px);
+  height: 2px;
+  border-radius: 2px;
+  margin-top: 6px;
+}
+
+/* ═══════════════════════════════════════════════════
+   DESKTOP EXPANDED STATE (Controlled by JS hover state)
+   ═══════════════════════════════════════════════════ */
+@media (min-width: 769px) {
+  .speakerCardExpanded {
+    flex: 3.6;
+    border-color: rgba(var(--accent-rgb), 0.55);
+    box-shadow: 0 0 45px rgba(var(--accent-rgb), 0.28), 0 24px 60px rgba(0, 0, 0, 0.65);
+  }
+
+  .speakerCardExpanded .cardBgLayer {
+    transform: scale(1.05);
+  }
+
+  .speakerCardExpanded .cardGlowOverlay {
+    opacity: 1;
+  }
+
+  .speakerCardExpanded .speakerImg {
+    filter: brightness(1.05) contrast(1.05) saturate(1.1);
+    transform: scale(1.05);
+  }
+
+  .speakerCardExpanded .cardNumber {
+    opacity: 0.08;
+    transform: scale(1.12);
+  }
+
+  .speakerCardExpanded .speakerCollapsedLabel {
+    opacity: 0;
+    transform: translateY(12px);
+    pointer-events: none;
+  }
+
+  .speakerCardExpanded .speakerInfo {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+}
+
+/* ── Desktop pointer hover enhancement ─────────── */
+@media (hover: hover) and (pointer: fine) and (min-width: 769px) {
+  .speakerCard:not(.speakerCardExpanded):hover {
+    border-color: rgba(255, 255, 255, 0.2);
+  }
 }
 
 /* ── Mobile Navigation Controls ──────────────── */
@@ -502,13 +575,12 @@
    RESPONSIVE (TABLETS & MOBILE PHONES)
    ═══════════════════════════════════════════════════ */
 
-@media (max-width: 900px) {
+@media (max-width: 900px) and (min-width: 769px) {
   .speakersContainer {
     height: clamp(420px, 55vh, 540px);
   }
 
-  .speakerCard:hover,
-  .speakerCardActive {
+  .speakerCardExpanded {
     flex: 3;
   }
 }
@@ -520,11 +592,15 @@
   }
 
   .sectionHeading {
-    margin-bottom: 20px;
+    margin-bottom: 16px;
   }
 
   /* Carousel horizontal snap track */
   .speakersContainer {
+    /* Force LTR so scrollLeft is always positive and scrollTo() works in all browsers.
+       The section is RTL, but RTL scroll containers have negative scrollLeft in Chrome/Firefox,
+       which breaks scrollTo(). LTR here fixes dots, arrows, and pill navigation. */
+    direction: ltr;
     flex-direction: row;
     height: auto;
     overflow-x: auto;
@@ -545,44 +621,61 @@
   .speakerCard {
     flex: 0 0 clamp(270px, 78vw, 320px);
     width: clamp(270px, 78vw, 320px);
-    height: clamp(420px, 60vh, 470px);
+    height: clamp(420px, 58vh, 470px);
     scroll-snap-align: center;
     border-radius: 24px;
     border: 1.5px solid rgba(255, 255, 255, 0.1);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    cursor: pointer;
+    /* Restore RTL for Arabic card content (parent container is LTR for scroll math) */
+    direction: rtl;
+    /* Lock dimensions so cards never expand or shrink on tap/touch */
+    transform: none !important;
   }
 
-  .speakerCardActive {
-    border-color: rgba(var(--accent-rgb), 0.6);
-    box-shadow: 0 0 30px rgba(var(--accent-rgb), 0.35), 0 16px 40px rgba(0, 0, 0, 0.7);
-    transform: scale(1.02);
+  /* Current Active Card in Mobile View */
+  .speakerCardMobileActive {
+    border-color: rgba(var(--accent-rgb), 0.7);
+    box-shadow: 0 0 28px rgba(var(--accent-rgb), 0.3), 0 16px 40px rgba(0, 0, 0, 0.7);
+  }
+
+  /* Hide collapsed label on mobile to prevent overlapping with speakerInfo */
+  .speakerCollapsedLabel {
+    display: none !important;
   }
 
   .cardGlowOverlay {
-    opacity: 1 !important;
+    opacity: 0.5;
+  }
+
+  .speakerCardMobileActive .cardGlowOverlay {
+    opacity: 0.85;
   }
 
   .speakerImgWrapper {
-    height: 84%;
+    height: 82%;
   }
 
-  /* Always keep speaker photo bright & clear on mobile */
+  /* Always keep speaker portrait crisp and clean on mobile without hover scaling */
   .speakerImg {
-    filter: brightness(0.95) contrast(1.05) saturate(1.1) !important;
+    filter: brightness(0.95) contrast(1.04) saturate(1.05) !important;
+    transform: none !important;
   }
 
   .cardNumber {
-    font-size: 3.5rem;
+    font-size: 3.2rem;
     top: 12px;
     left: 14px;
-    opacity: 0.25;
+    opacity: 0.2;
+    transform: none !important;
   }
 
-  /* Always keep info panel visible and readable on mobile */
+  /* Always keep info panel visible and beautifully readable on mobile */
   .speakerInfo {
     opacity: 1 !important;
     transform: none !important;
     padding: 0 18px 20px 18px;
+    pointer-events: auto;
     background: linear-gradient(
       to top,
       rgba(4, 10, 20, 0.96) 0%,
@@ -592,7 +685,7 @@
   }
 
   .speakerName {
-    font-size: 1.45rem;
+    font-size: 1.4rem;
     white-space: normal;
   }
 
@@ -602,7 +695,7 @@
   }
 
   .speakerTitle {
-    font-size: 0.88rem;
+    font-size: 0.86rem;
     white-space: normal;
   }
 }
@@ -616,7 +709,6 @@
   }
 
   .speakerName {
-    font-size: 1.3rem;
+    font-size: 1.25rem;
   }
 }
-

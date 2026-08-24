@@ -66,15 +66,22 @@ const speakers = [
   },
 ];
 
-const SpeakerCard = ({ speaker, index, activeIndex, onHover, onLeave, isMobile }) => {
-  const isActive = activeIndex === index;
-
+const SpeakerCard = ({
+  speaker,
+  index,
+  isExpanded,
+  isMobileActive,
+  onHover,
+  onCardClick,
+  isMobile,
+}) => {
   return (
     <div
-      className={`${styles.speakerCard} ${isActive ? styles.speakerCardActive : ""}`}
+      className={`${styles.speakerCard} ${
+        isExpanded ? styles.speakerCardExpanded : ""
+      } ${isMobile && isMobileActive ? styles.speakerCardMobileActive : ""}`}
       onMouseEnter={() => !isMobile && onHover(index)}
-      onMouseLeave={() => !isMobile && onLeave()}
-      onClick={() => isMobile && onHover(index)}
+      onClick={() => isMobile && onCardClick(index)}
       style={{ "--accent": speaker.accent, "--accent-rgb": speaker.accentRgb }}
     >
       {/* Background photo layer */}
@@ -126,7 +133,7 @@ const SpeakerCard = ({ speaker, index, activeIndex, onHover, onLeave, isMobile }
         style={{ background: `linear-gradient(90deg, transparent, ${speaker.accent}, transparent)` }}
       />
 
-      {/* Expanded Full Info Panel */}
+      {/* Expanded / Full Info Panel */}
       <div className={styles.speakerInfo}>
         <span
           className={styles.speakerBadge}
@@ -155,7 +162,13 @@ const SpeakerCard = ({ speaker, index, activeIndex, onHover, onLeave, isMobile }
 
 const Speakers = () => {
   const isMobile = useIsMobile(768);
-  const [activeIndex, setActiveIndex] = useState(0);
+  // Desktop hover state: null initially so all cards are equally balanced in rest state
+  const [hoveredIndex, setHoveredIndex] = useState(null);
+  // Mobile carousel active index: 0 initially for the first card in swipe view
+  const [mobileActiveIndex, setMobileActiveIndex] = useState(0);
+  // Ref mirror of mobileActiveIndex to avoid re-creating the scroll listener on every change
+  const mobileActiveIndexRef = useRef(0);
+
   const sectionRef = useRef(null);
   const headingRef = useRef(null);
   const subtitleRef = useRef(null);
@@ -215,17 +228,20 @@ const Speakers = () => {
   );
 
   // ── Mobile Carousel Scroll Listener for Active Index Sync ──
+  // Uses ref so the handler is stable and the effect never re-subscribes during scrolling
   const handleCarouselScroll = useCallback(() => {
     if (!carouselTrackRef.current) return;
     const track = carouselTrackRef.current;
-    const scrollLeft = Math.abs(track.scrollLeft);
+    // Container is forced to direction:ltr on mobile, so scrollLeft is always positive
+    const scrollLeft = track.scrollLeft;
     const cardWidth = track.firstElementChild?.offsetWidth || 280;
     const gap = 14;
     const newIndex = Math.round(scrollLeft / (cardWidth + gap));
-    if (newIndex >= 0 && newIndex < speakers.length && newIndex !== activeIndex) {
-      setActiveIndex(newIndex);
+    if (newIndex >= 0 && newIndex < speakers.length && newIndex !== mobileActiveIndexRef.current) {
+      mobileActiveIndexRef.current = newIndex;
+      setMobileActiveIndex(newIndex);
     }
-  }, [activeIndex]);
+  }, []); // stable — no deps needed thanks to the ref
 
   useEffect(() => {
     const track = carouselTrackRef.current;
@@ -237,27 +253,27 @@ const Speakers = () => {
 
   // ── Scroll to specific speaker on mobile ──
   const scrollToSpeaker = (index) => {
-    setActiveIndex(index);
+    mobileActiveIndexRef.current = index;
+    setMobileActiveIndex(index);
     if (carouselTrackRef.current) {
       const track = carouselTrackRef.current;
-      const card = track.children[index];
-      if (card) {
-        card.scrollIntoView({
-          behavior: "smooth",
-          block: "nearest",
-          inline: "center",
-        });
-      }
+      const cardWidth = track.firstElementChild?.offsetWidth || 280;
+      const gap = 14;
+      // Use scrollLeft for instant, jank-free positioning (browser handles the smooth animation)
+      track.scrollTo({
+        left: index * (cardWidth + gap),
+        behavior: "smooth",
+      });
     }
   };
 
   const handleNext = () => {
-    const nextIdx = (activeIndex + 1) % speakers.length;
+    const nextIdx = (mobileActiveIndex + 1) % speakers.length;
     scrollToSpeaker(nextIdx);
   };
 
   const handlePrev = () => {
-    const prevIdx = (activeIndex - 1 + speakers.length) % speakers.length;
+    const prevIdx = (mobileActiveIndex - 1 + speakers.length) % speakers.length;
     scrollToSpeaker(prevIdx);
   };
 
@@ -287,7 +303,7 @@ const Speakers = () => {
       {isMobile && (
         <div className={styles.mobileTabsWrapper}>
           {speakers.map((spk, idx) => {
-            const isTabActive = activeIndex === idx;
+            const isTabActive = mobileActiveIndex === idx;
             return (
               <button
                 key={idx}
@@ -301,7 +317,6 @@ const Speakers = () => {
               >
                 <span className={styles.tabNumber}>{spk.number}</span>
                 <span className={styles.tabName}>{spk.name}</span>
-                {isTabActive && <span className={styles.tabGlow} />}
               </button>
             );
           })}
@@ -315,15 +330,17 @@ const Speakers = () => {
           carouselTrackRef.current = el;
         }}
         className={styles.speakersContainer}
+        onMouseLeave={() => !isMobile && setHoveredIndex(null)}
       >
         {speakers.map((speaker, index) => (
           <SpeakerCard
             key={index}
             speaker={speaker}
             index={index}
-            activeIndex={activeIndex}
-            onHover={setActiveIndex}
-            onLeave={() => !isMobile && setActiveIndex(0)}
+            isExpanded={!isMobile && hoveredIndex === index}
+            isMobileActive={isMobile && mobileActiveIndex === index}
+            onHover={setHoveredIndex}
+            onCardClick={scrollToSpeaker}
             isMobile={isMobile}
           />
         ))}
@@ -343,7 +360,7 @@ const Speakers = () => {
 
           <div className={styles.mobileDotsWrap}>
             {speakers.map((spk, idx) => {
-              const isDotActive = activeIndex === idx;
+              const isDotActive = mobileActiveIndex === idx;
               return (
                 <button
                   key={idx}

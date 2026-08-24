@@ -439,7 +439,7 @@ const Issues = () => {
             <Users size={20} />
           </div>
           <div className={styles.cardContent}>
-            <h3 className={styles.cardTitle}> حاسس إن الكتب مش بتخلص؟</h3>
+            <h3 className={styles.cardTitle}>هتحس إن الكتب مش بتخلص؟</h3>
             <p className={styles.cardDesc}>
               اتعلم إزاي تذاكر بذكاء… مش إزاي تذاكر أكتر.
             </p>
