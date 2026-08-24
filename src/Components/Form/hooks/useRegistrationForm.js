@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import supabase from "@/utils/supabaseClient";
 import {
   uploadData,
   uploadImg,
@@ -8,9 +9,14 @@ import {
   getRegistrationCookie,
   clearRegistrationCookie,
   verifyStudentCookie,
+  signInWithGoogle,
+  signOutUser,
+  fetchStudentByEmail,
 } from "../Actions";
 
 export const useRegistrationForm = () => {
+  const [authUser, setAuthUser] = useState(null); // Supabase Google user
+  const [loadingAuth, setLoadingAuth] = useState(false);
   const [savedAttendee, setSavedAttendee] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isVerifying, setIsVerifying] = useState(true); // true while we check the DB
@@ -26,7 +32,7 @@ export const useRegistrationForm = () => {
   const [file, setFile] = useState(null);
   const [filePreview, setFilePreview] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [loadingStage, setLoadingStage] = useState(null); // 'uploading_image' | 'saving_data' | 'generating_ticket' | 'updating'
+  const [loadingStage, setLoadingStage] = useState(null); // 'uploading_image' | 'saving_data' | 'completing' | 'updating'
   const [errorMsg, setErrorMsg] = useState("");
   const [successToast, setSuccessToast] = useState("");
 
@@ -62,18 +68,57 @@ export const useRegistrationForm = () => {
   };
 
   // ─────────────────────────────────────────────
-  // 1. On mount: read browser cookie → verify against DB
-  //    ✓ Token found in DB  → hydrate from DB row, show profile
-  //    ✗ Token not in DB    → clear stale browser cookie, show form
+  // 1. Unified Auth & DB Verification on mount
+  //    - If signed in with Google: ignore cookies, fetch DB by Google email
+  //    - If not signed in: fallback to browser Cookie Token verification
   // ─────────────────────────────────────────────
   useEffect(() => {
-    const verify = async () => {
+    const initAuthAndVerification = async () => {
       setIsVerifying(true);
       try {
+        // Step A: Check active Supabase Google session
+        const { data: { session } } = await supabase.auth.getSession();
+        const currentUser = session?.user;
+        setAuthUser(currentUser || null);
+
+        if (currentUser?.email) {
+          // Google user is logged in -> IGNORE cookies, search DB by email!
+          const dbRow = await fetchStudentByEmail(currentUser.email);
+
+          if (dbRow) {
+            const hydrated = {
+              ...dbRow,
+              cookieToken: dbRow.cookie || generateCookieToken(),
+            };
+            setSavedAttendee(hydrated);
+            setForm({
+              name: dbRow.name || currentUser.user_metadata?.full_name || "",
+              email: dbRow.email || currentUser.email || "",
+              phone: dbRow.phone || "",
+              university: dbRow.university || "",
+              place: dbRow.place || "",
+            });
+            const img = dbRow.imgSrc || dbRow["imgSrc"] || dbRow.image || dbRow.image_url;
+            if (img) setFilePreview(img);
+          } else {
+            // New Google user without existing record -> pre-fill email and name
+            setSavedAttendee(null);
+            setForm((prev) => ({
+              ...prev,
+              email: currentUser.email,
+              name: currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || prev.name,
+            }));
+          }
+          setIsVerifying(false);
+          return;
+        }
+
+        // Step B: Not logged in with Google -> check Cookie Token
         const localData = getRegistrationCookie();
         const token = localData?.cookieToken;
 
         if (!token) {
+          setIsVerifying(false);
           return;
         }
 
@@ -81,6 +126,7 @@ export const useRegistrationForm = () => {
 
         if (!dbRow) {
           clearRegistrationCookie();
+          setIsVerifying(false);
           return;
         }
 
@@ -101,14 +147,94 @@ export const useRegistrationForm = () => {
 
         saveRegistrationCookie(hydrated);
       } catch (e) {
-        console.error("Cookie verification failed:", e);
+        console.error("Auth & verification error:", e);
       } finally {
         setIsVerifying(false);
       }
     };
 
-    verify();
+    initAuthAndVerification();
+
+    // Listen to OAuth state changes (e.g. redirect back from Google OAuth)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+          if (session?.user) {
+            setAuthUser(session.user);
+            const dbRow = await fetchStudentByEmail(session.user.email);
+            if (dbRow) {
+              setSavedAttendee(dbRow);
+              setForm({
+                name: dbRow.name || "",
+                email: dbRow.email || "",
+                phone: dbRow.phone || "",
+                university: dbRow.university || "",
+                place: dbRow.place || "",
+              });
+              const img = dbRow.imgSrc || dbRow["imgSrc"] || dbRow.image || dbRow.image_url;
+              if (img) setFilePreview(img);
+            } else {
+              setSavedAttendee(null);
+              setForm((prev) => ({
+                ...prev,
+                email: session.user.email,
+                name: session.user.user_metadata?.full_name || prev.name,
+              }));
+            }
+          }
+        } else if (event === "SIGNED_OUT") {
+          setAuthUser(null);
+          setSavedAttendee(null);
+          setForm({ name: "", email: "", phone: "", university: "", place: "" });
+          setFile(null);
+          setFilePreview(null);
+        }
+      }
+    );
+
+    return () => {
+      subscription?.unsubscribe();
+    };
   }, []);
+
+  // ─────────────────────────────────────────────
+  // Google Sign In / Sign Out Handlers
+  // ─────────────────────────────────────────────
+  const handleGoogleSignIn = async () => {
+    try {
+      setLoadingAuth(true);
+      await signInWithGoogle();
+    } catch (err) {
+      console.error("Google sign in failed:", err);
+      openModal({
+        type: "error",
+        title: "تعذر تسجيل الدخول بـ Google",
+        message: err?.message || "يرجى المحاولة مرة أخرى أو إدخال البيانات يدوياً.",
+        primaryLabel: "حسناً",
+      });
+    } finally {
+      setLoadingAuth(false);
+    }
+  };
+
+  const handleGoogleSignOut = async () => {
+    try {
+      setLoadingAuth(true);
+      await signOutUser();
+      setAuthUser(null);
+      setSavedAttendee(null);
+      setForm({ name: "", email: "", phone: "", university: "", place: "" });
+      setFile(null);
+      setFilePreview(null);
+      setSuccessToast("تم تسجيل الخروج بنجاح");
+      setTimeout(() => setSuccessToast(""), 3000);
+    } catch (err) {
+      console.error("Google sign out failed:", err);
+    } finally {
+      setLoadingAuth(false);
+    }
+  };
+
 
   // ─────────────────────────────────────────────
   // 2. Input change handlers
@@ -414,6 +540,8 @@ export const useRegistrationForm = () => {
   };
 
   return {
+    authUser,
+    loadingAuth,
     savedAttendee,
     isEditing,
     setIsEditing,
@@ -428,6 +556,8 @@ export const useRegistrationForm = () => {
     modalConfig,
     closeModal,
     openModal,
+    handleGoogleSignIn,
+    handleGoogleSignOut,
     handleChange,
     handleBranchSelect,
     handleFileChange,
@@ -440,5 +570,6 @@ export const useRegistrationForm = () => {
 };
 
 export default useRegistrationForm;
+
 
 

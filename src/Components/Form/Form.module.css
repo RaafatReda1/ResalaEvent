@@ -189,6 +189,164 @@
   transition: min-height 0.4s ease;
 }
 
+/* ═══════════════════════════════════════════════════
+   GOOGLE OAUTH AUTHENTICATION BANNER & BUTTONS
+   ═══════════════════════════════════════════════════ */
+.authBanner {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2px;
+}
+
+.googleSignInBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(16, 32, 54, 0.75);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 10px 18px;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  direction: rtl;
+}
+
+.googleSignInBtn:hover:not(:disabled) {
+  background: rgba(24, 48, 80, 0.85);
+  border-color: rgba(66, 133, 244, 0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(66, 133, 244, 0.2), 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.googleSignInBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.googleIconCircle {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  flex-shrink: 0;
+}
+
+.googleBtnText {
+  font-size: clamp(0.88rem, 1.2vw, 0.98rem);
+  font-weight: 800;
+  color: #ffffff;
+}
+
+.googleBtnSubtext {
+  font-size: clamp(0.72rem, 1vw, 0.78rem);
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+/* Logged In Google Banner */
+.authBannerLoggedIn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: linear-gradient(135deg, rgba(16, 32, 54, 0.85) 0%, rgba(10, 24, 44, 0.9) 100%);
+  border: 1px solid rgba(58, 185, 172, 0.35);
+  border-radius: 16px;
+  padding: 10px 16px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+  direction: rtl;
+}
+
+.authAvatarWrap {
+  position: relative;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #0a1526;
+  border: 2px solid #3ab9ac;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.authUserInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  text-align: right;
+}
+
+.authUserName {
+  display: block;
+  font-size: clamp(0.85rem, 1.2vw, 0.95rem);
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.25;
+}
+
+.authUserEmail {
+  display: block;
+  font-size: clamp(0.72rem, 1vw, 0.78rem);
+  color: #94a3b8;
+  font-weight: 500;
+  line-height: 1.2;
+  direction: ltr;
+  text-align: right;
+}
+
+
+.authAvatarImg {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.authOnlineDot {
+  position: absolute;
+  bottom: -2px;
+  right: -2px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #22c55e;
+  border: 2px solid #060e1a;
+  box-shadow: 0 0 8px #22c55e;
+}
+
+.authSignOutBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(230, 57, 70, 0.12);
+  border: 1px solid rgba(230, 57, 70, 0.3);
+  color: #ff858d;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.authSignOutBtn:hover {
+  background: #e63946;
+  color: #ffffff;
+  border-color: #e63946;
+}
+
+
 /* ── Form Inputs Grid ── */
 .inputsGrid {
   display: grid;

@@ -121,6 +121,51 @@ export const uploadData = async (form) => {
 };
 
 // ─────────────────────────────────────────────
+// Google OAuth & Supabase Auth Helpers
+// ─────────────────────────────────────────────
+export const signInWithGoogle = async () => {
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo: window.location.origin,
+    },
+  });
+  if (error) {
+    console.error("Google sign in error:", error);
+    throw error;
+  }
+  return data;
+};
+
+export const signOutUser = async () => {
+  const { error } = await supabase.auth.signOut();
+  if (error) {
+    console.error("Sign out error:", error);
+    throw error;
+  }
+};
+
+export const fetchStudentByEmail = async (email) => {
+  if (!email) return null;
+  try {
+    const { data, error } = await supabase
+      .from("students")
+      .select("*")
+      .eq("email", email.trim().toLowerCase())
+      .maybeSingle();
+
+    if (error) {
+      console.error("Fetch by email error:", error);
+      return null;
+    }
+    return data;
+  } catch (e) {
+    console.error("Fetch by email exception:", e);
+    return null;
+  }
+};
+
+// ─────────────────────────────────────────────
 // Update existing student row by id
 // ─────────────────────────────────────────────
 export const updateStudentData = async (id, form) => {
@@ -137,4 +182,5 @@ export const updateStudentData = async (id, form) => {
   }
   return data;
 };
+
 

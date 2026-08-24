@@ -1,7 +1,9 @@
 import { User, Mail, Phone, GraduationCap, Lock } from "lucide-react";
 import styles from "../Form.module.css";
 
-const RegistrationInputs = ({ form, onChange, isEditing }) => {
+const RegistrationInputs = ({ form, onChange, isEditing, authUser }) => {
+  const isEmailLocked = isEditing || Boolean(authUser?.email);
+
   return (
     <div className={styles.inputsGrid}>
       {/* Full Name */}
@@ -28,14 +30,31 @@ const RegistrationInputs = ({ form, onChange, isEditing }) => {
         </div>
       </div>
 
-      {/* Email — locked when editing */}
+      {/* Email — locked when editing or when signed in with Google */}
       <div className={styles.fieldGroup}>
         <label className={styles.fieldLabel}>
           <span className={styles.labelIcon}>
             <Mail size={16} />
           </span>
           <span>البريد الإلكتروني *</span>
-          {isEditing && (
+          {authUser?.email ? (
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "4px",
+                fontSize: "0.7rem",
+                color: "#3ab9ac",
+                marginRight: "auto",
+                background: "rgba(58,185,172,0.12)",
+                border: "1px solid rgba(58,185,172,0.25)",
+                borderRadius: "6px",
+                padding: "2px 8px",
+              }}
+            >
+              <Lock size={11} /> البريد المسجل
+            </span>
+          ) : isEditing ? (
             <span
               style={{
                 display: "inline-flex",
@@ -51,7 +70,7 @@ const RegistrationInputs = ({ form, onChange, isEditing }) => {
             >
               <Lock size={11} /> لا يمكن تعديل البريد
             </span>
-          )}
+          ) : null}
         </label>
         <div className={styles.inputWrapper}>
           <input
@@ -61,15 +80,16 @@ const RegistrationInputs = ({ form, onChange, isEditing }) => {
             placeholder="name@example.com"
             onChange={onChange}
             required
-            readOnly={isEditing}
+            readOnly={isEmailLocked}
             className={styles.inputField}
-            style={isEditing ? { opacity: 0.45, cursor: "not-allowed", pointerEvents: "none" } : {}}
+            style={isEmailLocked ? { opacity: 0.6, cursor: "not-allowed", pointerEvents: "none" } : {}}
           />
           <div className={styles.inputIcon}>
-            {isEditing ? <Lock size={18} /> : <Mail size={18} />}
+            {isEmailLocked ? <Lock size={18} /> : <Mail size={18} />}
           </div>
         </div>
       </div>
+
 
       {/* Phone / WhatsApp */}
       <div className={styles.fieldGroup}>

@@ -4,6 +4,7 @@ import ImageUploadDropzone from "./ImageUploadDropzone";
 import SubmitButtons from "./SubmitButtons";
 
 const RegistrationForm = ({
+  authUser,
   isEditing,
   form,
   file,
@@ -24,8 +25,8 @@ const RegistrationForm = ({
       onSubmit={isEditing ? onTriggerUpdateConfirm : onSubmit}
       className="w-full flex flex-col gap-6"
     >
-      {/* 1. Primary Text Inputs — email locked when editing */}
-      <RegistrationInputs form={form} onChange={onChange} isEditing={isEditing} />
+      {/* 1. Primary Text Inputs — email locked when editing or signed in with Google */}
+      <RegistrationInputs form={form} onChange={onChange} isEditing={isEditing} authUser={authUser} />
 
       {/* 2. Bus Pickup Branch Selector */}
       <BranchSelector

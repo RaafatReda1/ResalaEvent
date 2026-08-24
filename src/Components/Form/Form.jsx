@@ -10,12 +10,15 @@ import FormAlerts from "./components/FormAlerts";
 import AttendeeProfile from "./components/AttendeeProfile";
 import RegistrationForm from "./components/RegistrationForm";
 import FormModal from "./components/FormModal";
+import GoogleAuthButton from "./components/GoogleAuthButton";
 import styles from "./Form.module.css";
 
 gsap.registerPlugin(ScrollTrigger);
 
 const Form = () => {
   const {
+    authUser,
+    loadingAuth,
     savedAttendee,
     isEditing,
     setIsEditing,
@@ -29,6 +32,8 @@ const Form = () => {
     successToast,
     modalConfig,
     closeModal,
+    handleGoogleSignIn,
+    handleGoogleSignOut,
     handleChange,
     handleBranchSelect,
     handleFileChange,
@@ -97,6 +102,14 @@ const Form = () => {
 
         {/* 4. Main Glassmorphic Card Container */}
         <div ref={formCardRef} className={styles.glassFormCard}>
+          {/* Google Sign In / User Status Button */}
+          <GoogleAuthButton
+            authUser={authUser}
+            onSignIn={handleGoogleSignIn}
+            onSignOut={handleGoogleSignOut}
+            loadingAuth={loadingAuth}
+          />
+
           {/* Alerts: Error & Success Messages */}
           <FormAlerts errorMsg={errorMsg} successToast={successToast} />
 
@@ -110,6 +123,7 @@ const Form = () => {
             </div>
           )}
 
+
           {/* VIEW A / B — hidden while verifying */}
           {!isVerifying && savedAttendee && !isEditing ? (
             <div className={styles.viewFade} key="profile">
@@ -121,6 +135,7 @@ const Form = () => {
           ) : !isVerifying ? (
             <div className={styles.viewFade} key="form">
               <RegistrationForm
+                authUser={authUser}
                 isEditing={isEditing}
                 form={form}
                 file={file}
