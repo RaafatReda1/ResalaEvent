@@ -6,7 +6,7 @@ import {
 
   MousePointer,
 } from "lucide-react";
-import { CursorDrivenParticleTypography } from "@/components/ui/cursor-driven-particles-typography";
+import { CursorDrivenParticleTypography } from "@/Components/ui/cursor-driven-particles-typography";
 import "./Agenda.css";
 
 gsap.registerPlugin(ScrollTrigger);

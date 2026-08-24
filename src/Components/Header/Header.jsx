@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
-import useIsMobile from "../../Hooks/useIsMobile";
+import useIsMobile from "../../hooks/useIsMobile";
 import { QrCode, Sparkles } from "lucide-react";
 import styles from "./Header.module.css";
 
