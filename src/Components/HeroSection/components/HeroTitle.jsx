@@ -11,7 +11,7 @@ const HeroTitle = () => {
         <div className={styles.liquidDropletFront} />
         <div className={styles.liquidAccentDot} />
         <img
-          src="/maWaraaTitle.png"
+          src="/mawaraanew.png"
           alt="مَا وَرَاءَ الطِّبِّ"
           className={styles.calligraphyImage}
           onError={(e) => { e.currentTarget.src = "/maWaraaTitleOriginal.png"; }}
