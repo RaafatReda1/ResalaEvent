@@ -1,14 +1,15 @@
 .container {
+  position: fixed;
+  inset: 0;
   width: 100vw;
   height: 100vh;
-  background-color: var(--navy-900);
+  background-color: var(--navy-900, #050a14);
   display: flex;
   justify-content: center;
   align-items: center;
   overflow: hidden;
-  position: relative;
   direction: rtl;
-  z-index: 100;
+  z-index: 99999;
 }
 
 /* Background Ambient Lighting */

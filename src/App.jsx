@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import './App.css';
 import Loader from './Components/Loader/Loader';
 import HeroSection from './Components/HeroSection/HeroSection';
@@ -12,31 +14,42 @@ import Footer from './Components/Footer/Footer';
 import FloatingWhatsApp from './Components/FloatingWhatsApp/FloatingWhatsApp';
 import { Analytics } from '@vercel/analytics/react';
 
+gsap.registerPlugin(ScrollTrigger);
+
 function App() {
-  const [isIntroComplete, setIsIntroComplete] = useState(false);
+  const [isIntroActive, setIsIntroActive] = useState(true);
+
+  const handleIntroComplete = () => {
+    setIsIntroActive(false);
+    // Smoothly refresh ScrollTrigger so all section coordinates accurately calculate
+    setTimeout(() => {
+      ScrollTrigger.refresh();
+    }, 60);
+  };
 
   return (
     <div style={{ backgroundColor: 'var(--navy-900)', minHeight: '100vh', overflowX: 'hidden' }}>
-      {!isIntroComplete ? (
-        <Loader onComplete={() => setIsIntroComplete(true)} />
-      ) : (
-        <>
-          <main>
-            <Header />
-            <HeroSection />
-            <About />
-            <Issues />
-            <Speakers />
-            <Agenda />
-            <Form />
-            <Footer />
-          </main>
-          <FloatingWhatsApp />
-          <Analytics />
-        </>
+      {/* 1. Main Website — Pre-rendered and ready in background for 60fps instant readiness */}
+      <main>
+        <Header />
+        <HeroSection />
+        <About />
+        <Issues />
+        <Speakers />
+        <Agenda />
+        <Form />
+        <Footer />
+      </main>
+      <FloatingWhatsApp />
+      <Analytics />
+
+      {/* 2. Intro Loader Overlay */}
+      {isIntroActive && (
+        <Loader onComplete={handleIntroComplete} />
       )}
     </div>
   );
 }
 
 export default App;
+

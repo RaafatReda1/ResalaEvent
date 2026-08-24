@@ -19,6 +19,27 @@ const Loader = ({ onComplete }) => {
   const date04Ref = useRef(null);
   const masterTimelineRef = useRef(null);
 
+  const isFinishingRef = useRef(false);
+
+  const finishIntro = () => {
+    if (isFinishingRef.current) return;
+    isFinishingRef.current = true;
+
+    if (!containerRef.current) {
+      if (onComplete) onComplete();
+      return;
+    }
+
+    gsap.to(containerRef.current, {
+      opacity: 0,
+      duration: 0.5,
+      ease: "power2.inOut",
+      onComplete: () => {
+        if (onComplete) onComplete();
+      },
+    });
+  };
+
   useGSAP(
     () => {
       const path = pathRef.current;
@@ -42,7 +63,7 @@ const Loader = ({ onComplete }) => {
       // 2. Master GSAP Timeline (Scenes 01 to 07 without Date Merge)
       const masterTl = gsap.timeline({
         onComplete: () => {
-          if (onComplete) onComplete();
+          finishIntro();
         },
       });
       masterTimelineRef.current = masterTl;
@@ -221,9 +242,9 @@ const Loader = ({ onComplete }) => {
 
   const handleSkipIntro = () => {
     if (masterTimelineRef.current) {
-      masterTimelineRef.current.progress(1);
+      masterTimelineRef.current.kill();
     }
-    if (onComplete) onComplete();
+    finishIntro();
   };
 
   return (
