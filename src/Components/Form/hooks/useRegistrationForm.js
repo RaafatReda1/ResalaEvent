@@ -26,8 +26,40 @@ export const useRegistrationForm = () => {
   const [file, setFile] = useState(null);
   const [filePreview, setFilePreview] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [loadingStage, setLoadingStage] = useState(null); // 'uploading_image' | 'saving_data' | 'generating_ticket' | 'updating'
   const [errorMsg, setErrorMsg] = useState("");
   const [successToast, setSuccessToast] = useState("");
+
+  // ── Modal State ──
+  const [modalConfig, setModalConfig] = useState({
+    isOpen: false,
+    type: "success",
+    title: "",
+    message: "",
+    primaryLabel: "",
+    secondaryLabel: "",
+    onPrimary: null,
+    onSecondary: null,
+    data: null,
+  });
+
+  const closeModal = () => {
+    setModalConfig((prev) => ({ ...prev, isOpen: false }));
+  };
+
+  const openModal = (config) => {
+    setModalConfig({
+      isOpen: true,
+      type: config.type || "success",
+      title: config.title || "",
+      message: config.message || "",
+      primaryLabel: config.primaryLabel || "حسناً",
+      secondaryLabel: config.secondaryLabel || "",
+      onPrimary: config.onPrimary || closeModal,
+      onSecondary: config.onSecondary || closeModal,
+      data: config.data || null,
+    });
+  };
 
   // ─────────────────────────────────────────────
   // 1. On mount: read browser cookie → verify against DB
@@ -42,23 +74,19 @@ export const useRegistrationForm = () => {
         const token = localData?.cookieToken;
 
         if (!token) {
-          // No cookie at all → fresh user
           return;
         }
 
-        // Ask the database if this token exists
         const dbRow = await verifyStudentCookie(token);
 
         if (!dbRow) {
-          // Token not found in DB → stale / tampered cookie → wipe it
           clearRegistrationCookie();
           return;
         }
 
-        // ✓ Verified: hydrate state from the authoritative DB row
         const hydrated = {
           ...dbRow,
-          cookieToken: token, // keep token for future updates
+          cookieToken: token,
         };
         setSavedAttendee(hydrated);
         setForm({
@@ -68,10 +96,9 @@ export const useRegistrationForm = () => {
           university: dbRow.university || "",
           place: dbRow.place || "",
         });
-        const img = dbRow.imgSrc || dbRow.image || dbRow.image_url;
+        const img = dbRow.imgSrc || dbRow["imgSrc"] || dbRow.image || dbRow.image_url;
         if (img) setFilePreview(img);
 
-        // Re-save to keep the local copy fresh
         saveRegistrationCookie(hydrated);
       } catch (e) {
         console.error("Cookie verification failed:", e);
@@ -100,7 +127,21 @@ export const useRegistrationForm = () => {
     const selected = e.target.files?.[0];
     if (!selected) return;
     if (!selected.type.startsWith("image/")) {
-      setErrorMsg("يرجى اختيار ملف صورة صالح (PNG, JPG, JPEG)");
+      openModal({
+        type: "error",
+        title: "نوع ملف غير صالح",
+        message: "يرجى اختيار صورة صحيحة بصيغة PNG أو JPG أو JPEG.",
+        primaryLabel: "اختيار صورة أخرى",
+      });
+      return;
+    }
+    if (selected.size > 5 * 1024 * 1024) {
+      openModal({
+        type: "error",
+        title: "حجم الصورة كبير جداً",
+        message: "الحد الأقصى لحجم صورة بطاقة الترشيح هو 5 ميجابايت. يرجى ضغط الصورة أو اختيار ملف أصغر.",
+        primaryLabel: "فهمت",
+      });
       return;
     }
     setFile(selected);
@@ -118,99 +159,145 @@ export const useRegistrationForm = () => {
   };
 
   // ─────────────────────────────────────────────
-  // 3. Submit new registration
-  //    → generate unique token → insert with cookie col
-  //    → save token in browser cookie
+  // 3. Validation helper
+  // ─────────────────────────────────────────────
+  const validateForm = () => {
+    if (!form.name.trim()) {
+      setErrorMsg("يرجى إدخال الاسم بالكامل");
+      return false;
+    }
+    if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
+      setErrorMsg("يرجى إدخال بريد إلكتروني صحيح");
+      return false;
+    }
+    if (!form.phone.trim() || form.phone.trim().length < 10) {
+      setErrorMsg("يرجى إدخال رقم هاتف / واتساب صالح (11 رقم)");
+      return false;
+    }
+    if (!form.university.trim()) {
+      setErrorMsg("يرجى كتابة اسم الجامعة / الكلية");
+      return false;
+    }
+    if (!form.place.trim()) {
+      setErrorMsg("يرجى اختيار أقرب فرع لرسالة لنقطة التجمع والباص");
+      return false;
+    }
+    return true;
+  };
+
+  // ─────────────────────────────────────────────
+  // 4. Submit new registration
   // ─────────────────────────────────────────────
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     setErrorMsg("");
 
-    if (
-      !form.name.trim() ||
-      !form.email.trim() ||
-      !form.phone.trim() ||
-      !form.university.trim() ||
-      !form.place.trim()
-    ) {
-      setErrorMsg("يرجى ملء جميع الحقول المطلوبة");
+    if (!validateForm()) return;
+
+    // Warning if no image was selected for fresh registration
+    if (!file) {
+      openModal({
+        type: "error",
+        title: "صورة بطاقة الترشيح مطلوبة",
+        message: "يرجى إرفاق صورة بطاقة الترشيح أو ما يثبت التحاقك بالفرقة الأولى لإتمام التسجيل وتأكيد مقعدك.",
+        primaryLabel: "إرفاق الصورة الآن",
+      });
       return;
     }
 
     try {
       setLoading(true);
 
-      // Upload photo if provided
+      // Step 1: Uploading Image
+      setLoadingStage("uploading_image");
       let publicImgUrl = "";
       if (file) {
         publicImgUrl = await uploadImg(file, form.name);
       }
 
-      // Generate a fresh browser-to-DB binding token
+      // Step 2: Database saving
+      setLoadingStage("saving_data");
       const cookieToken = generateCookieToken();
 
       const payload = {
         name: form.name.trim(),
-        email: form.email.trim(),
+        email: form.email.trim().toLowerCase(),
         phone: form.phone.trim(),
         university: form.university.trim(),
         place: form.place.trim(),
         imgSrc: publicImgUrl || null,
-        cookie: cookieToken,   // ← stored in DB `cookie` column
+        cookie: cookieToken,
       };
 
       const dbRow = await uploadData(payload);
 
+      // Step 3: Ticket issuance
+      setLoadingStage("generating_ticket");
       const registeredData = {
         ...dbRow,
-        cookieToken, // keep handy in browser data
+        cookieToken,
         registeredAt: new Date().toISOString(),
       };
 
       saveRegistrationCookie(registeredData);
       setSavedAttendee(registeredData);
-      setSuccessToast("تم تسجيل حضورك بنجاح! تم حفظ تذكرتك على جهازك 🎉");
-      setTimeout(() => setSuccessToast(""), 6000);
+      setSuccessToast("تم استلام طلب تسجيلك بنجاح! 📨");
+
+      // Trigger Modal
+      openModal({
+        type: "success",
+        title: "تم استلام طلب التسجيل بنجاح! 📨",
+        message:
+          "أهلاً بك! تم استلام بياناتك بنجاح وحفظها على هذا الجهاز. طلبك الآن قيد مراجعة مسؤولي الإيفنت، وسيقوم فريقنا بالتواصل معك عبر واتساب لتأكيد القبول وإرسال كود الـ QR وموعد باص التحرك.",
+        primaryLabel: "عرض بيانات التسجيل",
+        onPrimary: closeModal,
+      });
     } catch (err) {
       console.error("Form submission error:", err);
-      setErrorMsg(err?.message || "حدث خطأ أثناء التسجيل.");
+      if (err?.code === "23505" || err?.message?.includes("unique") || err?.message?.includes("email")) {
+        openModal({
+          type: "duplicate_email",
+          title: "البريد الإلكتروني مسجل مسبقاً",
+          message:
+            "هذا البريد الإلكتروني مسجل لدينا بالفعل. إذا كنت قد سجلت من قبل يمكنك التواصل معنا عبر واتساب للمساعدة ومتابعة طلبك.",
+          primaryLabel: "فهمت",
+        });
+      } else {
+        openModal({
+          type: "error",
+          title: "حدث خطأ أثناء إرسال الطلب",
+          message: err?.message || "يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.",
+          primaryLabel: "إعادة المحاولة",
+        });
+      }
     } finally {
       setLoading(false);
+      setLoadingStage(null);
     }
   };
 
   // ─────────────────────────────────────────────
-  // 4. Update existing registration
-  //    → update DB row by id (cookie token stays the same)
+  // 5. Update existing registration
   // ─────────────────────────────────────────────
-  const handleUpdate = async (e) => {
-    e.preventDefault();
-    setErrorMsg("");
-
-    if (
-      !form.name.trim() ||
-      !form.email.trim() ||
-      !form.phone.trim() ||
-      !form.university.trim() ||
-      !form.place.trim()
-    ) {
-      setErrorMsg("يرجى ملء جميع الحقول المطلوبة");
-      return;
-    }
-
+  const executeUpdate = async () => {
+    closeModal();
     try {
       setLoading(true);
+      setLoadingStage("updating");
 
       let publicImgUrl =
         savedAttendee?.imgSrc ||
+        savedAttendee?.["imgSrc"] ||
         savedAttendee?.image ||
         savedAttendee?.image_url ||
         "";
 
       if (file && (!filePreview || !filePreview.startsWith("http"))) {
+        setLoadingStage("uploading_image");
         publicImgUrl = await uploadImg(file, form.name);
       }
 
+      setLoadingStage("saving_data");
       const payload = {
         name: form.name.trim(),
         email: form.email.trim(),
@@ -218,7 +305,6 @@ export const useRegistrationForm = () => {
         university: form.university.trim(),
         place: form.place.trim(),
         imgSrc: publicImgUrl || null,
-        // NOTE: cookie token is intentionally NOT changed on update
       };
 
       let dbRow = null;
@@ -229,38 +315,102 @@ export const useRegistrationForm = () => {
       const updatedData = {
         ...(dbRow || savedAttendee),
         ...payload,
-        cookieToken: savedAttendee.cookieToken, // preserve token
+        cookieToken: savedAttendee.cookieToken,
         updatedAt: new Date().toISOString(),
       };
 
       saveRegistrationCookie(updatedData);
       setSavedAttendee(updatedData);
       setIsEditing(false);
-      setSuccessToast("تم تحديث بياناتك بنجاح! ✅");
-      setTimeout(() => setSuccessToast(""), 4000);
+      setSuccessToast("تم حفظ التعديلات بنجاح! ✅");
+
+      openModal({
+        type: "success",
+        title: "تم حفظ التعديلات بنجاح! ✨",
+        message: "تم تحديث بياناتك ونقطة التجمع بنجاح وربطها بطلب التسجيل الخاص بك.",
+        primaryLabel: "العودة لبيانات التسجيل",
+        onPrimary: closeModal,
+      });
     } catch (err) {
-      setErrorMsg(err?.message || "حدث خطأ أثناء تحديث البيانات");
+      console.error("Update error:", err);
+      openModal({
+        type: "error",
+        title: "تعذر تحديث البيانات",
+        message: err?.message || "حدث خطأ أثناء الاتصال بقاعدة البيانات. يرجى المحاولة مرة أخرى.",
+        primaryLabel: "حسناً",
+      });
     } finally {
       setLoading(false);
+      setLoadingStage(null);
     }
   };
 
+  // Trigger confirmation modal before performing update
+  const handleTriggerUpdateConfirm = (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (!validateForm()) return;
+
+    openModal({
+      type: "confirm_update",
+      title: "تأكيد حفظ التعديلات",
+      message: `هل أنت متأكد من حفظ التعديلات الجديدة (الاسم: ${form.name} | نقطة التحرك: ${form.place})؟`,
+      primaryLabel: "نعم، حفظ وتأكيد",
+      secondaryLabel: "مراجعة البيانات",
+      onPrimary: executeUpdate,
+      onSecondary: closeModal,
+    });
+  };
+
+  // Trigger confirmation modal before cancelling edit
+  const handleCancelEdit = () => {
+    openModal({
+      type: "confirm_cancel",
+      title: "إلغاء التعديل؟",
+      message: "هل تريد التراجع عن التعديلات والعودة لعرض بيانات طلبك المحفوظة دون حفظ أي تغييرات؟",
+      primaryLabel: "نعم، إلغاء التعديل",
+      secondaryLabel: "متابعة التعديل",
+      onPrimary: () => {
+        closeModal();
+        setIsEditing(false);
+        // Reset form values to saved attendee data
+        if (savedAttendee) {
+          setForm({
+            name: savedAttendee.name || "",
+            email: savedAttendee.email || "",
+            phone: savedAttendee.phone || "",
+            university: savedAttendee.university || "",
+            place: savedAttendee.place || "",
+          });
+          const img = savedAttendee.imgSrc || savedAttendee["imgSrc"] || savedAttendee.image;
+          if (img) setFilePreview(img);
+          setFile(null);
+        }
+      },
+      onSecondary: closeModal,
+    });
+  };
+
   // ─────────────────────────────────────────────
-  // 5. Clear cookie → user starts fresh
+  // 6. Clear cookie (User Reset)
   // ─────────────────────────────────────────────
   const handleClearRegistration = () => {
-    if (
-      window.confirm(
-        "هل تريد بالتأكيد إلغاء التسجيل المحفوظ على هذا الجهاز وتسجيل حضور جديد؟"
-      )
-    ) {
-      clearRegistrationCookie();
-      setSavedAttendee(null);
-      setIsEditing(false);
-      setForm({ name: "", email: "", phone: "", university: "", place: "" });
-      setFile(null);
-      setFilePreview(null);
-    }
+    openModal({
+      type: "confirm_cancel",
+      title: "إلغاء طلب التسجيل على هذا الجهاز؟",
+      message: "هل تريد بالتأكيد إلغاء بيانات طلب التسجيل المحفوظة على هذا الجهاز والبدء بطلب جديد؟",
+      primaryLabel: "نعم، طلب جديد",
+      secondaryLabel: "تراجع",
+      onPrimary: () => {
+        closeModal();
+        clearRegistrationCookie();
+        setSavedAttendee(null);
+        setIsEditing(false);
+        setForm({ name: "", email: "", phone: "", university: "", place: "" });
+        setFile(null);
+        setFilePreview(null);
+      },
+      onSecondary: closeModal,
+    });
   };
 
   return {
@@ -272,17 +422,23 @@ export const useRegistrationForm = () => {
     file,
     filePreview,
     loading,
+    loadingStage,
     errorMsg,
     successToast,
+    modalConfig,
+    closeModal,
+    openModal,
     handleChange,
     handleBranchSelect,
     handleFileChange,
     handleRemoveFile,
     handleSubmit,
-    handleUpdate,
+    handleTriggerUpdateConfirm,
+    handleCancelEdit,
     handleClearRegistration,
   };
 };
 
 export default useRegistrationForm;
+
 

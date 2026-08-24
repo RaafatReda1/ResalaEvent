@@ -1,4 +1,4 @@
-﻿import { QrCode } from "lucide-react";
+import { QrCode } from "lucide-react";
 import styles from "../Form.module.css";
 
 const QRNoticeCard = ({ phone, place }) => {
@@ -9,12 +9,12 @@ const QRNoticeCard = ({ phone, place }) => {
       </div>
       <div className={styles.qrNoticeContent}>
         <h4 className={styles.qrNoticeTitle}>
-          تنبيه هام بخصوص كود الدخول (QR Code) وتأكيد الباص 
+          تنبيه بخصوص مراجعة الطلب وكود الدخول (QR Code)
         </h4>
         <p className={styles.qrNoticeText}>
-          سيقوم فريق تنظيم <strong>رسالة أطباء الخير</strong> بالتواصل معك
-          قريباً عبر رقم الواتساب المسجل (<strong>{phone}</strong>) لإرسال
-          كود الـ QR الرسمي الخاص بدخول الإيفنت وتأكيد نقطة وموعد تحرك الباص
+          طلبك الآن قيد مراجعة المنظمين. سيقوم فريق تنظيم <strong>رسالة أطباء الخير</strong> بالتواصل معك
+          قريباً عبر رقم الواتساب المسجل (<strong>{phone}</strong>) لتأكيد القبول وإرسال
+          كود الـ QR وتأكيد نقطة وموعد تحرك الباص
           من (<strong>{place}</strong>).
         </p>
       </div>

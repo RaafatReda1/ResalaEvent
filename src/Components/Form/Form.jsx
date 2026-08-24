@@ -9,6 +9,7 @@ import FormHeader from "./components/FormHeader";
 import FormAlerts from "./components/FormAlerts";
 import AttendeeProfile from "./components/AttendeeProfile";
 import RegistrationForm from "./components/RegistrationForm";
+import FormModal from "./components/FormModal";
 import styles from "./Form.module.css";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -23,15 +24,18 @@ const Form = () => {
     file,
     filePreview,
     loading,
+    loadingStage,
     errorMsg,
     successToast,
+    modalConfig,
+    closeModal,
     handleChange,
     handleBranchSelect,
     handleFileChange,
     handleRemoveFile,
     handleSubmit,
-    handleUpdate,
-    handleClearRegistration,
+    handleTriggerUpdateConfirm,
+    handleCancelEdit,
   } = useRegistrationForm();
 
   const containerRef = useRef(null);
@@ -80,15 +84,18 @@ const Form = () => {
       {/* 1. Ambient Background Decor Layers */}
       <BackgroundDecor />
 
+      {/* 2. Interactive Glassmorphic Modals & Popups */}
+      <FormModal {...modalConfig} onClose={closeModal} />
+
       <div className={styles.formContainer}>
-        {/* 2. Header (Badge, Title, Subtitle) */}
+        {/* 3. Header (Badge, Title, Subtitle) */}
         <FormHeader
           headerRef={headerRef}
           savedAttendee={savedAttendee}
           isEditing={isEditing}
         />
 
-        {/* 3. Main Glassmorphic Card Container */}
+        {/* 4. Main Glassmorphic Card Container */}
         <div ref={formCardRef} className={styles.glassFormCard}>
           {/* Alerts: Error & Success Messages */}
           <FormAlerts errorMsg={errorMsg} successToast={successToast} />
@@ -127,13 +134,14 @@ const Form = () => {
                   null
                 }
                 loading={loading}
+                loadingStage={loadingStage}
                 onChange={handleChange}
                 onSelectBranch={handleBranchSelect}
                 onFileChange={handleFileChange}
                 onRemoveFile={handleRemoveFile}
                 onSubmit={handleSubmit}
-                onUpdate={handleUpdate}
-                onCancelEdit={() => setIsEditing(false)}
+                onTriggerUpdateConfirm={handleTriggerUpdateConfirm}
+                onCancelEdit={handleCancelEdit}
               />
             </div>
           ) : null}
@@ -144,3 +152,4 @@ const Form = () => {
 };
 
 export default Form;
+

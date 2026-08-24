@@ -10,17 +10,18 @@ const RegistrationForm = ({
   filePreview,
   existingImgUrl,
   loading,
+  loadingStage,
   onChange,
   onSelectBranch,
   onFileChange,
   onRemoveFile,
   onSubmit,
-  onUpdate,
+  onTriggerUpdateConfirm,
   onCancelEdit,
 }) => {
   return (
     <form
-      onSubmit={isEditing ? onUpdate : onSubmit}
+      onSubmit={isEditing ? onTriggerUpdateConfirm : onSubmit}
       className="w-full flex flex-col gap-6"
     >
       {/* 1. Primary Text Inputs — email locked when editing */}
@@ -42,10 +43,12 @@ const RegistrationForm = ({
         isEditing={isEditing}
       />
 
-      {/* 4. Action / Submit Buttons */}
+      {/* 4. Action / Submit Buttons with loading stages & confirmation */}
       <SubmitButtons
         loading={loading}
+        loadingStage={loadingStage}
         isEditing={isEditing}
+        onTriggerUpdateConfirm={onTriggerUpdateConfirm}
         onCancelEdit={onCancelEdit}
       />
     </form>
@@ -53,4 +56,5 @@ const RegistrationForm = ({
 };
 
 export default RegistrationForm;
+
 
