@@ -1,4 +1,4 @@
-﻿import RegistrationInputs from "./RegistrationInputs";
+import RegistrationInputs from "./RegistrationInputs";
 import BranchSelector from "./BranchSelector";
 import ImageUploadDropzone from "./ImageUploadDropzone";
 import SubmitButtons from "./SubmitButtons";
@@ -8,6 +8,7 @@ const RegistrationForm = ({
   form,
   file,
   filePreview,
+  existingImgUrl,
   loading,
   onChange,
   onSelectBranch,
@@ -22,7 +23,7 @@ const RegistrationForm = ({
       onSubmit={isEditing ? onUpdate : onSubmit}
       className="w-full flex flex-col gap-6"
     >
-      {/* 1. Primary Text Inputs */}
+      {/* 1. Primary Text Inputs — email locked when editing */}
       <RegistrationInputs form={form} onChange={onChange} isEditing={isEditing} />
 
       {/* 2. Bus Pickup Branch Selector */}
@@ -31,12 +32,14 @@ const RegistrationForm = ({
         onSelectBranch={onSelectBranch}
       />
 
-      {/* 3. Personal Photo Upload */}
+      {/* 3. Personal Photo Upload — no-delete when editing existing image */}
       <ImageUploadDropzone
         file={file}
         filePreview={filePreview}
+        existingImgUrl={existingImgUrl}
         onFileChange={onFileChange}
         onRemoveFile={onRemoveFile}
+        isEditing={isEditing}
       />
 
       {/* 4. Action / Submit Buttons */}
@@ -50,3 +53,4 @@ const RegistrationForm = ({
 };
 
 export default RegistrationForm;
+

@@ -1,4 +1,4 @@
-import { User, Mail, Phone, GraduationCap } from "lucide-react";
+import { User, Mail, Phone, GraduationCap, Lock } from "lucide-react";
 import styles from "../Form.module.css";
 
 const RegistrationInputs = ({ form, onChange, isEditing }) => {
@@ -28,30 +28,47 @@ const RegistrationInputs = ({ form, onChange, isEditing }) => {
         </div>
       </div>
 
-      {/* Email */}
+      {/* Email — locked when editing */}
       <div className={styles.fieldGroup}>
         <label className={styles.fieldLabel}>
           <span className={styles.labelIcon}>
             <Mail size={16} />
           </span>
           <span>البريد الإلكتروني *</span>
+          {isEditing && (
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "4px",
+                fontSize: "0.7rem",
+                color: "#94a3b8",
+                marginRight: "auto",
+                background: "rgba(148,163,184,0.12)",
+                borderRadius: "6px",
+                padding: "2px 8px",
+              }}
+            >
+              <Lock size={11} /> لا يمكن تعديل البريد
+            </span>
+          )}
         </label>
-        {!isEditing && (
-          <div className={styles.inputWrapper}>
-            <input
-              type="email"
-              name="email"
-              value={form.email}
-              placeholder="name@example.com"
-              onChange={onChange}
-              required
-              className={styles.inputField}
-            />
-            <div className={styles.inputIcon}>
-              <Mail size={18} />
-            </div>
+        <div className={styles.inputWrapper}>
+          <input
+            type="email"
+            name="email"
+            value={form.email}
+            placeholder="name@example.com"
+            onChange={onChange}
+            required
+            readOnly={isEditing}
+            className={styles.inputField}
+            style={isEditing ? { opacity: 0.45, cursor: "not-allowed", pointerEvents: "none" } : {}}
+          />
+          <div className={styles.inputIcon}>
+            {isEditing ? <Lock size={18} /> : <Mail size={18} />}
           </div>
-        )}
+        </div>
       </div>
 
       {/* Phone / WhatsApp */}

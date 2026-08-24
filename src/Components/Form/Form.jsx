@@ -105,27 +105,37 @@ const Form = () => {
 
           {/* VIEW A / B — hidden while verifying */}
           {!isVerifying && savedAttendee && !isEditing ? (
-            <AttendeeProfile
-              savedAttendee={savedAttendee}
-              onStartEdit={() => setIsEditing(true)}
-              onClearRegistration={handleClearRegistration}
-            />
+            <div className={styles.viewFade} key="profile">
+              <AttendeeProfile
+                savedAttendee={savedAttendee}
+                onStartEdit={() => setIsEditing(true)}
+              />
+            </div>
           ) : !isVerifying ? (
-            /* VIEW B: Registration Form / Edit Mode */
-            <RegistrationForm
-              isEditing={isEditing}
-              form={form}
-              file={file}
-              filePreview={filePreview}
-              loading={loading}
-              onChange={handleChange}
-              onSelectBranch={handleBranchSelect}
-              onFileChange={handleFileChange}
-              onRemoveFile={handleRemoveFile}
-              onSubmit={handleSubmit}
-              onUpdate={handleUpdate}
-              onCancelEdit={() => setIsEditing(false)}
-            />
+            <div className={styles.viewFade} key="form">
+              <RegistrationForm
+                isEditing={isEditing}
+                form={form}
+                file={file}
+                filePreview={filePreview}
+                existingImgUrl={
+                  savedAttendee?.imgSrc ||
+                  savedAttendee?.["imgSrc"] ||
+                  savedAttendee?.image ||
+                  savedAttendee?.image_url ||
+                  filePreview ||
+                  null
+                }
+                loading={loading}
+                onChange={handleChange}
+                onSelectBranch={handleBranchSelect}
+                onFileChange={handleFileChange}
+                onRemoveFile={handleRemoveFile}
+                onSubmit={handleSubmit}
+                onUpdate={handleUpdate}
+                onCancelEdit={() => setIsEditing(false)}
+              />
+            </div>
           ) : null}
         </div>
       </div>

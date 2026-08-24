@@ -6,7 +6,6 @@ import styles from "../Form.module.css";
 const AttendeeProfile = ({
   savedAttendee,
   onStartEdit,
-  onClearRegistration,
 }) => {
   return (
     <div className={styles.profileCardContainer}>
