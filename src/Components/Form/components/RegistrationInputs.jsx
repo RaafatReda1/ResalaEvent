@@ -1,5 +1,9 @@
-import { User, Mail, Phone, GraduationCap, Lock } from "lucide-react";
+import { User, Mail, Phone, GraduationCap, Lock, BookOpen } from "lucide-react";
 import styles from "../Form.module.css";
+
+const ACADEMIC_YEAR_OPTIONS = [
+  { value: "فرقة أولى", label: "فرقة أولى" },
+];
 
 const RegistrationInputs = ({ form, onChange, isEditing, authUser }) => {
   const isEmailLocked = isEditing || Boolean(authUser?.email);
@@ -138,8 +142,57 @@ const RegistrationInputs = ({ form, onChange, isEditing, authUser }) => {
           </div>
         </div>
       </div>
+
+      {/* Academic Year — فرقة أولى only */}
+      <div className={styles.fieldGroup}>
+        <label className={styles.fieldLabel}>
+          <span className={styles.labelIcon}>
+            <BookOpen size={16} />
+          </span>
+          <span>السنة الدراسية *</span>
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              fontSize: "0.68rem",
+              color: "#eab308",
+              background: "rgba(234,179,8,0.12)",
+              border: "1px solid rgba(234,179,8,0.3)",
+              borderRadius: "6px",
+              padding: "2px 7px",
+              marginRight: "auto",
+              fontWeight: 700,
+            }}
+          >
+            فرقة أولى فقط
+          </span>
+        </label>
+        <div className={styles.inputWrapper}>
+          <select
+            name="academicYear"
+            value={form.academicYear}
+            onChange={onChange}
+            required
+            className={styles.inputField}
+            style={{ cursor: "pointer", appearance: "none", WebkitAppearance: "none" }}
+          >
+            <option value="" disabled>اختر السنة الدراسية...</option>
+            {ACADEMIC_YEAR_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          <div className={styles.inputIcon} style={{ pointerEvents: "none" }}>
+            <BookOpen size={18} />
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
 
 export default RegistrationInputs;
+
+
+

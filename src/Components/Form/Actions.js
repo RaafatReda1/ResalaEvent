@@ -83,16 +83,23 @@ export const verifyStudentCookie = async (cookieToken) => {
 export const uploadImg = async (file, studentName = "student") => {
   if (!file) throw new Error("No image selected");
 
-  const fileExt = file.name.split(".").pop();
-  const fileName = `${crypto.randomUUID()}.${fileExt}`;
-  const safeName = encodeURIComponent(
-    (studentName || "student").trim().replace(/\s+/g, "_")
-  );
-  const filePath = `${safeName}/${fileName}`;
+  const rawExt = file.name ? file.name.split(".").pop() : "jpg";
+  const fileExt = (rawExt || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
+  
+  // Safe ASCII-only prefix: remove any spaces, Arabic or non-ASCII characters, or special symbols
+  const cleanPrefix = (studentName || "student")
+    .trim()
+    .replace(/[^a-zA-Z0-9_-]/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 25);
+
+  const uniqueId = `${Date.now()}_${crypto.randomUUID().slice(0, 8)}`;
+  const filePath = cleanPrefix ? `${cleanPrefix}_${uniqueId}.${fileExt}` : `student_${uniqueId}.${fileExt}`;
 
   const { error } = await supabase.storage
     .from(BUCKET)
-    .upload(filePath, file, { cacheControl: "3600", upsert: false });
+    .upload(filePath, file, { cacheControl: "3600", upsert: true });
 
   if (error) {
     console.error("Image upload error:", error);

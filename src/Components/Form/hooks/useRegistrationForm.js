@@ -26,6 +26,7 @@ export const useRegistrationForm = () => {
     email: "",
     phone: "",
     university: "",
+    academicYear: "",
     place: "",
   });
 
@@ -96,6 +97,7 @@ export const useRegistrationForm = () => {
               email: dbRow.email || currentUser.email || "",
               phone: dbRow.phone || "",
               university: dbRow.university || "",
+              academicYear: dbRow.academicYear || dbRow.academic_year || "",
               place: dbRow.place || "",
             });
             const img = dbRow.imgSrc || dbRow["imgSrc"] || dbRow.image || dbRow.image_url;
@@ -185,7 +187,7 @@ export const useRegistrationForm = () => {
         } else if (event === "SIGNED_OUT") {
           setAuthUser(null);
           setSavedAttendee(null);
-          setForm({ name: "", email: "", phone: "", university: "", place: "" });
+          setForm({ name: "", email: "", phone: "", university: "", academicYear: "", place: "" });
           setFile(null);
           setFilePreview(null);
         }
@@ -209,8 +211,9 @@ export const useRegistrationForm = () => {
       openModal({
         type: "error",
         title: "تعذر تسجيل الدخول بـ Google",
-        message: err?.message || "يرجى المحاولة مرة أخرى أو إدخال البيانات يدوياً.",
-        primaryLabel: "حسناً",
+        message:
+          "تم إغلاق نافذة تسجيل الدخول أو تعذر المصادقة. يمكنك المحاولة مجدداً أو كتابة بريدك الإلكتروني يدوياً في النموذج بكل سهولة.",
+        primaryLabel: "حسناً، فهمت",
       });
     } finally {
       setLoadingAuth(false);
@@ -223,7 +226,7 @@ export const useRegistrationForm = () => {
       await signOutUser();
       setAuthUser(null);
       setSavedAttendee(null);
-      setForm({ name: "", email: "", phone: "", university: "", place: "" });
+      setForm({ name: "", email: "", phone: "", university: "", academicYear: "", place: "" });
       setFile(null);
       setFilePreview(null);
       setSuccessToast("تم تسجيل الخروج بنجاح");
@@ -285,23 +288,125 @@ export const useRegistrationForm = () => {
   };
 
   // ─────────────────────────────────────────────
-  // 3. Validation helper
+  // Friendly Error Parser Helper
+  // ─────────────────────────────────────────────
+  const parseUserFriendlyError = (err, context = "submit") => {
+    const msg = (err?.message || "").toLowerCase();
+    const code = (err?.code || "").toString();
+
+    // 1. Duplicate email / unique constraint
+    if (
+      code === "23505" ||
+      msg.includes("unique") ||
+      msg.includes("duplicate") ||
+      msg.includes("already registered") ||
+      msg.includes("students_email_key")
+    ) {
+      return {
+        type: "duplicate_email",
+        title: "البريد الإلكتروني مسجل مسبقاً",
+        message:
+          "هذا البريد الإلكتروني مسجل لدينا بالفعل في قائمة الحضور. إذا كنت ترغب في مراجعة بياناتك المسجلة أو تعديلها، يمكنك الدخول بنفس البريد أو التواصل معنا عبر واتساب للمساعدة.",
+        primaryLabel: "فهمت",
+      };
+    }
+
+    // 2. Storage / Image upload errors
+    if (
+      msg.includes("storage") ||
+      msg.includes("bucket") ||
+      msg.includes("invalid key") ||
+      msg.includes("payload too large") ||
+      msg.includes("413") ||
+      msg.includes("entity too large")
+    ) {
+      return {
+        type: "error",
+        title: "تعذر رفع صورة بطاقة الترشيح",
+        message:
+          "حدث خطأ أثناء رفع ملف الصورة. يرجى التأكد من أن الصورة لا تتجاوز 5 ميجابايت وبصيغة (JPG أو PNG)، ثم المحاولة مجدداً.",
+        primaryLabel: "اختيار صورة أخرى",
+      };
+    }
+
+    // 3. Network / Offline / Timeout
+    if (
+      msg.includes("failed to fetch") ||
+      msg.includes("network") ||
+      msg.includes("timeout") ||
+      msg.includes("offline") ||
+      msg.includes("err_connection") ||
+      (typeof navigator !== "undefined" && !navigator.onLine)
+    ) {
+      return {
+        type: "error",
+        title: "تعذر الاتصال بالشبكة 🌐",
+        message:
+          "يبدو أن هناك ضعفاً أو انقطاعاً في اتصال الإنترنت. يرجى التحقق من اتصالك بالشبكة ثم الضغط على زر إعادة المحاولة (بياناتك المدخلة محفوظة في الحقول ولم تُفقد).",
+        primaryLabel: "إعادة المحاولة",
+      };
+    }
+
+    // 4. Permission / RLS / Auth error
+    if (
+      msg.includes("permission") ||
+      msg.includes("policy") ||
+      msg.includes("row-level security") ||
+      code === "42501" ||
+      code === "403"
+    ) {
+      return {
+        type: "error",
+        title: "تعذر إتمام العملية حالياً",
+        message:
+          "نعتذر، حدثت مشكلة غير متوقعة في الخادم. يرجى تحديث الصفحة والمحاولة مجدداً أو التواصل مع فريق التنظيم للمساعدة الفورية.",
+        primaryLabel: "تحديث الصفحة",
+        onPrimary: () => window.location.reload(),
+      };
+    }
+
+    // 5. Default Fallback with empathetic phrasing
+    return {
+      type: "error",
+      title: context === "update" ? "تعذر حفظ التعديلات" : "حدث خطأ أثناء إرسال الطلب",
+      message:
+        "حدث خطأ مؤقت أثناء معالجة طلبك. بياناتك المدخلة ما زالت محفوظة في النموذج، يرجى المحاولة مرة أخرى.",
+      primaryLabel: "إعادة المحاولة",
+    };
+  };
+
+  // ─────────────────────────────────────────────
+  // 3. Validation helper with clear error messages
   // ─────────────────────────────────────────────
   const validateForm = () => {
-    if (!form.name.trim()) {
+    const trimmedName = form.name.trim();
+    if (!trimmedName) {
       setErrorMsg("يرجى إدخال الاسم بالكامل");
       return false;
     }
-    if (!form.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim())) {
-      setErrorMsg("يرجى إدخال بريد إلكتروني صحيح");
+    if (trimmedName.length < 3) {
+      setErrorMsg("يرجى إدخال الاسم كاملاً (ثلاثي أو ثنائي على الأقل)");
       return false;
     }
-    if (!form.phone.trim() || form.phone.trim().length < 10) {
-      setErrorMsg("يرجى إدخال رقم هاتف / واتساب صالح (11 رقم)");
+
+    const trimmedEmail = form.email.trim();
+    if (!trimmedEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmedEmail)) {
+      setErrorMsg("يرجى إدخال بريد إلكتروني صالح (مثال: name@example.com)");
       return false;
     }
+
+    const trimmedPhone = form.phone.trim().replace(/[\s-]/g, "");
+    if (!trimmedPhone || trimmedPhone.length < 10) {
+      setErrorMsg("يرجى إدخال رقم هاتف / واتساب صحيح يتكون من 11 رقماً (مثال: 01012345678)");
+      return false;
+    }
+
     if (!form.university.trim()) {
       setErrorMsg("يرجى كتابة اسم الجامعة / الكلية");
+      return false;
+    }
+    if (!form.academicYear.trim()) {
+      setErrorMsg("يرجى اختيار السنة الدراسية (فرقة أولى)");
       return false;
     }
     if (!form.place.trim()) {
@@ -350,6 +455,7 @@ export const useRegistrationForm = () => {
         email: form.email.trim().toLowerCase(),
         phone: form.phone.trim(),
         university: form.university.trim(),
+        academicYear: form.academicYear.trim(),
         place: form.place.trim(),
         imgSrc: publicImgUrl || null,
         cookie: cookieToken,
@@ -380,22 +486,8 @@ export const useRegistrationForm = () => {
       });
     } catch (err) {
       console.error("Form submission error:", err);
-      if (err?.code === "23505" || err?.message?.includes("unique") || err?.message?.includes("email")) {
-        openModal({
-          type: "duplicate_email",
-          title: "البريد الإلكتروني مسجل مسبقاً",
-          message:
-            "هذا البريد الإلكتروني مسجل لدينا بالفعل. إذا كنت قد سجلت من قبل يمكنك التواصل معنا عبر واتساب للمساعدة ومتابعة طلبك.",
-          primaryLabel: "فهمت",
-        });
-      } else {
-        openModal({
-          type: "error",
-          title: "حدث خطأ أثناء إرسال الطلب",
-          message: err?.message || "يرجى التحقق من اتصالك بالإنترنت والمحاولة مرة أخرى.",
-          primaryLabel: "إعادة المحاولة",
-        });
-      }
+      const friendlyErr = parseUserFriendlyError(err, "submit");
+      openModal(friendlyErr);
     } finally {
       setLoading(false);
       setLoadingStage(null);
@@ -429,6 +521,7 @@ export const useRegistrationForm = () => {
         email: form.email.trim(),
         phone: form.phone.trim(),
         university: form.university.trim(),
+        academicYear: form.academicYear.trim(),
         place: form.place.trim(),
         imgSrc: publicImgUrl || null,
       };
@@ -459,12 +552,8 @@ export const useRegistrationForm = () => {
       });
     } catch (err) {
       console.error("Update error:", err);
-      openModal({
-        type: "error",
-        title: "تعذر تحديث البيانات",
-        message: err?.message || "حدث خطأ أثناء الاتصال بقاعدة البيانات. يرجى المحاولة مرة أخرى.",
-        primaryLabel: "حسناً",
-      });
+      const friendlyErr = parseUserFriendlyError(err, "update");
+      openModal(friendlyErr);
     } finally {
       setLoading(false);
       setLoadingStage(null);
@@ -505,6 +594,7 @@ export const useRegistrationForm = () => {
             email: savedAttendee.email || "",
             phone: savedAttendee.phone || "",
             university: savedAttendee.university || "",
+            academicYear: savedAttendee.academicYear || savedAttendee.academic_year || "",
             place: savedAttendee.place || "",
           });
           const img = savedAttendee.imgSrc || savedAttendee["imgSrc"] || savedAttendee.image;
@@ -531,7 +621,7 @@ export const useRegistrationForm = () => {
         clearRegistrationCookie();
         setSavedAttendee(null);
         setIsEditing(false);
-        setForm({ name: "", email: "", phone: "", university: "", place: "" });
+        setForm({ name: "", email: "", phone: "", university: "", academicYear: "", place: "" });
         setFile(null);
         setFilePreview(null);
       },

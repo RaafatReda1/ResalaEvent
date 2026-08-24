@@ -37,6 +37,19 @@ const ProfileDetailsGrid = ({ attendee }) => {
         </div>
       </div>
 
+      {/* Academic Year */}
+      <div className={styles.profileItem}>
+        <div className={styles.profileItemIcon}>
+          <GraduationCap size={18} />
+        </div>
+        <div className={styles.profileItemContent}>
+          <span className={styles.profileItemLabel}>السنة الدراسية</span>
+          <span className={styles.profileItemValue}>
+            {attendee.academicYear || attendee.academic_year || "فرقة أولى"}
+          </span>
+        </div>
+      </div>
+
       {/* Branch / Bus Pickup */}
       <div className={styles.profileItem}>
         <div className={styles.profileItemIcon}>

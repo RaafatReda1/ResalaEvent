@@ -426,6 +426,12 @@
     0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
+select.inputField option {
+  background-color: #0b1c30;
+  color: #ffffff;
+  padding: 10px;
+}
+
 .inputField:focus + .inputIcon,
 .inputWrapper:focus-within .inputIcon {
   color: var(--teal-400, #3ab9ac);
