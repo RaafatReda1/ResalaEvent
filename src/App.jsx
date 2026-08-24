@@ -10,6 +10,7 @@ import Agenda from './Components/Agenda/Agenda';
 import Form from './Components/Form/Form';
 import Footer from './Components/Footer/Footer';
 import FloatingWhatsApp from './Components/FloatingWhatsApp/FloatingWhatsApp';
+import { Analytics } from '@vercel/analytics/react';
 
 function App() {
   const [isIntroComplete, setIsIntroComplete] = useState(false);
@@ -31,6 +32,7 @@ function App() {
             <Footer />
           </main>
           <FloatingWhatsApp />
+          <Analytics />
         </>
       )}
     </div>
