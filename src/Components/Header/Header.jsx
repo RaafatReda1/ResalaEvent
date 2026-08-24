@@ -11,7 +11,7 @@ import {
   getRegistrationCookie,
   verifyStudentCookie,
 } from "../Form/Actions";
-import { QrCode, LogOut, User, FileText } from "lucide-react";
+import { QrCode, LogOut, User, FileText, Menu, X } from "lucide-react";
 import styles from "./Header.module.css";
 
 const GoogleIcon = () => (
@@ -45,11 +45,12 @@ const NAV_ITEMS = [
 ];
 
 const Header = () => {
-  const isMobile = useIsMobile();
+  const isMobile = useIsMobile(768);
   const [activeSection, setActiveSection] = useState("home");
   const [authUser, setAuthUser] = useState(null);
   const [isRegistered, setIsRegistered] = useState(false);
   const [loadingAuth, setLoadingAuth] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const containerRef = useRef(null);
 
   // ── Check registration state in DB (via signed-in Google email OR verified Cookie) ──
@@ -92,7 +93,6 @@ const Header = () => {
 
     return () => subscription?.unsubscribe();
   }, []);
-
 
   const handleGoogleSignIn = async () => {
     try {
@@ -164,6 +164,7 @@ const Header = () => {
   // ── Smooth Scroll Handler ──
   const scrollTo = (e, targetId) => {
     e.preventDefault();
+    setMobileMenuOpen(false);
     const target = document.getElementById(targetId);
     if (target) {
       target.scrollIntoView({ behavior: "smooth" });
@@ -175,100 +176,131 @@ const Header = () => {
 
   return (
     <header className={styles.headerContainer} ref={containerRef}>
-      <div className={styles.glassNav}>
-        {/* Brand / Logo Mark */}
-        <a
-          href="#home"
-          onClick={(e) => scrollTo(e, "home")}
-          className={styles.brand}
-        >
-          <img
-            src="/activitylogoNoFill.jpeg"
-            alt="شعار رسالة"
-            className={styles.brandLogo}
-            onError={(e) => {
-              e.currentTarget.src = "/resalaLogoNofill.jpeg";
-            }}
-          />
-        </a>
+      <div className={styles.headerWrapper}>
+        <div className={styles.glassNav}>
+          {/* Brand / Logo Mark */}
+          <a
+            href="#home"
+            onClick={(e) => scrollTo(e, "home")}
+            className={styles.brand}
+          >
+            <img
+              src="/activitylogoNoFill.jpeg"
+              alt="شعار رسالة"
+              className={styles.brandLogo}
+              onError={(e) => {
+                e.currentTarget.src = "/resalaLogoNofill.jpeg";
+              }}
+            />
+          </a>
 
-        {/* Arabic Navigation Links */}
-        <nav className={styles.navLinks}>
-          {NAV_ITEMS.map((item) => {
-            const isActive = activeSection === item.id;
-            return (
-              <a
-                key={item.id}
-                href={`#${item.id}`}
-                onClick={(e) => scrollTo(e, item.id)}
-                className={`${styles.navItem} ${isActive ? styles.active : ""}`}
+          {/* Desktop Arabic Navigation Links */}
+          <nav className={styles.navLinks}>
+            {NAV_ITEMS.map((item) => {
+              const isActive = activeSection === item.id;
+              return (
+                <a
+                  key={item.id}
+                  href={`#${item.id}`}
+                  onClick={(e) => scrollTo(e, item.id)}
+                  className={`${styles.navItem} ${isActive ? styles.active : ""}`}
+                >
+                  {item.label}
+                </a>
+              );
+            })}
+          </nav>
+
+          {/* Action Buttons Group */}
+          <div className={styles.headerActions}>
+            {/* Google Auth Button in Header */}
+            {authUser ? (
+              <div
+                className={styles.headerUserPill}
+                onClick={(e) => scrollTo(e, "register")}
+                title="عرض طلب التسجيل"
               >
-                {item.label}
-              </a>
-            );
-          })}
-        </nav>
-
-        {/* Action Buttons Group */}
-        <div className={styles.headerActions}>
-          {/* Google Auth Button in Header */}
-          {authUser ? (
-            <div
-              className={styles.headerUserPill}
-              onClick={(e) => scrollTo(e, "register")}
-              title="عرض طلب التسجيل"
-            >
-              <div className={styles.headerUserAvatar}>
-                {avatarUrl ? (
-                  <img src={avatarUrl} alt={displayName} className={styles.headerUserImg} />
-                ) : (
-                  <User size={13} className="text-teal-300" />
-                )}
-                <span className={styles.headerUserDot} />
-              </div>
-              {!isMobile && (
+                <div className={styles.headerUserAvatar}>
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt={displayName} className={styles.headerUserImg} />
+                  ) : (
+                    <User size={13} className="text-teal-300" />
+                  )}
+                  <span className={styles.headerUserDot} />
+                </div>
                 <span className={styles.headerUserName}>{displayName}</span>
-              )}
+                <button
+                  type="button"
+                  onClick={handleGoogleSignOut}
+                  className={styles.headerSignOutBtn}
+                  title="تسجيل الخروج"
+                >
+                  <LogOut size={12} />
+                </button>
+              </div>
+            ) : (
               <button
                 type="button"
-                onClick={handleGoogleSignOut}
-                className={styles.headerSignOutBtn}
-                title="تسجيل الخروج"
+                onClick={handleGoogleSignIn}
+                disabled={loadingAuth}
+                className={styles.headerGoogleBtn}
+                title="تسجيل الدخول باستخدام Google"
               >
-                <LogOut size={12} />
+                <div className={styles.headerGoogleIcon}>
+                  <GoogleIcon />
+                </div>
+                <span className={styles.googleBtnText}>دخول Google</span>
               </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              onClick={handleGoogleSignIn}
-              disabled={loadingAuth}
-              className={styles.headerGoogleBtn}
-              title="تسجيل الدخول باستخدام Google"
-            >
-              <div className={styles.headerGoogleIcon}>
-                <GoogleIcon />
-              </div>
-              {!isMobile && <span>دخول Google</span>}
-            </button>
-          )}
+            )}
 
-          {/* Main CTA Button -> Scrolls to #register */}
-          <button
-            className={`${styles.ctaBtn} ${isRegistered ? styles.ctaBtnRegistered : ""}`}
-            type="button"
-            onClick={(e) => scrollTo(e, "register")}
-          >
-            {isMobile ? (
-              isRegistered ? <FileText size={16} /> : <QrCode size={16} />
-            ) : (
-              <>
+            {/* Main CTA Button -> Scrolls to #register */}
+            <button
+              className={`${styles.ctaBtn} ${isRegistered ? styles.ctaBtnRegistered : ""}`}
+              type="button"
+              onClick={(e) => scrollTo(e, "register")}
+              title={isRegistered ? "عرض بياناتي" : "احجز مقعدك"}
+            >
+              <span className={styles.ctaIconWrap}>
+                {isRegistered ? <FileText size={15} /> : <QrCode size={15} />}
+              </span>
+              <span className={styles.ctaTextWrap}>
                 <span className={isRegistered ? styles.liveDotTeal : styles.liveDot} />
                 <span>{isRegistered ? "عرض بياناتي" : "احجز مقعدك"}</span>
-              </>
-            )}
-          </button>
+              </span>
+            </button>
+
+            {/* Mobile Hamburger Toggle Button */}
+            <button
+              type="button"
+              className={styles.mobileMenuToggle}
+              onClick={() => setMobileMenuOpen((prev) => !prev)}
+              aria-label="القائمة"
+              title="القائمة"
+            >
+              {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+            </button>
+          </div>
         </div>
+
+        {/* Mobile Dropdown Menu */}
+        {mobileMenuOpen && (
+          <div className={styles.mobileDropdown}>
+            {NAV_ITEMS.map((item) => {
+              const isActive = activeSection === item.id;
+              return (
+                <a
+                  key={item.id}
+                  href={`#${item.id}`}
+                  onClick={(e) => scrollTo(e, item.id)}
+                  className={`${styles.mobileNavItem} ${isActive ? styles.mobileActive : ""}`}
+                >
+                  <span>{item.label}</span>
+                  {isActive && <span className={styles.mobileActiveDot} />}
+                </a>
+              );
+            })}
+          </div>
+        )}
       </div>
     </header>
   );

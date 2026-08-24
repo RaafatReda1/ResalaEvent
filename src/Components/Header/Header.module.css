@@ -332,56 +332,293 @@
   100% { transform: scale(0.9); opacity: 0.7; }
 }
 
+.ctaIconWrap {
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
 
+.ctaTextWrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
 
+.googleBtnText {
+  display: inline;
+}
+
+.headerUserName {
+  display: inline-block;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #e2e8f0;
+  max-width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.headerWrapper {
+  width: min(100%, 960px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  pointer-events: auto;
+}
+
+.mobileMenuToggle {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #e2e8f0;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+}
+
+.mobileMenuToggle:hover {
+  background: rgba(31, 166, 160, 0.2);
+  border-color: #3ab9ac;
+  color: #ffffff;
+}
+
+/* Mobile Glassmorphic Dropdown Drawer */
+.mobileDropdown {
+  width: 100%;
+  background: rgba(8, 18, 34, 0.94);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(93, 204, 192, 0.35);
+  border-radius: 22px;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7), 0 0 25px rgba(31, 166, 160, 0.15);
+  animation: slideDownMenu 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+  direction: rtl;
+}
+
+.mobileNavItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 16px;
+  color: #cbd5e1;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+  border-radius: 14px;
+  transition: all 0.2s ease;
+}
+
+.mobileNavItem:hover {
+  background: rgba(31, 166, 160, 0.12);
+  color: #ffffff;
+}
+
+.mobileActive {
+  background: rgba(31, 166, 160, 0.22);
+  color: #5dccc0;
+  font-weight: 800;
+}
+
+.mobileActiveDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #3ab9ac;
+  box-shadow: 0 0 8px #3ab9ac;
+}
+
+@keyframes slideDownMenu {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
 
 /* ═══════════════════════════════════════════════════
-   RESPONSIVE MEDIA QUERIES
+   RESPONSIVE MEDIA QUERIES & MOBILE OPTIMIZATIONS
    ═══════════════════════════════════════════════════ */
 
-@media (max-width: 820px) {
-  .glassNav {
-    width: 96%;
-    gap: 12px;
-  }
-  .brandText {
-    display: none;
-  }
-}
-
-@media (max-width: 600px) {
+/* Screens <= 768px (Mobile & Small Tablets) */
+@media (max-width: 768px) {
   .headerContainer {
     top: 10px;
-    padding: 0 10px;
+    padding: 0 12px;
   }
+
   .glassNav {
-    padding: 6px 10px;
+    width: 100%;
+    padding: 7px 12px 7px 14px;
+    gap: 10px;
+    justify-content: space-between;
+  }
+
+  /* Hide horizontal nav links on mobile to prevent squishing */
+  .navLinks {
+    display: none;
+  }
+
+  /* Show mobile menu toggle */
+  .mobileMenuToggle {
+    display: flex;
+  }
+
+  .headerActions {
     gap: 8px;
   }
-  .navLinks {
-    gap: 4px;
+
+  .brandLogo {
+    width: 30px;
+    height: 30px;
   }
-  .navItem {
-    padding: 4px 8px;
-    font-size: 0.78rem;
+
+  /* Text vs Icon handling */
+  .googleBtnText {
+    display: none;
   }
+
+  .headerUserName {
+    display: none;
+  }
+
+  .ctaTextWrap {
+    display: none;
+  }
+
+  .ctaIconWrap {
+    display: flex;
+  }
+
+  .headerGoogleBtn {
+    padding: 5px;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    justify-content: center;
+    gap: 0;
+  }
+
+  .headerGoogleIcon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .headerUserPill {
+    padding: 3px 6px;
+    gap: 6px;
+    border-radius: 20px;
+  }
+
+  .headerUserAvatar {
+    width: 22px;
+    height: 22px;
+  }
+
+  .headerSignOutBtn {
+    width: 18px;
+    height: 18px;
+  }
+
   .ctaBtn {
-    padding: 6px 12px;
-    font-size: 0.76rem;
+    padding: 7px 12px;
+    font-size: 0.8rem;
+    gap: 0;
+    border-radius: 22px;
+    min-height: 32px;
+    min-width: 38px;
   }
 }
 
-@media (max-width: 400px) {
-  .navItem {
-    padding: 3px 5px;
-    font-size: 0.72rem;
+/* Small Mobile Phones (<= 480px) */
+@media (max-width: 480px) {
+  .headerContainer {
+    top: 8px;
+    padding: 0 8px;
   }
+
+  .glassNav {
+    padding: 6px 10px 6px 12px;
+    border-radius: 36px;
+    gap: 6px;
+  }
+
+  .brandLogo {
+    width: 28px;
+    height: 28px;
+  }
+
+  .headerActions {
+    gap: 6px;
+  }
+
+  .mobileMenuToggle {
+    width: 30px;
+    height: 30px;
+  }
+
+  .headerGoogleBtn {
+    width: 30px;
+    height: 30px;
+  }
+
+  .ctaBtn {
+    padding: 6px 10px;
+    border-radius: 20px;
+    min-height: 30px;
+  }
+}
+
+/* Ultra Small Screens (<= 360px) */
+@media (max-width: 360px) {
+  .headerContainer {
+    top: 5px;
+    padding: 0 6px;
+  }
+
+  .glassNav {
+    padding: 5px 8px 5px 10px;
+    gap: 4px;
+  }
+
   .brandLogo {
     width: 24px;
     height: 24px;
   }
+
+  .headerActions {
+    gap: 4px;
+  }
+
+  .mobileMenuToggle {
+    width: 28px;
+    height: 28px;
+  }
+
+  .headerGoogleBtn {
+    width: 28px;
+    height: 28px;
+  }
+
   .ctaBtn {
-    padding: 5px 9px;
-    font-size: 0.7rem;
+    padding: 5px 8px;
+    min-height: 28px;
   }
 }
+
+
+
