@@ -1,5 +1,4 @@
 import { Edit3 } from "lucide-react";
-import ProfileAvatar from "./ProfileAvatar";
 import ProfileDetailsGrid from "./ProfileDetailsGrid";
 import QRNoticeCard from "./QRNoticeCard";
 import styles from "../Form.module.css";
