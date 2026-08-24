@@ -1,4 +1,4 @@
-﻿import { Bus, MapPin } from "lucide-react";
+import { Bus } from "lucide-react";
 import { BRANCH_OPTIONS } from "./constants";
 import styles from "../Form.module.css";
 
@@ -30,13 +30,14 @@ const BranchSelector = ({ selectedPlace, onSelectBranch }) => {
                 isSelected ? styles.branchCardActive : ""
               }`}
             >
-              <div className={styles.branchIconCircle}>
-                <MapPin size={18} />
-              </div>
+              {/* Radio circle — inner dot shown via CSS ::after when active */}
+              <div className={styles.branchIconCircle} />
+
+              {/* Branch name */}
               <span className={styles.branchName}>{branch.name}</span>
-              <span className={styles.branchCheckmark}>
-                {isSelected ? "✓ تم الاختيار" : branch.area}
-              </span>
+
+              {/* Area tag — always visible */}
+              <span className={styles.branchCheckmark}>{branch.area}</span>
             </div>
           );
         })}
@@ -46,3 +47,4 @@ const BranchSelector = ({ selectedPlace, onSelectBranch }) => {
 };
 
 export default BranchSelector;
+

@@ -431,7 +431,13 @@
   color: var(--teal-400, #3ab9ac);
 }
 
-/* ── Branch / Bus Pickup Section ── */
+/* ═══════════════════════════════════════════════════
+   BRANCH / BUS PICKUP SELECTOR
+   Desktop: elegant vertical radio list
+   Mobile:  2-column tap-chip grid
+   ═══════════════════════════════════════════════════ */
+
+/* ── Wrapper card ──────────────────────────────── */
 .branchSection {
   display: flex;
   flex-direction: column;
@@ -458,6 +464,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .busBadge {
@@ -468,6 +475,7 @@
   border-radius: 20px;
   font-size: 0.75rem;
   font-weight: 700;
+  flex-shrink: 0;
 }
 
 .branchSubtitle {
@@ -476,88 +484,223 @@
   line-height: 1.5;
 }
 
-/* ── Branch Cards Selector Grid ── */
+/* ── Desktop: vertical radio list ─────────────── */
 .branchGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   width: 100%;
-  margin-top: 6px;
+  margin-top: 4px;
 }
 
 .branchCard {
   position: relative;
-  background: rgba(16, 32, 54, 0.65);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 14px;
-  padding: 14px 12px;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  text-align: center;
-  gap: 8px;
+  gap: 14px;
+  padding: 12px 16px;
+  background: rgba(16, 32, 54, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-right: 3px solid transparent;
+  border-radius: 14px;
   cursor: pointer;
   user-select: none;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
   overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
 }
 
-.branchCard:hover {
-  background: rgba(24, 48, 80, 0.75);
-  border-color: rgba(58, 185, 172, 0.4);
-  transform: translateY(-3px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+/* Teal accent bar on the right (RTL — physical right = logical start) */
+.branchCard::before {
+  content: '';
+  position: absolute;
+  top: 0; bottom: 0; right: 0;
+  width: 3px;
+  border-radius: 2px 0 0 2px;
+  background: var(--teal-400, #3ab9ac);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .branchCard:hover {
+    background: rgba(24, 48, 80, 0.6);
+    border-color: rgba(58, 185, 172, 0.3);
+  }
 }
 
 .branchCardActive {
-  background: linear-gradient(145deg, rgba(31, 166, 160, 0.25) 0%, rgba(10, 30, 50, 0.8) 100%);
-  border-color: var(--teal-400, #3ab9ac);
-  box-shadow:
-    0 0 25px rgba(58, 185, 172, 0.3),
-    0 10px 25px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
-  transform: translateY(-3px) scale(1.02);
+  background: rgba(31, 166, 160, 0.12);
+  border-color: rgba(58, 185, 172, 0.6) !important;
+  box-shadow: 0 0 14px rgba(58, 185, 172, 0.18);
 }
 
+.branchCardActive::before {
+  opacity: 1;
+}
+
+/* Radio circle */
 .branchIconCircle {
-  width: 38px;
-  height: 38px;
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
-  background: rgba(58, 185, 172, 0.12);
-  border: 1px solid rgba(58, 185, 172, 0.25);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--teal-400, #3ab9ac);
-  transition: all 0.3s ease;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  position: relative;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.branchIconCircle::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: 50%;
+  background: var(--teal-400, #3ab9ac);
+  opacity: 0;
+  transform: scale(0.3);
+  transition: opacity 0.2s ease, transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .branchCardActive .branchIconCircle {
-  background: var(--teal-400, #3ab9ac);
-  color: #060e1a;
-  box-shadow: 0 0 14px rgba(58, 185, 172, 0.8);
+  border-color: var(--teal-400, #3ab9ac);
+  box-shadow: 0 0 7px rgba(58, 185, 172, 0.45);
 }
 
+.branchCardActive .branchIconCircle::after {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Branch name */
 .branchName {
-  font-size: clamp(0.85rem, 1.1vw, 0.95rem);
+  flex: 1;
+  font-size: 0.95rem;
   font-weight: 700;
-  color: #ffffff;
+  color: #cbd5e1;
   line-height: 1.3;
+  transition: color 0.2s ease;
 }
 
+.branchCardActive .branchName {
+  color: #ffffff;
+}
+
+/* Area tag */
 .branchCheckmark {
-  font-size: 0.72rem;
-  color: var(--teal-300, #5dccc0);
+  font-size: 0.7rem;
   font-weight: 600;
-  opacity: 0;
-  transform: translateY(4px);
-  transition: all 0.3s ease;
+  color: rgba(94, 234, 212, 0.65);
+  background: rgba(58, 185, 172, 0.08);
+  border: 1px solid rgba(58, 185, 172, 0.15);
+  padding: 2px 8px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 .branchCardActive .branchCheckmark {
-  opacity: 1;
-  transform: translateY(0);
+  background: rgba(58, 185, 172, 0.2);
+  border-color: rgba(58, 185, 172, 0.45);
+  color: #5eead4;
 }
+
+/* ── Mobile: 2-column chip grid ────────────────── */
+@media (max-width: 768px) {
+  .branchSection {
+    padding: 16px;
+    gap: 12px;
+    border-radius: 16px;
+  }
+
+  .branchTitle {
+    font-size: 0.9rem;
+    gap: 8px;
+    line-height: 1.4;
+  }
+
+  .branchSubtitle {
+    font-size: 0.78rem;
+  }
+
+  /* Switch to 2-column chip grid so all 6 fit on screen */
+  .branchGrid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 2px;
+  }
+
+  /* Chip: centered, tall enough for comfortable tap (≥48px) */
+  .branchCard {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 6px;
+    padding: 14px 10px;
+    min-height: 68px;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    border-bottom: 2px solid transparent;
+    /* Remove left-bar pseudo, use bottom-border instead */
+  }
+
+  /* Bottom accent border on mobile chips */
+  .branchCard::before {
+    top: auto;
+    bottom: 0;
+    right: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    border-radius: 0 0 12px 12px;
+  }
+
+  .branchCardActive {
+    background: rgba(31, 166, 160, 0.14);
+    border-color: rgba(58, 185, 172, 0.55) !important;
+    box-shadow: 0 0 12px rgba(58, 185, 172, 0.18);
+  }
+
+  /* Hide radio circle on mobile chips (not needed in centered chip layout) */
+  .branchIconCircle {
+    display: none;
+  }
+
+  .branchName {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #94a3b8;
+    line-height: 1.35;
+    flex: none;
+    width: 100%;
+    text-align: center;
+  }
+
+  .branchCardActive .branchName {
+    color: #ffffff;
+  }
+
+  /* Show area tag as subtle caption under the name */
+  .branchCheckmark {
+    font-size: 0.65rem;
+    padding: 1px 7px;
+    background: transparent;
+    border: none;
+    color: rgba(94, 234, 212, 0.5);
+    flex-shrink: 0;
+  }
+
+  .branchCardActive .branchCheckmark {
+    background: transparent;
+    border: none;
+    color: rgba(94, 234, 212, 0.85);
+  }
+}
+
+
 
 /* ── Image Upload Dropzone ── */
 .fileDropzone {
@@ -1422,10 +1565,6 @@
     grid-template-columns: 1fr;
   }
 
-  .branchGrid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
   .profileGrid {
     grid-template-columns: 1fr;
   }
@@ -1460,10 +1599,6 @@
   }
 }
 
-@media (max-width: 440px) {
-  .branchGrid {
-    grid-template-columns: 1fr;
-  }
-}
+
 
 
