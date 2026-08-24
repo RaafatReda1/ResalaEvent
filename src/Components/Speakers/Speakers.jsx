@@ -45,8 +45,8 @@ const speakers = [
   {
     name: "د. حسام عيسي",
     nameEn: "Dr. Hossam Eissa",
-    title: " طبيب مقيم بمستشفي اسيوط",
-    titleEn: "Intern Doctor at Asyut Hospital",
+    title: "طبيب امتياز بمستشفي الدمرداش",
+    titleEn: "Intern Doctor at Demerdash Hospital",
     imageSrc: "/hossamNoFill.png",
     bgImage: "/hossamFill.png",
     accent: "#8B5CF6",
@@ -56,8 +56,9 @@ const speakers = [
   {
     name: "د. منصور الجزار",
     nameEn: "Dr. Mansour Al-Jazar",
-    title: "طبيب امتياز بمستشفي الدمرداش",
-    titleEn: "Intern Doctor at Demerdash Hospital",
+
+    title: " طبيب امتياز بمستشفي اسيوط",
+    titleEn: "Intern Doctor at Asyut Hospital",
     imageSrc: "/drMansour.png",
     bgImage: "/drMansour.png",
     accent: "#2889ff",
