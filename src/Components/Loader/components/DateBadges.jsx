@@ -13,7 +13,7 @@ const DateBadges = forwardRef(({ date04Ref }, date03Ref) => {
         <span className={styles.badgeDotTarget} />
         <div className={styles.dateTextWrapper}>
           <span className={styles.badgeSub}>EVENT DAY</span>
-          <span className={styles.badgeTextTarget}>04 SEP 2026</span>
+          <span className={styles.badgeTextTarget}>04 SEP</span>
         </div>
       </div>
     </>
