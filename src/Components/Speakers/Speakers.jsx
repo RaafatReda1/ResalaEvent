@@ -10,10 +10,10 @@ gsap.registerPlugin(ScrollTrigger);
 
 const speakers = [
   {
-    name: "د. نجلاء فاروق",
+    name: "أ.د. نجلاء فاروق",
     nameEn: "Dr. Naglaa Farouk",
-    title: "رئيسة النشاط الطبي",
-    titleEn: "Head of Medical Activity",
+    title: "رئيسة قسم الميكرو بجامعه الازهر",
+    titleEn: "Head of Microbiology Department",
     imageSrc: "/drNagalaa.png",
     bgImage: "/drNaglaaFill.jpeg",
     accent: "#3AB9AC",
@@ -21,10 +21,10 @@ const speakers = [
     number: "01",
   },
   {
-    name: "د. رانيا عبد الجليل",
+    name: "أ.م.د رانيا عبد الجليل",
     nameEn: "Dr. Rania Abd Al-Galil",
-    title: "رئيسة النشاط الطبي",
-    titleEn: "Head of Medical Activity",
+    title: "أستاذ مساعد بقسم الاناتومي بالازهر",
+    titleEn: "Assistant Professor of Anatomical Sciences",
     imageSrc: "/drRania.png",
     bgImage: "/drRaniaFill.jpeg",
     accent: "#E63946",
@@ -34,8 +34,8 @@ const speakers = [
   {
     name: "د. عمرو البركي",
     nameEn: "Dr. Amr Al-Braky",
-    title: "المدير التنفيذي",
-    titleEn: "Executive Director",
+    title: "طبيب امتياز بمستشفي الدمرداش",
+    titleEn: "Intern Doctor at Demerdash Hospital",
     imageSrc: "/amrNofill.png",
     bgImage: "/amrFilled.png",
     accent: "#EAB308",
@@ -45,8 +45,8 @@ const speakers = [
   {
     name: "د. حسام عيسي",
     nameEn: "Dr. Hossam Eissa",
-    title: "مدير البرامج",
-    titleEn: "Programs Director",
+    title: " طبيب مقيم بمستشفي اسيوط",
+    titleEn: "Intern Doctor at Asyut Hospital",
     imageSrc: "/hossamNoFill.png",
     bgImage: "/hossamFill.png",
     accent: "#8B5CF6",
@@ -54,10 +54,10 @@ const speakers = [
     number: "04",
   },
   {
-    name: "د. منصور",
-    nameEn: "Dr. Mansour",
-    title: "مدير البرامج",
-    titleEn: "Programs Director",
+    name: "د. منصور الجزار",
+    nameEn: "Dr. Mansour Al-Jazar",
+    title: "طبيب امتياز بمستشفي الدمرداش",
+    titleEn: "Intern Doctor at Demerdash Hospital",
     imageSrc: "/drMansour.png",
     bgImage: "/drMansour.png",
     accent: "#2889ff",
@@ -112,15 +112,16 @@ const SpeakerCard = ({
       </div>
 
       {/* Number watermark */}
-      <span className={styles.cardNumber}>
-        {speaker.number}
-      </span>
+      <span className={styles.cardNumber}>{speaker.number}</span>
 
       {/* Collapsed Speaker Tag (Visible on desktop when not expanded) */}
       <div className={styles.speakerCollapsedLabel}>
         <span
           className={styles.collapsedBadge}
-          style={{ borderColor: `rgba(${speaker.accentRgb},0.5)`, color: speaker.accent }}
+          style={{
+            borderColor: `rgba(${speaker.accentRgb},0.5)`,
+            color: speaker.accent,
+          }}
         >
           {speaker.number}
         </span>
@@ -130,7 +131,9 @@ const SpeakerCard = ({
       {/* Bottom accent glow bar */}
       <div
         className={styles.accentBar}
-        style={{ background: `linear-gradient(90deg, transparent, ${speaker.accent}, transparent)` }}
+        style={{
+          background: `linear-gradient(90deg, transparent, ${speaker.accent}, transparent)`,
+        }}
       />
 
       {/* Expanded / Full Info Panel */}
@@ -158,7 +161,6 @@ const SpeakerCard = ({
     </div>
   );
 };
-
 
 const Speakers = () => {
   const isMobile = useIsMobile(768);
@@ -237,7 +239,11 @@ const Speakers = () => {
     const cardWidth = track.firstElementChild?.offsetWidth || 280;
     const gap = 14;
     const newIndex = Math.round(scrollLeft / (cardWidth + gap));
-    if (newIndex >= 0 && newIndex < speakers.length && newIndex !== mobileActiveIndexRef.current) {
+    if (
+      newIndex >= 0 &&
+      newIndex < speakers.length &&
+      newIndex !== mobileActiveIndexRef.current
+    ) {
       mobileActiveIndexRef.current = newIndex;
       setMobileActiveIndex(newIndex);
     }
@@ -370,7 +376,9 @@ const Speakers = () => {
                   aria-label={`انتقل إلى ${spk.name}`}
                   style={{
                     backgroundColor: isDotActive ? spk.accent : undefined,
-                    boxShadow: isDotActive ? `0 0 10px ${spk.accent}` : undefined,
+                    boxShadow: isDotActive
+                      ? `0 0 10px ${spk.accent}`
+                      : undefined,
                   }}
                 />
               );
@@ -392,4 +400,3 @@ const Speakers = () => {
 };
 
 export default Speakers;
-
