@@ -119,23 +119,44 @@ export default function Agenda() {
             <div className="particleControls">
               <div className="particleHint">
                 <MousePointer size={14} className="animate-bounce" />
+                <span>المس، اسحب، أو اضغط بالماوس للتفاعل مع النقاط</span>
+              </div>
+
+              {/* Interactive Text Switchers */}
+              <div className="textSwitchGroup">
+                {["SOON", "قريباً", "ما وراء الطب"].map((t) => (
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setParticleText(t)}
+                    className={`switchBtn ${particleText === t ? "activeSwitch" : ""}`}
+                  >
+                    {t}
+                  </button>
+                ))}
               </div>
             </div>
 
             <div className="particleCanvasContainer">
               <CursorDrivenParticleTypography
                 text={particleText}
-                fontSize={particleText === "قريباً" ? 170 : 150}
+                fontSize={
+                  particleText === "ما وراء الطب"
+                    ? 95
+                    : particleText === "قريباً"
+                    ? 135
+                    : 145
+                }
                 fontFamily={
-                  particleText === "قريباً"
-                    ? "Tajawal, sans-serif"
-                    : "Inter, sans-serif"
+                  particleText === "SOON"
+                    ? "Inter, system-ui, sans-serif"
+                    : "Cairo, system-ui, sans-serif"
                 }
                 color="#3AB9AC"
                 particleSize={1.8}
-                particleDensity={4}
-                dispersionStrength={22}
-                returnSpeed={0.09}
+                particleDensity={4.2}
+                dispersionStrength={20}
+                returnSpeed={0.085}
               />
             </div>
           </div>
