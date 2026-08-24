@@ -1,7 +1,7 @@
 import { User, Mail, Phone, GraduationCap } from "lucide-react";
 import styles from "../Form.module.css";
 
-const RegistrationInputs = ({ form, onChange }) => {
+const RegistrationInputs = ({ form, onChange, isEditing }) => {
   return (
     <div className={styles.inputsGrid}>
       {/* Full Name */}
@@ -36,20 +36,22 @@ const RegistrationInputs = ({ form, onChange }) => {
           </span>
           <span>البريد الإلكتروني *</span>
         </label>
-        <div className={styles.inputWrapper}>
-          <input
-            type="email"
-            name="email"
-            value={form.email}
-            placeholder="name@example.com"
-            onChange={onChange}
-            required
-            className={styles.inputField}
-          />
-          <div className={styles.inputIcon}>
-            <Mail size={18} />
+        {!isEditing && (
+          <div className={styles.inputWrapper}>
+            <input
+              type="email"
+              name="email"
+              value={form.email}
+              placeholder="name@example.com"
+              onChange={onChange}
+              required
+              className={styles.inputField}
+            />
+            <div className={styles.inputIcon}>
+              <Mail size={18} />
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Phone / WhatsApp */}

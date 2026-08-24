@@ -18,7 +18,7 @@ const SubmitButtons = ({ loading, isEditing, onCancelEdit }) => {
           ) : isEditing ? (
             <>
               <Save size={20} />
-              <span>حفظ التعديلات في تذكرتي</span>
+              <span>حفظ التعديلات</span>
             </>
           ) : (
             <>

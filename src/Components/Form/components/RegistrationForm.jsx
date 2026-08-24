@@ -23,7 +23,7 @@ const RegistrationForm = ({
       className="w-full flex flex-col gap-6"
     >
       {/* 1. Primary Text Inputs */}
-      <RegistrationInputs form={form} onChange={onChange} />
+      <RegistrationInputs form={form} onChange={onChange} isEditing={isEditing} />
 
       {/* 2. Bus Pickup Branch Selector */}
       <BranchSelector
