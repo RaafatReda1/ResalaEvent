@@ -4,8 +4,14 @@ import gsap from "gsap";
 import { useGSAP } from "@gsap/react";
 import useIsMobile from "../../hooks/useIsMobile";
 import supabase from "@/utils/supabaseClient";
-import { signInWithGoogle, signOutUser } from "../Form/Actions";
-import { QrCode, LogOut, User, Sparkles } from "lucide-react";
+import {
+  signInWithGoogle,
+  signOutUser,
+  fetchStudentByEmail,
+  getRegistrationCookie,
+  verifyStudentCookie,
+} from "../Form/Actions";
+import { QrCode, LogOut, User, FileText } from "lucide-react";
 import styles from "./Header.module.css";
 
 const GoogleIcon = () => (
@@ -42,23 +48,51 @@ const Header = () => {
   const isMobile = useIsMobile();
   const [activeSection, setActiveSection] = useState("home");
   const [authUser, setAuthUser] = useState(null);
+  const [isRegistered, setIsRegistered] = useState(false);
   const [loadingAuth, setLoadingAuth] = useState(false);
   const containerRef = useRef(null);
+
+  // ── Check registration state in DB (via signed-in Google email OR verified Cookie) ──
+  const checkRegistration = async (user) => {
+    try {
+      if (user?.email) {
+        const student = await fetchStudentByEmail(user.email);
+        setIsRegistered(Boolean(student));
+        return;
+      }
+
+      // If not signed in with Google -> check verified cookie in DB
+      const cookieData = getRegistrationCookie();
+      if (cookieData?.cookieToken) {
+        const student = await verifyStudentCookie(cookieData.cookieToken);
+        setIsRegistered(Boolean(student));
+      } else {
+        setIsRegistered(false);
+      }
+    } catch {
+      setIsRegistered(false);
+    }
+  };
 
   // ── Listen to Supabase Auth state ──
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setAuthUser(session?.user || null);
+      const user = session?.user || null;
+      setAuthUser(user);
+      checkRegistration(user);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (_event, session) => {
-        setAuthUser(session?.user || null);
+        const user = session?.user || null;
+        setAuthUser(user);
+        checkRegistration(user);
       }
     );
 
     return () => subscription?.unsubscribe();
   }, []);
+
 
   const handleGoogleSignIn = async () => {
     try {
@@ -221,16 +255,16 @@ const Header = () => {
 
           {/* Main CTA Button -> Scrolls to #register */}
           <button
-            className={styles.ctaBtn}
+            className={`${styles.ctaBtn} ${isRegistered ? styles.ctaBtnRegistered : ""}`}
             type="button"
             onClick={(e) => scrollTo(e, "register")}
           >
             {isMobile ? (
-              <QrCode size={16} />
+              isRegistered ? <FileText size={16} /> : <QrCode size={16} />
             ) : (
               <>
-                <span className={styles.liveDot} />
-                <span>احجز مقعدك</span>
+                <span className={isRegistered ? styles.liveDotTeal : styles.liveDot} />
+                <span>{isRegistered ? "عرض بياناتي" : "احجز مقعدك"}</span>
               </>
             )}
           </button>
