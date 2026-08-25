@@ -2,22 +2,32 @@ import { useState } from "react";
 import {
   LayoutDashboard,
   Users,
-  Settings,
   ChevronLeft,
   LogOut,
   FileText,
 } from "lucide-react";
 import styles from "./AdminAside.module.css";
+import { Link } from "react-router-dom";
 
 const navLinks = [
   {
     id: "dashboard",
     icon: <LayoutDashboard size={22} />,
     label: "لوحة التحكم",
+    path: "/dashboard",
   },
-  { id: "students", icon: <Users size={22} />, label: "المتسجلون" },
-  { id: "reports", icon: <FileText size={22} />, label: "التقارير" },
-  { id: "settings", icon: <Settings size={22} />, label: "الإعدادات" },
+  {
+    id: "students",
+    icon: <Users size={22} />,
+    label: "المتسجلون",
+    path: "/students",
+  },
+  {
+    id: "reports",
+    icon: <FileText size={22} />,
+    label: "التقارير",
+    path: "/reports",
+  },
 ];
 
 const AdminAside = () => {
@@ -30,7 +40,6 @@ const AdminAside = () => {
     >
       {/* Logo + toggle */}
       <div className={styles.logoContainer}>
-
         <button
           className={styles.toggleBtn}
           onClick={() => setIsCollapsed(!isCollapsed)}
@@ -43,17 +52,21 @@ const AdminAside = () => {
       {/* Nav links */}
       <nav className={styles.navMenu}>
         {navLinks.map((link) => (
-          <button
+          <Link
             key={link.id}
+            to={link.path}
             onClick={() => setActiveId(link.id)}
-            className={`${styles.navItem} ${activeId === link.id ? styles.active : ""}`}
+            className={`${styles.navItem} ${
+              activeId === link.id ? styles.active : ""
+            }`}
             title={isCollapsed ? link.label : ""}
           >
             <span className={styles.icon}>{link.icon}</span>
             <span className={styles.label}>{link.label}</span>
+
             {/* Active background notch */}
             <span className={styles.notch} />
-          </button>
+          </Link>
         ))}
 
         <div className={styles.logoWrapper}>
