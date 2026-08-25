@@ -17,7 +17,9 @@ const Admin = () => {
         <div className={styles.contentArea}>
           {/* Dashboard content will be rendered here */}
           <Routes>
-            <Route path="/dashboard" element={<AdminDashboard></AdminDashboard>} />
+            <Route index element={<AdminDashboard />} />
+            <Route path="/" element={<AdminDashboard />} />
+            <Route path="/dashboard" element={<AdminDashboard />} />
             <Route path="/students" element={<AdminControls>Students</AdminControls>} />
             <Route path="/reports" element={<AdminReports>Reports</AdminReports>} />
           </Routes>
