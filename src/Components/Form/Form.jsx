@@ -9,6 +9,7 @@ import FormHeader from "./components/FormHeader";
 import FormAlerts from "./components/FormAlerts";
 import AttendeeProfile from "./components/AttendeeProfile";
 import RegistrationForm from "./components/RegistrationForm";
+import AnonSavedNotice from "./components/AnonSavedNotice";
 import FormModal from "./components/FormModal";
 import GoogleAuthButton from "./components/GoogleAuthButton";
 import styles from "./Form.module.css";
@@ -20,6 +21,7 @@ const Form = () => {
     authUser,
     loadingAuth,
     savedAttendee,
+    anonCookieData,
     isEditing,
     setIsEditing,
     isVerifying,
@@ -41,6 +43,7 @@ const Form = () => {
     handleSubmit,
     handleTriggerUpdateConfirm,
     handleCancelEdit,
+    handleStartNewRegistration,
   } = useRegistrationForm();
 
   const containerRef = useRef(null);
@@ -96,19 +99,23 @@ const Form = () => {
         {/* 3. Header (Badge, Title, Subtitle) */}
         <FormHeader
           headerRef={headerRef}
+          authUser={authUser}
           savedAttendee={savedAttendee}
+          anonCookieData={anonCookieData}
           isEditing={isEditing}
         />
 
         {/* 4. Main Glassmorphic Card Container */}
         <div ref={formCardRef} className={styles.glassFormCard}>
-          {/* Google Sign In / User Status Button */}
-          <GoogleAuthButton
-            authUser={authUser}
-            onSignIn={handleGoogleSignIn}
-            onSignOut={handleGoogleSignOut}
-            loadingAuth={loadingAuth}
-          />
+          {/* Google Sign In / User Status Button (Shown when not in Anon Notice mode) */}
+          {(!anonCookieData || authUser || (authUser && savedAttendee)) && (
+            <GoogleAuthButton
+              authUser={authUser}
+              onSignIn={handleGoogleSignIn}
+              onSignOut={handleGoogleSignOut}
+              loadingAuth={loadingAuth}
+            />
+          )}
 
           {/* Alerts: Error & Success Messages */}
           <FormAlerts errorMsg={errorMsg} successToast={successToast} />
@@ -123,28 +130,35 @@ const Form = () => {
             </div>
           )}
 
-
-          {/* VIEW A / B — hidden while verifying */}
-          {!isVerifying && savedAttendee && !isEditing ? (
+          {/* VIEW A: Verified / Signed-In Attendee Profile (STRICTLY requires active auth session) */}
+          {!isVerifying && authUser && savedAttendee && !isEditing ? (
             <div className={styles.viewFade} key="profile">
               <AttendeeProfile
                 savedAttendee={savedAttendee}
                 onStartEdit={() => setIsEditing(true)}
               />
             </div>
+          ) : !isVerifying && !authUser && anonCookieData ? (
+            /* VIEW B: Anon Registration Cookie Detected -> Prompt Sign In (NO edit button, NO full profile) */
+            <div className={styles.viewFade} key="anon-saved">
+              <AnonSavedNotice
+                anonData={anonCookieData}
+                onSignIn={handleGoogleSignIn}
+                onStartNew={handleStartNewRegistration}
+                loadingAuth={loadingAuth}
+              />
+            </div>
           ) : !isVerifying ? (
+            /* VIEW C: Fresh Registration Form (or Edit Form for authenticated users only) */
             <div className={styles.viewFade} key="form">
               <RegistrationForm
                 authUser={authUser}
-                isEditing={isEditing}
+                isEditing={Boolean(authUser && isEditing)}
                 form={form}
                 file={file}
                 filePreview={filePreview}
                 existingImgUrl={
-                  savedAttendee?.imgSrc ||
-                  savedAttendee?.["imgSrc"] ||
-                  savedAttendee?.image ||
-                  savedAttendee?.image_url ||
+                  (authUser && (savedAttendee?.imgSrc || savedAttendee?.["imgSrc"] || savedAttendee?.image || savedAttendee?.image_url)) ||
                   filePreview ||
                   null
                 }

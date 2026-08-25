@@ -18,6 +18,7 @@ export const useRegistrationForm = () => {
   const [authUser, setAuthUser] = useState(null); // Supabase Google user
   const [loadingAuth, setLoadingAuth] = useState(false);
   const [savedAttendee, setSavedAttendee] = useState(null);
+  const [anonCookieData, setAnonCookieData] = useState(null); // Registration cookie found without active Google session
   const [isEditing, setIsEditing] = useState(false);
   const [isVerifying, setIsVerifying] = useState(true); // true while we check the DB
 
@@ -70,8 +71,9 @@ export const useRegistrationForm = () => {
 
   // ─────────────────────────────────────────────
   // 1. Unified Auth & DB Verification on mount
-  //    - If signed in with Google: ignore cookies, fetch DB by Google email
-  //    - If not signed in: fallback to browser Cookie Token verification
+  //    - If signed in with Google: fetch DB by Google email (RLS allows authenticated SELECT)
+  //    - If not signed in: check if browser has a saved registration cookie
+  //      and prompt the user to sign in to preview/edit their data.
   // ─────────────────────────────────────────────
   useEffect(() => {
     const initAuthAndVerification = async () => {
@@ -83,7 +85,8 @@ export const useRegistrationForm = () => {
         setAuthUser(currentUser || null);
 
         if (currentUser?.email) {
-          // Google user is logged in -> IGNORE cookies, search DB by email!
+          // Google user is logged in -> ignore anon cookies, search DB by email with RLS credentials!
+          setAnonCookieData(null);
           const dbRow = await fetchStudentByEmail(currentUser.email);
 
           if (dbRow) {
@@ -117,37 +120,15 @@ export const useRegistrationForm = () => {
 
         // Step B: Not logged in with Google -> check Cookie Token
         const localData = getRegistrationCookie();
-        const token = localData?.cookieToken;
-
-        if (!token) {
-          setIsVerifying(false);
-          return;
+        if (localData && (localData.email || localData.name || localData.cookieToken)) {
+          // User previously submitted the form on this device without signing in.
+          // RLS policy prevents unauthenticated SELECT, so prompt them to sign in.
+          setAnonCookieData(localData);
+          setSavedAttendee(null);
+        } else {
+          setAnonCookieData(null);
+          setSavedAttendee(null);
         }
-
-        const dbRow = await verifyStudentCookie(token);
-
-        if (!dbRow) {
-          clearRegistrationCookie();
-          setIsVerifying(false);
-          return;
-        }
-
-        const hydrated = {
-          ...dbRow,
-          cookieToken: token,
-        };
-        setSavedAttendee(hydrated);
-        setForm({
-          name: dbRow.name || "",
-          email: dbRow.email || "",
-          phone: dbRow.phone || "",
-          university: dbRow.university || "",
-          place: dbRow.place || "",
-        });
-        const img = dbRow.imgSrc || dbRow["imgSrc"] || dbRow.image || dbRow.image_url;
-        if (img) setFilePreview(img);
-
-        saveRegistrationCookie(hydrated);
       } catch (e) {
         console.error("Auth & verification error:", e);
       } finally {
@@ -163,6 +144,7 @@ export const useRegistrationForm = () => {
         if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
           if (session?.user) {
             setAuthUser(session.user);
+            setAnonCookieData(null);
             const dbRow = await fetchStudentByEmail(session.user.email);
             if (dbRow) {
               setSavedAttendee(dbRow);
@@ -171,6 +153,7 @@ export const useRegistrationForm = () => {
                 email: dbRow.email || "",
                 phone: dbRow.phone || "",
                 university: dbRow.university || "",
+                academicYear: dbRow.academicYear || dbRow.academic_year || "",
                 place: dbRow.place || "",
               });
               const img = dbRow.imgSrc || dbRow["imgSrc"] || dbRow.image || dbRow.image_url;
@@ -187,6 +170,12 @@ export const useRegistrationForm = () => {
         } else if (event === "SIGNED_OUT") {
           setAuthUser(null);
           setSavedAttendee(null);
+          const localData = getRegistrationCookie();
+          if (localData && (localData.email || localData.name || localData.cookieToken)) {
+            setAnonCookieData(localData);
+          } else {
+            setAnonCookieData(null);
+          }
           setForm({ name: "", email: "", phone: "", university: "", academicYear: "", place: "" });
           setFile(null);
           setFilePreview(null);
@@ -472,18 +461,37 @@ export const useRegistrationForm = () => {
       };
 
       saveRegistrationCookie(registeredData);
-      setSavedAttendee(registeredData);
-      setSuccessToast("تم استلام طلب تسجيلك بنجاح! 📨");
 
-      // Trigger Modal
-      openModal({
-        type: "success",
-        title: "تم استلام طلب التسجيل بنجاح! 📨",
-        message:
-          "أهلاً بك! تم استلام بياناتك بنجاح وحفظها على هذا الجهاز. طلبك الآن قيد مراجعة مسؤولي الإيفنت، وسيقوم فريقنا بالتواصل معك عبر واتساب لتأكيد القبول وإرسال كود الـ QR وموعد باص التحرك.",
-        primaryLabel: "عرض بيانات التسجيل",
-        onPrimary: closeModal,
-      });
+      if (authUser) {
+        setSavedAttendee(registeredData);
+        setAnonCookieData(null);
+        setIsEditing(false);
+        setSuccessToast("تم استلام طلب تسجيلك بنجاح! 📨");
+
+        openModal({
+          type: "success",
+          title: "تم استلام طلب التسجيل بنجاح! 📨",
+          message:
+            "أهلاً بك! تم استلام بياناتك بنجاح وحفظها بحسابك. طلبك الآن قيد مراجعة مسؤولي الإيفنت، وسيقوم فريقنا بالتواصل معك عبر واتساب لتأكيد القبول وإرسال كود الـ QR وموعد باص التحرك.",
+          primaryLabel: "عرض بطاقة التسجيل",
+          onPrimary: closeModal,
+        });
+      } else {
+        // Unsigned-in anonymous user: strictly no savedAttendee / no edit access
+        setSavedAttendee(null);
+        setAnonCookieData(registeredData);
+        setIsEditing(false);
+        setSuccessToast("تم استلام طلب تسجيلك بنجاح! 📨");
+
+        openModal({
+          type: "success",
+          title: "تم استلام طلب التسجيل بنجاح! 📨",
+          message:
+            "أهلاً بك! تم استلام بياناتك وحفظها بنجاح بقاعدة البيانات. لعرض تفاصيل استمارتك أو تعديل بياناتك ومكان الباص مستقبلاً، يرجى تسجيل الدخول بحساب Google.",
+          primaryLabel: "حسناً، فهمت",
+          onPrimary: closeModal,
+        });
+      }
     } catch (err) {
       console.error("Form submission error:", err);
       const friendlyErr = parseUserFriendlyError(err, "submit");
@@ -563,6 +571,15 @@ export const useRegistrationForm = () => {
   // Trigger confirmation modal before performing update
   const handleTriggerUpdateConfirm = (e) => {
     if (e && e.preventDefault) e.preventDefault();
+    if (!authUser || !savedAttendee) {
+      openModal({
+        type: "error",
+        title: "تسجيل الدخول مطلوب لتعديل البيانات",
+        message: "يجب تسجيل الدخول بحساب Google أولاً لتتمكن من تعديل بيانات التسجيل وتأكيد هويتك.",
+        primaryLabel: "حسناً، فهمت",
+      });
+      return;
+    }
     if (!validateForm()) return;
 
     openModal({
@@ -607,32 +624,39 @@ export const useRegistrationForm = () => {
   };
 
   // ─────────────────────────────────────────────
-  // 6. Clear cookie (User Reset)
+  // 6. Clear cookie (User Reset / Start New Form)
   // ─────────────────────────────────────────────
-  const handleClearRegistration = () => {
+  const handleStartNewRegistration = () => {
     openModal({
       type: "confirm_cancel",
-      title: "إلغاء طلب التسجيل على هذا الجهاز؟",
-      message: "هل تريد بالتأكيد إلغاء بيانات طلب التسجيل المحفوظة على هذا الجهاز والبدء بطلب جديد؟",
-      primaryLabel: "نعم، طلب جديد",
-      secondaryLabel: "تراجع",
+      title: "بدء استمارة تسجيل جديدة؟",
+      message: "هل تريد تسجيل استمارة لشخص آخر والبدء بنموذج تسجيل جديد فارغ على هذا المتصفح؟",
+      primaryLabel: "نعم، تسجيل جديد",
+      secondaryLabel: "إلغاء",
       onPrimary: () => {
         closeModal();
         clearRegistrationCookie();
+        setAnonCookieData(null);
         setSavedAttendee(null);
         setIsEditing(false);
         setForm({ name: "", email: "", phone: "", university: "", academicYear: "", place: "" });
         setFile(null);
         setFilePreview(null);
+        setErrorMsg("");
       },
       onSecondary: closeModal,
     });
+  };
+
+  const handleClearRegistration = () => {
+    handleStartNewRegistration();
   };
 
   return {
     authUser,
     loadingAuth,
     savedAttendee,
+    anonCookieData,
     isEditing,
     setIsEditing,
     isVerifying,
@@ -656,6 +680,7 @@ export const useRegistrationForm = () => {
     handleTriggerUpdateConfirm,
     handleCancelEdit,
     handleClearRegistration,
+    handleStartNewRegistration,
   };
 };
 
