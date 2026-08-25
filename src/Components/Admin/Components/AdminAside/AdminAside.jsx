@@ -19,7 +19,7 @@ const navLinks = [
   {
     id: "students",
     icon: <Users size={22} />,
-    label: "المتسجلون",
+    label: "المسجلين",
     path: "/students",
   },
   {

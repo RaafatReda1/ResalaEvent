@@ -2,7 +2,9 @@ import AdminHeader from "./Components/AdminHeader/AdminHeader";
 import AdminAside from "./Components/AdminAside/AdminAside";
 import styles from "./Admin.module.css";
 import { Route, Routes } from "react-router-dom";
-
+import AdminDashboard from "./Components/AdminDashboard/AdminDashboard";
+import AdminControls from "./Components/AdminControls/AdminControls";
+import AdminReports from "./Components/AdminReports/AdminReports";
 const Admin = () => {
   return (
     <div className={styles.adminWrapper}>
@@ -15,9 +17,9 @@ const Admin = () => {
         <div className={styles.contentArea}>
           {/* Dashboard content will be rendered here */}
           <Routes>
-            <Route path="/dashboard" element={<h1>Dashboard</h1>} />
-            <Route path="/students" element={<h1>Students</h1>} />
-            <Route path="/reports" element={<h1>Reports</h1>} />
+            <Route path="/dashboard" element={<AdminDashboard></AdminDashboard>} />
+            <Route path="/students" element={<AdminControls>Students</AdminControls>} />
+            <Route path="/reports" element={<AdminReports>Reports</AdminReports>} />
           </Routes>
         </div>
       </div>
