@@ -1,21 +1,299 @@
-.aside {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 200px;
-  height: 100vh;
-  background-color: #ff0000;
-  z-index: 9999;
+/* ═══════════════════════════════════════════════════
+   ADMIN ASIDE / SIDEBAR — DentQ-Inspired
+   ═══════════════════════════════════════════════════ */
+
+.sidebar {
+  width: 210px;
+  background-color: transparent; /* parent adminWrapper provides deep blue */
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  color: rgba(255, 255, 255, 0.7);
+  z-index: 10;
+  padding: 12px 0 0 10px;
+  overflow: hidden;
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar.collapsed {
+  width: 70px;
+}
+
+/* ── Logo Row ── */
+.logoContainer {
+  display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 2.5rem;
+  padding-right: 1.2rem;
+  height: 60px;
 }
 
-h1{
-  color: #00ff51;
+
+.logoWrapper{
+    margin:auto;
 }
 
-h2{
-  color: #000000;
+.sidebar.collapsed .logoContainer {
+  justify-content: center;
+  padding-right: 0;
+  padding-left: 2px;
+  margin-bottom: 1.8rem;
+}
+
+
+
+/* ── Toggle Button ── */
+.toggleBtn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 10px;
+  transition: all 0.25s ease;
+  flex-shrink: 0;
+}
+
+.toggleBtn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.05);
+}
+
+.toggleIcon {
+  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar.collapsed .toggleIcon {
+  transform: rotate(-180deg);
+}
+
+/* ── Nav Menu ── */
+.navMenu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  flex: 1;
+}
+
+/* ── Nav Item base ── */
+.navItem {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 20px;
+  text-decoration: none;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.92rem;
+  font-weight: 500;
+  /* Left-rounded pill that bleeds into the white content area */
+  border-radius: 30px 0 0 30px;
+  position: relative;
+  margin-right: -1px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  text-align: right;
+  width: 100%;
+  transition: color 0.25s ease;
+  white-space: nowrap;
+}
+
+.navItem:hover {
+  color: white;
+}
+
+.label {
+  white-space: nowrap;
+  opacity: 1;
+  transition: opacity 0.2s ease;
+}
+
+.sidebar.collapsed .label {
+  display: none;
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+/* ── Active State ── */
+.navItem.active {
+  color: #0a1628; /* dark text on white notch bg */
+  font-weight: 700;
+}
+
+/* Top curved notch */
+.navItem.active::before {
+  content: "";
+  position: absolute;
+  top: -20px;
+  right: 0;
+  width: 20px;
+  height: 20px;
+  background: transparent;
+  border-bottom-right-radius: 20px;
+  box-shadow: 8px 8px 0 5px #f0f4f8;
+  pointer-events: none;
+}
+
+/* Bottom curved notch */
+.navItem.active::after {
+  content: "";
+  position: absolute;
+  bottom: -20px;
+  right: 0;
+  width: 20px;
+  height: 20px;
+  background: transparent;
+  border-top-right-radius: 20px;
+  box-shadow: 8px -8px 0 5px #f0f4f8;
+  pointer-events: none;
+}
+
+/* Active icon accent + shake */
+.navItem.active .icon {
+  color: #3ab9ac;
+  scale: 1.25;
+}
+
+/* Sliding white notch fill */
+.notch {
+  background: #f0f4f8;
+  width: 100%;
+  position: absolute;
+  height: 100%;
+  border-left: solid 20px #f0f4f8;
+  top: 0;
+  left: 0;
+  border-radius: 30px 0 0 30px;
+  transform: translateX(250px); /* hidden off-screen */
+  transition: transform 0.05s;
+  z-index: -1000;
+  pointer-events: none;
+}
+
+.active .notch {
+  z-index: -1;
+  transform: translateX(0);
+}
+
+/* ── Bottom / Logout ── */
+.bottomLink {
+  margin-top: auto;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-right: 0;
+}
+
+.bottomLink .navItem {
+  border-radius: 30px;
+  margin-right: 0;
+  color: rgba(255, 200, 200, 0.7);
+}
+
+.bottomLink .navItem:hover {
+  color: #ff8a8a;
+}
+
+
+/* ── Mobile: Floating Bottom Dock ── */
+@media (max-width: 768px) {
+  .sidebar {
+    position: fixed;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90vw !important;
+    height: 68px;
+    flex-direction: row;
+    padding: 0 14px;
+    background: rgba(10, 22, 40, 0.88);
+    backdrop-filter: blur(14px) saturate(180%);
+    -webkit-backdrop-filter: blur(14px) saturate(180%);
+    z-index: 1000;
+    border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+    overflow: visible;
+  }
+
+  .sidebar.collapsed { width: 90vw !important; }
+  .logoContainer { display: none !important; }
+
+  .navMenu {
+    flex-direction: row;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    gap: 0;
+    padding: 0;
+  }
+
+  .navItem {
+    flex-direction: column;
+    padding: 5px 4px;
+    gap: 3px;
+    border-radius: 14px !important;
+    margin: 0 !important;
+    flex: 1;
+    justify-content: center;
+    background: transparent;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    color: rgba(255, 255, 255, 0.55);
+  }
+
+  .icon { color: inherit; }
+
+  .label {
+    font-size: 0.58rem !important;
+    display: block !important;
+    opacity: 0.75 !important;
+    width: auto !important;
+    font-weight: 500;
+  }
+
+  .navItem.active {
+    background: rgba(58, 185, 172, 0.18);
+    color: white;
+    transform: translateY(-5px);
+  }
+
+  .navItem.active .icon {
+    color: #3ab9ac;
+    scale: 1.1;
+  }
+
+  .navItem.active .label {
+    opacity: 1 !important;
+    color: white;
+  }
+
+  /* Hide notch decorations on mobile */
+  .navItem.active::before,
+  .navItem.active::after,
+  .notch {
+    display: none !important;
+  }
+
+  .bottomLink { display: none; }
+}
+
+@media (max-width: 480px) {
+  .sidebar {
+    height: 62px;
+    bottom: 10px;
+    width: 94vw !important;
+    padding: 0 8px;
+  }
+  .navItem { padding: 4px 2px; }
+  .icon svg { width: 20px; height: 20px; }
+  .label { font-size: 0.52rem !important; }
 }

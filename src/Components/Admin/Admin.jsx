@@ -1,25 +1,22 @@
-import { fetchUsers } from "@/utils/adminActions";
-import { useEffect } from "react";
-import { signOutUser } from "../Form/Actions";
 import AdminHeader from "./Components/AdminHeader/AdminHeader";
 import AdminAside from "./Components/AdminAside/AdminAside";
+import styles from "./Admin.module.css";
 
 const Admin = () => {
-  const handleSignOut = async () => {
-    await signOutUser();
-    console.log("signed out");
-  };
-
-  useEffect(() => {
-    console.log(fetchUsers());
-    handleSignOut();
-  }, []);
-
   return (
-    <>
-      <AdminHeader />
+    <div className={styles.adminWrapper}>
+      {/* Sidebar */}
       <AdminAside />
-    </>
+
+      {/* Main content shell */}
+      <div className={styles.mainContainer}>
+        <AdminHeader />
+        <div className={styles.contentArea}>
+          {/* Dashboard content will be rendered here */}
+          
+        </div>
+      </div>
+    </div>
   );
 };
 
