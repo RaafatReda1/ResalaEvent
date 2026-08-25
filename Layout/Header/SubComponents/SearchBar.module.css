@@ -1,0 +1,115 @@
+.searchContainer {
+    position: relative;
+    width: 100%;
+    max-width: 800px;
+}
+
+.inputWrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.searchIcon {
+    position: absolute;
+    left: 16px;
+    color: #94a3b8;
+}
+
+.searchInput {
+    width: 100%;
+    padding: 12px 12px 12px 48px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    font-size: 14px;
+    color: #1e293b;
+    transition: all 0.2s;
+}
+
+.searchInput:focus {
+    outline: none;
+    background: #fff;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+
+.spinner {
+    position: absolute;
+    right: 16px;
+    width: 16px;
+    height: 16px;
+    border: 2px solid #e2e8f0;
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+.dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border: 1px solid #e2e8f0;
+    z-index: 1000;
+    overflow: hidden;
+    max-height: 480px;
+    overflow-y: auto;
+}
+
+.noResults {
+    padding: 24px;
+    text-align: center;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.resultsList { padding: 8px; display: flex; flex-direction: column; gap: 4px; }
+
+.resultItem {
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.resultItem:hover { background: #f1f5f9; }
+.resultItem:hover .linkIcon { opacity: 1; transform: translateX(0); }
+
+.itemIcon {
+    width: 36px;
+    height: 36px;
+    background: #f8fafc;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #3b82f6;
+    flex-shrink: 0;
+}
+
+.itemInfo { flex: 1; min-width: 0; }
+.itemTitle { font-size: 14px; font-weight: 700; color: #1e293b; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.itemSub { font-size: 11px; color: #64748b; margin: 2px 0 0; }
+
+.typeTag {
+    font-size: 8px;
+    font-weight: 800;
+    padding: 4px 8px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    border-radius: 6px;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+}
+
+.linkIcon { opacity: 0; color: #3b82f6; transition: all 0.2s; transform: translateX(-5px); }
+
+@keyframes spin { to { transform: rotate(360deg); } }

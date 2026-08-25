@@ -1,0 +1,53 @@
+.adminWrapper {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    background-color: #023e8a; /* Deep rich blue base for Sidebar contrast */
+    overflow: hidden;
+}
+
+.mainContainer {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--background-light); /* Off-white/greyish background */
+    border-radius: 40px 0 0 40px; /* Massive Inverse border radius */
+    margin: 10px 0 10px 0; /* Tight margin to let the sidebar 'wrap' it */
+    overflow: hidden;
+    position: relative;
+    box-shadow: -10px 0px 30px rgba(0, 0, 0, 0.15); /* Depth shadow pushing into sidebar */
+}
+
+/* RTL Support for Arabic */
+[dir="rtl"] .mainContainer {
+    border-radius: 0 40px 40px 0;
+    box-shadow: 10px 0px 30px rgba(0, 0, 0, 0.15);
+}
+
+.contentArea {
+    flex: 1;
+    overflow-y: auto;
+    padding: 2rem;
+    scrollbar-width: thin;
+    scrollbar-color: var(--highlight-color) transparent;
+}
+
+@media (max-width: 768px) {
+    .adminWrapper { 
+        flex-direction: column; 
+        height: 100vh;
+        overflow: hidden;
+    }
+    .mainContainer {
+        border-radius: 0;
+        margin: 0;
+        box-shadow: none;
+        height: 100%; /* Take full height, we'll use padding for the dock */
+        flex: 1;
+    }
+    [dir="rtl"] .mainContainer { border-radius: 0; }
+    
+    .contentArea { 
+        padding: 1.5rem 1rem 100px 1rem; /* Extra bottom padding for floating dock */
+    }
+}
