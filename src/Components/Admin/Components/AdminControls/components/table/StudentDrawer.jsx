@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   FileText,
   ExternalLink,
@@ -8,8 +8,17 @@ import {
   MessageCircle,
   Edit2,
   Trash2,
+  QrCode,
+  Download,
+  Copy,
 } from "lucide-react";
 import { generateCustomWhatsAppLink } from "@/utils/whatsAppTemplateManager";
+import {
+  generateStudentQRDataURL,
+  downloadQRCode,
+  copyQRCodeToClipboard,
+  processAndCopyStudentQR,
+} from "@/utils/qrCodeManager";
 import styles from "../../AdminControls.module.css";
 
 const StudentDrawer = ({
@@ -21,6 +30,23 @@ const StudentDrawer = ({
   onOpenDelete,
   onSingleApproval,
 }) => {
+  const [qrDataUrl, setQrDataUrl] = useState(null);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (student?.id) {
+      generateStudentQRDataURL(student).then((url) => {
+        if (isMounted) setQrDataUrl(url);
+      });
+    } else {
+      setQrDataUrl(null);
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [student?.id, student?.name, student?.university, student?.academicYear]);
+
   if (!student) return null;
 
   const whatsAppLink = generateCustomWhatsAppLink(
@@ -28,6 +54,35 @@ const StudentDrawer = ({
     whatsAppTemplate,
     whatsAppNameOptions
   );
+
+  const handleWhatsAppSend = async (e) => {
+    e.preventDefault();
+    try {
+      await processAndCopyStudentQR(student);
+    } catch (err) {
+      console.error("Failed to generate/copy QR on WhatsApp send:", err);
+    }
+    if (whatsAppLink) {
+      window.open(whatsAppLink, "_blank", "noopener,noreferrer");
+    }
+  };
+
+  const handleDownloadQR = () => {
+    if (qrDataUrl) {
+      const cleanName = student.name ? student.name.replace(/\s+/g, "_") : student.id;
+      downloadQRCode(qrDataUrl, `pass_${cleanName}_${student.id}.png`);
+    }
+  };
+
+  const handleCopyQR = async () => {
+    if (qrDataUrl) {
+      const ok = await copyQRCodeToClipboard(qrDataUrl);
+      if (ok) {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
+    }
+  };
 
   const formatDate = (dateStr) => {
     if (!dateStr) return "—";
@@ -45,7 +100,7 @@ const StudentDrawer = ({
 
   return (
     <div className={styles.expandedDrawer}>
-      {/* Left: Certificate Preview */}
+      {/* Left: Certificate Preview & QR Code */}
       <div className={styles.drawerCertSection}>
         <div className={styles.drawerCertTitle}>
           <FileText size={15} />
@@ -80,6 +135,72 @@ const StudentDrawer = ({
             <span>لم يتم إرفاق صورة شهادة أو كارنيه</span>
           </div>
         )}
+
+        {/* QR Code Section (Always available, status-aware) */}
+        <div className={styles.drawerQRCard}>
+          <div className={styles.drawerQRTitle}>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <QrCode size={15} />
+              <span>رمز الدخول (QR Code)</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              {student.isApproved === true ? (
+                <span style={{ fontSize: "0.72rem", color: "#16a34a", fontWeight: 800 }}>مقبول ✅</span>
+              ) : (
+                <span style={{ fontSize: "0.72rem", color: "#d97706", fontWeight: 800 }}>في الانتظار ⏳</span>
+              )}
+              <span className={styles.qrBadgeId}>ID: #{student.id}</span>
+            </div>
+          </div>
+
+          <div className={styles.drawerQRContent}>
+            {qrDataUrl ? (
+              <img
+                src={qrDataUrl}
+                alt={`QR Code #${student.id}`}
+                className={styles.drawerQRImage}
+              />
+            ) : (
+              <div
+                style={{
+                  width: 90,
+                  height: 90,
+                  background: "#f1f5f9",
+                  borderRadius: 8,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "0.75rem",
+                  color: "#94a3b8",
+                }}
+              >
+                جاري التوليد...
+              </div>
+            )}
+
+            <div className={styles.drawerQRActions}>
+              <button
+                type="button"
+                className={styles.drawerBtnQRDownload}
+                onClick={handleDownloadQR}
+                title="تحميل صورة الرمز على الجهاز"
+              >
+                <Download size={13} />
+                <span>تحميل الرمز</span>
+              </button>
+
+              <button
+                type="button"
+                className={`${styles.drawerBtnQRCopy} ${copied ? styles.copied : ""}`}
+                onClick={handleCopyQR}
+                title="نسخ صورة الرمز مباشرة للحافظة للصق في واتساب"
+              >
+                {copied ? <Check size={13} /> : <Copy size={13} />}
+                <span>{copied ? "تم النسخ!" : "نسخ للحافظة"}</span>
+              </button>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Right: Full Details Grid & Actions */}
@@ -167,16 +288,19 @@ const StudentDrawer = ({
             </button>
 
             {student.phone && (
-              <a
-                href={whatsAppLink}
-                target="_blank"
-                rel="noreferrer"
+              <button
+                type="button"
+                onClick={handleWhatsAppSend}
                 className={styles.drawerBtnWhatsApp}
-                title="إرسال رسالة القبول المخصصة عبر واتساب"
+                title={
+                  student.isApproved === true
+                    ? "تحميل ونسخ رمز الـ QR ثم فتح محادثة الواتساب"
+                    : "إرسال رسالة عبر واتساب"
+                }
               >
                 <MessageCircle size={14} />
                 <span>إرسال واتساب</span>
-              </a>
+              </button>
             )}
           </div>
 
@@ -207,3 +331,4 @@ const StudentDrawer = ({
 };
 
 export default StudentDrawer;
+

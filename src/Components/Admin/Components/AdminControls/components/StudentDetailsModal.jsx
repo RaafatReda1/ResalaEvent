@@ -1,6 +1,21 @@
-import React from "react";
-import { X, Check, Clock, MessageCircle, FileText } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import {
+  X,
+  Check,
+  Clock,
+  MessageCircle,
+  FileText,
+  QrCode,
+  Download,
+  Copy,
+} from "lucide-react";
 import { generateCustomWhatsAppLink } from "@/utils/whatsAppTemplateManager";
+import {
+  generateStudentQRDataURL,
+  downloadQRCode,
+  copyQRCodeToClipboard,
+  processAndCopyStudentQR,
+} from "@/utils/qrCodeManager";
 import CertificateViewer from "./modals/CertificateViewer";
 import StudentInfoGrid from "./modals/StudentInfoGrid";
 import styles from "../AdminControls.module.css";
@@ -13,6 +28,23 @@ const StudentDetailsModal = ({
   whatsAppNameOptions,
   onApprovalChange,
 }) => {
+  const [qrDataUrl, setQrDataUrl] = useState(null);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (student?.id) {
+      generateStudentQRDataURL(student).then((url) => {
+        if (isMounted) setQrDataUrl(url);
+      });
+    } else {
+      setQrDataUrl(null);
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [student?.id, student?.name, student?.university, student?.academicYear]);
+
   if (!isOpen || !student) return null;
 
   const whatsAppLink = generateCustomWhatsAppLink(
@@ -20,6 +52,35 @@ const StudentDetailsModal = ({
     whatsAppTemplate,
     whatsAppNameOptions
   );
+
+  const handleWhatsAppSend = async (e) => {
+    e.preventDefault();
+    try {
+      await processAndCopyStudentQR(student);
+    } catch (err) {
+      console.error("Failed to generate/copy QR on WhatsApp send:", err);
+    }
+    if (whatsAppLink) {
+      window.open(whatsAppLink, "_blank", "noopener,noreferrer");
+    }
+  };
+
+  const handleDownloadQR = () => {
+    if (qrDataUrl) {
+      const cleanName = student.name ? student.name.replace(/\s+/g, "_") : student.id;
+      downloadQRCode(qrDataUrl, `pass_${cleanName}_${student.id}.png`);
+    }
+  };
+
+  const handleCopyQR = async () => {
+    if (qrDataUrl) {
+      const ok = await copyQRCodeToClipboard(qrDataUrl);
+      if (ok) {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
+    }
+  };
 
   const formatDate = (dateStr) => {
     if (!dateStr) return "—";
@@ -91,7 +152,80 @@ const StudentDetailsModal = ({
         {/* 3. Structured Details Cards Grid */}
         <StudentInfoGrid student={student} />
 
-        {/* 4. Action Buttons Footer */}
+        {/* 4. QR Code Card (Always available, status-aware) */}
+        <div className={styles.drawerQRCard} style={{ margin: "16px 0 0 0" }}>
+          <div className={styles.drawerQRTitle}>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <QrCode size={16} />
+              <span>رمز الدخول الخاص بالفعالية (QR Code)</span>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              {student.isApproved === true ? (
+                <span style={{ fontSize: "0.74rem", color: "#16a34a", fontWeight: 800 }}>مقبول ✅</span>
+              ) : (
+                <span style={{ fontSize: "0.74rem", color: "#d97706", fontWeight: 800 }}>في الانتظار ⏳</span>
+              )}
+              <span className={styles.qrBadgeId}>Student ID: #{student.id}</span>
+            </div>
+          </div>
+
+
+            <div className={styles.drawerQRContent}>
+              {qrDataUrl ? (
+                <img
+                  src={qrDataUrl}
+                  alt={`QR Code #${student.id}`}
+                  className={styles.drawerQRImage}
+                  style={{ width: 100, height: 100 }}
+                />
+              ) : (
+                <div
+                  style={{
+                    width: 100,
+                    height: 100,
+                    background: "#f1f5f9",
+                    borderRadius: 8,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "0.75rem",
+                    color: "#94a3b8",
+                  }}
+                >
+                  جاري التوليد...
+                </div>
+              )}
+
+              <div className={styles.drawerQRActions}>
+                <div style={{ fontSize: "0.8rem", color: "#64748b", marginBottom: "4px" }}>
+                  رمز مشفر يحتوي على الرقم التعريفي للطالب (ID: {student.id}) لمسحه عند بوابة الدخول.
+                </div>
+                <div style={{ display: "flex", gap: "8px" }}>
+                  <button
+                    type="button"
+                    className={styles.drawerBtnQRDownload}
+                    onClick={handleDownloadQR}
+                    title="تحميل صورة الرمز على الجهاز"
+                  >
+                    <Download size={14} />
+                    <span>تحميل الرمز</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    className={`${styles.drawerBtnQRCopy} ${copied ? styles.copied : ""}`}
+                    onClick={handleCopyQR}
+                    title="نسخ صورة الرمز مباشرة للحافظة للصق في واتساب"
+                  >
+                    {copied ? <Check size={14} /> : <Copy size={14} />}
+                    <span>{copied ? "تم النسخ!" : "نسخ للحافظة"}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        {/* 5. Action Buttons Footer */}
         <div className={styles.modalFooterActions}>
           <div
             style={{
@@ -130,17 +264,20 @@ const StudentDetailsModal = ({
           </div>
 
           {student.phone && (
-            <a
-              href={whatsAppLink}
-              target="_blank"
-              rel="noreferrer"
+            <button
+              type="button"
+              onClick={handleWhatsAppSend}
               className={styles.drawerBtnWhatsApp}
               style={{ padding: "9px 16px" }}
-              title="إرسال رسالة القبول المخصصة عبر واتساب"
+              title={
+                student.isApproved === true
+                  ? "تحميل ونسخ رمز الـ QR ثم فتح محادثة الواتساب"
+                  : "إرسال رسالة عبر واتساب"
+              }
             >
               <MessageCircle size={15} />
               <span>إرسال رسالة القبول عبر واتساب</span>
-            </a>
+            </button>
           )}
         </div>
       </div>

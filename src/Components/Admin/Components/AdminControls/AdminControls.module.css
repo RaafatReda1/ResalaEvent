@@ -521,6 +521,40 @@
   color: #0f172a;
 }
 
+.btnActionQR {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #f3e8ff;
+  color: #7e22ce;
+  border: 1px solid #e9d5ff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 0 1px 3px rgba(126, 34, 206, 0.1);
+}
+
+.btnActionQR:hover {
+  background: #7e22ce;
+  color: #ffffff;
+  border-color: #7e22ce;
+  transform: scale(1.08);
+}
+
+.btnActionQRApproved {
+  background: #7e22ce;
+  color: #ffffff;
+  border-color: #6b21a8;
+  box-shadow: 0 2px 6px rgba(126, 34, 206, 0.25);
+}
+
+.btnActionQRApproved:hover {
+  background: #6b21a8;
+  border-color: #581c87;
+}
+
 /* ═══════════════════════════════════════════════════════════
    ACCORDION INLINE DRAWER (Properly Styled with CSS Modules)
    ═══════════════════════════════════════════════════════════ */
@@ -605,6 +639,159 @@
   font-size: 0.85rem;
   font-weight: 700;
   gap: 8px;
+}
+
+/* QR Code Section inside Drawer (Event Pass) */
+.drawerQRCard {
+  margin-top: 14px;
+  padding: 16px;
+  background: #f0fdfa;
+  border: 1px solid #ccfbf1;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 2px 8px rgba(15, 118, 110, 0.05);
+}
+
+.drawerQRTitle {
+  font-size: 0.84rem;
+  font-weight: 800;
+  color: #0f766e;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.qrBadgeId {
+  background: #ccfbf1;
+  color: #0f766e;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid #99f6e4;
+}
+
+.drawerQRContent {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.drawerQRImage {
+  width: 100px;
+  height: 138px;
+  border-radius: 10px;
+  border: 1px solid #99f6e4;
+  background: #041d1a;
+  box-shadow: 0 4px 12px rgba(13, 148, 136, 0.15);
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.drawerQRImage:hover {
+  transform: scale(1.04);
+  box-shadow: 0 6px 16px rgba(13, 148, 136, 0.25);
+}
+
+.drawerQRActions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.drawerBtnQRDownload {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: #0d9488;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.drawerBtnQRDownload:hover {
+  background: #0f766e;
+}
+
+.drawerBtnQRCopy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: #ffffff;
+  color: #0f766e;
+  border: 1px solid #99f6e4;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.drawerBtnQRCopy:hover {
+  background: #ccfbf1;
+}
+
+.drawerBtnQRCopy.copied {
+  background: #16a34a;
+  color: #ffffff;
+  border-color: #16a34a;
+}
+
+.drawerBtnQRDownload {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #7e22ce;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.drawerBtnQRDownload:hover {
+  background: #6b21a8;
+}
+
+.drawerBtnQRCopy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: #f3e8ff;
+  color: #7e22ce;
+  border: 1px solid #d8b4fe;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.drawerBtnQRCopy:hover {
+  background: #e9d5ff;
+}
+
+.drawerBtnQRCopy.copied {
+  background: #16a34a;
+  color: #ffffff;
+  border-color: #16a34a;
 }
 
 .drawerInfoSection {

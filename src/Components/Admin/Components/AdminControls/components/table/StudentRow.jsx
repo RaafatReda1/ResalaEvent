@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Check,
   Clock,
@@ -7,8 +7,10 @@ import {
   ChevronDown,
   ChevronUp,
   MessageCircle,
+  QrCode,
 } from "lucide-react";
 import { generateCustomWhatsAppLink } from "@/utils/whatsAppTemplateManager";
+import { processAndCopyStudentQR } from "@/utils/qrCodeManager";
 import styles from "../../AdminControls.module.css";
 
 const StudentRow = ({
@@ -21,11 +23,37 @@ const StudentRow = ({
   onToggleExpand,
   onOpenDetails,
 }) => {
+  const [qrLoading, setQrLoading] = useState(false);
+
   const whatsAppLink = generateCustomWhatsAppLink(
     student,
     whatsAppTemplate,
     whatsAppNameOptions
   );
+
+  const handleWhatsAppSend = async (e) => {
+    e.preventDefault();
+    try {
+      await processAndCopyStudentQR(student);
+    } catch (err) {
+      console.error("Failed to generate/copy QR on WhatsApp send:", err);
+    }
+    if (whatsAppLink) {
+      window.open(whatsAppLink, "_blank", "noopener,noreferrer");
+    }
+  };
+
+  const handleDownloadQR = async (e) => {
+    e.stopPropagation();
+    try {
+      setQrLoading(true);
+      await processAndCopyStudentQR(student);
+    } catch (err) {
+      console.error("Failed to download QR:", err);
+    } finally {
+      setQrLoading(false);
+    }
+  };
 
   const formatDate = (dateStr) => {
     if (!dateStr) return "—";
@@ -135,17 +163,33 @@ const StudentRow = ({
       {/* Quick Actions */}
       <td onClick={(e) => e.stopPropagation()}>
         <div className={styles.rowActionsClean}>
+          {/* QR Code Action (Always available, highlighted when approved) */}
+          <button
+            type="button"
+            className={`${styles.btnActionQR} ${
+              student.isApproved === true ? styles.btnActionQRApproved : ""
+            }`}
+            onClick={handleDownloadQR}
+            disabled={qrLoading}
+            title={
+              student.isApproved === true
+                ? "تحميل ونسخ رمز الـ QR للطالب المعتمد"
+                : "توليد وتحميل رمز الـ QR للطالب"
+            }
+          >
+            <QrCode size={15} />
+          </button>
+
           {/* Direct WhatsApp link with customized template */}
           {student.phone && (
-            <a
-              href={whatsAppLink}
-              target="_blank"
-              rel="noreferrer"
+            <button
+              type="button"
+              onClick={handleWhatsAppSend}
               className={styles.btnActionWhatsApp}
-              title="إرسال رسالة القبول المخصصة عبر واتساب"
+              title="تحميل ونسخ رمز الـ QR ثم فتح محادثة الواتساب"
             >
               <MessageCircle size={15} />
-            </a>
+            </button>
           )}
 
           {/* Details Modal */}
@@ -174,3 +218,4 @@ const StudentRow = ({
 };
 
 export default StudentRow;
+
