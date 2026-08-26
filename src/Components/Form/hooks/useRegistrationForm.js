@@ -13,6 +13,7 @@ import {
   signOutUser,
   fetchStudentByEmail,
 } from "../Actions";
+import { logActivity, ACTION_TYPES, ACTION_CATEGORIES } from "@/utils/activityLogger";
 
 export const useRegistrationForm = () => {
   const [authUser, setAuthUser] = useState(null); // Supabase Google user
@@ -462,6 +463,26 @@ export const useRegistrationForm = () => {
 
       saveRegistrationCookie(registeredData);
 
+      logActivity({
+        action_type: ACTION_TYPES.STUDENT_SUBMIT_FORM,
+        action_category: ACTION_CATEGORIES.STUDENT_ACTION,
+        description: `قام الطالب "${payload.name}" بإرسال استمارة التسجيل لأول مرة`,
+        target_id: dbRow?.id || null,
+        target_name: payload.name,
+        metadata: {
+          university: payload.university,
+          academicYear: payload.academicYear,
+          place: payload.place,
+          email: payload.email,
+        },
+        actorOverride: {
+          id: authUser?.id || null,
+          email: payload.email,
+          name: payload.name,
+          role: "student",
+        },
+      });
+
       if (authUser) {
         setSavedAttendee(registeredData);
         setAnonCookieData(null);
@@ -550,6 +571,26 @@ export const useRegistrationForm = () => {
       setSavedAttendee(updatedData);
       setIsEditing(false);
       setSuccessToast("تم حفظ التعديلات بنجاح! ✅");
+
+      logActivity({
+        action_type: ACTION_TYPES.STUDENT_UPDATE_FORM,
+        action_category: ACTION_CATEGORIES.STUDENT_ACTION,
+        description: `قام الطالب "${payload.name}" بتحديث بيانات استمارة التسجيل الخاصة به`,
+        target_id: savedAttendee?.id || null,
+        target_name: payload.name,
+        metadata: {
+          university: payload.university,
+          academicYear: payload.academicYear,
+          place: payload.place,
+          email: payload.email,
+        },
+        actorOverride: {
+          id: authUser?.id || null,
+          email: payload.email,
+          name: payload.name,
+          role: "student",
+        },
+      });
 
       openModal({
         type: "success",

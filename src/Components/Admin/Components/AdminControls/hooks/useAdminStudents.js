@@ -15,6 +15,7 @@ import {
   saveAdminWhatsAppTemplate,
   DEFAULT_WHATSAPP_TEMPLATE,
 } from "@/utils/whatsAppTemplateManager";
+import { logActivity, ACTION_TYPES, ACTION_CATEGORIES } from "@/utils/activityLogger";
 
 export const useAdminStudents = () => {
   // Master in-memory cache of all students (never fetches cookie)
@@ -368,10 +369,25 @@ export const useAdminStudents = () => {
           prev.map((s) => (s.id === editingStudent.id ? { ...s, ...updated } : s))
         );
         showToast("تم تحديث بيانات الطالب بنجاح! ✅");
+        logActivity({
+          action_type: ACTION_TYPES.EDIT_STUDENT,
+          action_category: ACTION_CATEGORIES.ADMIN_OPERATION,
+          description: `قام بتحديث بيانات الطالب "${formData.name || formData.email}"`,
+          target_id: editingStudent.id,
+          target_name: formData.name || formData.email,
+          metadata: { updatedFields: Object.keys(formData) },
+        });
       } else {
         const created = await createStudentAdmin(formData);
         setAllStudents((prev) => [created, ...prev]);
         showToast("تمت إضافة الطالب الجديد بنجاح! 🎉");
+        logActivity({
+          action_type: ACTION_TYPES.CREATE_STUDENT,
+          action_category: ACTION_CATEGORIES.ADMIN_OPERATION,
+          description: `قام بإضافة طالب جديد يدوياً: "${formData.name || formData.email}"`,
+          target_id: created.id,
+          target_name: formData.name || formData.email,
+        });
       }
       setIsFormModalOpen(false);
     } catch (err) {
@@ -386,10 +402,18 @@ export const useAdminStudents = () => {
     if (options) setWhatsAppNameOptions(options);
     await saveAdminWhatsAppTemplate(newTemplate);
     showToast("تم حفظ قالب رسالة الواتساب بنجاح في جدول المشرفين! 💬");
+    logActivity({
+      action_type: ACTION_TYPES.UPDATE_WHATSAPP_TEMPLATE,
+      action_category: ACTION_CATEGORIES.SETTINGS,
+      description: "قام بتعديل وتحديث قالب رسائل الواتساب المحفوظ",
+      metadata: { options },
+    });
   };
 
   // Single Approval change (Optimistic UI)
   const handleSingleApproval = async (id, isApproved) => {
+    const targetStudent = allStudents.find((s) => s.id === id);
+
     // 1. Instant local update
     setAllStudents((prev) =>
       prev.map((s) => (s.id === id ? { ...s, isApproved } : s))
@@ -405,6 +429,25 @@ export const useAdminStudents = () => {
         ? "تم رفض طلب الطالب ❌"
         : "تمت إعادة الطالب لقائمة الانتظار ⏳"
     );
+
+    logActivity({
+      action_type:
+        isApproved === true
+          ? ACTION_TYPES.APPROVE_STUDENT
+          : isApproved === false
+          ? ACTION_TYPES.REJECT_STUDENT
+          : ACTION_TYPES.PENDING_STUDENT,
+      action_category: ACTION_CATEGORIES.ADMIN_OPERATION,
+      description:
+        isApproved === true
+          ? `قام باعتماد وقبول الطالب "${targetStudent?.name || targetStudent?.email || id}"`
+          : isApproved === false
+          ? `قام برفض طلب الطالب "${targetStudent?.name || targetStudent?.email || id}"`
+          : `قام بإعادة الطالب "${targetStudent?.name || targetStudent?.email || id}" للانتظار`,
+      target_id: id,
+      target_name: targetStudent?.name || targetStudent?.email || null,
+      metadata: { status: isApproved },
+    });
 
     // 2. Background Supabase update
     try {
@@ -432,6 +475,15 @@ export const useAdminStudents = () => {
         : `تم رفض (${targetIds.length}) طلاب ❌`
     );
 
+    logActivity({
+      action_type: ACTION_TYPES.BULK_APPROVAL,
+      action_category: ACTION_CATEGORIES.ADMIN_OPERATION,
+      description: `قام بتحديث حالة اعتماد جماعية لعدد (${targetIds.length}) طالب إلى: ${
+        isApproved === true ? "مقبول" : isApproved === false ? "مرفوض" : "في الانتظار"
+      }`,
+      metadata: { count: targetIds.length, targetIds, isApproved },
+    });
+
     try {
       await bulkSetApprovalStatus(targetIds, isApproved);
     } catch (err) {
@@ -445,9 +497,19 @@ export const useAdminStudents = () => {
   const handleConfirmDelete = async () => {
     if (studentToDelete?.id) {
       const delId = studentToDelete.id;
+      const delName = studentToDelete.name || studentToDelete.email;
       setAllStudents((prev) => prev.filter((s) => s.id !== delId));
       setIsDeleteModalOpen(false);
       showToast("تم حذف الطالب بنجاح! 🗑️");
+
+      logActivity({
+        action_type: ACTION_TYPES.DELETE_STUDENT,
+        action_category: ACTION_CATEGORIES.ADMIN_OPERATION,
+        description: `قام بحذف بيانات الطالب "${delName}" نهائياً من قاعدة البيانات`,
+        target_id: delId,
+        target_name: delName,
+      });
+
       try {
         await deleteStudentAdmin(delId);
       } catch (err) {
@@ -461,6 +523,14 @@ export const useAdminStudents = () => {
       setSelectedIds([]);
       setIsDeleteModalOpen(false);
       showToast(`تم حذف (${delIds.length}) طلاب بنجاح! 🗑️`);
+
+      logActivity({
+        action_type: ACTION_TYPES.BULK_DELETE,
+        action_category: ACTION_CATEGORIES.ADMIN_OPERATION,
+        description: `قام بحذف (${delIds.length}) طلاب نهائياً من قاعدة البيانات`,
+        metadata: { count: delIds.length, deletedIds: delIds },
+      });
+
       try {
         await bulkDeleteStudentsAdmin(delIds);
       } catch (err) {
