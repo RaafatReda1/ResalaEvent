@@ -1,0 +1,14 @@
+/* ─── WhatsApp Variables Palette ─── */
+.paletteWrapper { display: flex; flex-direction: column; gap: 8px; }
+.paletteTopRow { display: flex; justify-content: space-between; align-items: center; }
+.paletteTitle { font-size: 0.82rem; font-weight: 800; color: #0f766e; display: flex; align-items: center; gap: 6px; }
+.chipsGrid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.variableChip { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #f0fdfa; border: 1px solid #99f6e4; border-radius: 10px; cursor: pointer; transition: all 0.15s ease; text-align: right; }
+.variableChip:hover { background: #ccfbf1; border-color: #2dd4bf; transform: translateY(-1px); }
+.chipLeft { display: flex; align-items: center; gap: 6px; }
+.chipIcon { color: #0d9488; }
+.chipLabel { font-size: 0.8rem; font-weight: 800; color: #0f766e; }
+.chipTag { font-size: 0.68rem; font-weight: 700; color: #64748b; background: #ffffff; padding: 2px 6px; border-radius: 6px; border: 1px solid #ccfbf1; }
+.healthBadge { font-size: 0.75rem; font-weight: 800; padding: 3px 10px; border-radius: 8px; display: inline-flex; align-items: center; gap: 4px; }
+.healthOk { background: #dcfce7; color: #15803d; }
+.healthError { background: #fee2e2; color: #b91c1c; }
