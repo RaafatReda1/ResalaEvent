@@ -9,11 +9,13 @@ import {
   Edit2,
   Trash2,
 } from "lucide-react";
-import { generateWhatsAppApprovalLink } from "@/utils/adminStudentActions";
+import { generateCustomWhatsAppLink } from "@/utils/whatsAppTemplateManager";
 import styles from "../../AdminControls.module.css";
 
 const StudentDrawer = ({
   student,
+  whatsAppTemplate,
+  whatsAppNameOptions,
   onOpenDetails,
   onOpenEdit,
   onOpenDelete,
@@ -21,7 +23,11 @@ const StudentDrawer = ({
 }) => {
   if (!student) return null;
 
-  const whatsAppLink = generateWhatsAppApprovalLink(student);
+  const whatsAppLink = generateCustomWhatsAppLink(
+    student,
+    whatsAppTemplate,
+    whatsAppNameOptions
+  );
 
   const formatDate = (dateStr) => {
     if (!dateStr) return "—";
@@ -166,6 +172,7 @@ const StudentDrawer = ({
                 target="_blank"
                 rel="noreferrer"
                 className={styles.drawerBtnWhatsApp}
+                title="إرسال رسالة القبول المخصصة عبر واتساب"
               >
                 <MessageCircle size={14} />
                 <span>إرسال واتساب</span>

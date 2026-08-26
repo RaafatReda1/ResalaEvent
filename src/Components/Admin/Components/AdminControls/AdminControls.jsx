@@ -6,10 +6,12 @@ import Pagination from "./components/Pagination";
 import StudentFormModal from "./components/StudentFormModal";
 import StudentDetailsModal from "./components/StudentDetailsModal";
 import DeleteConfirmModal from "./components/DeleteConfirmModal";
+import WhatsAppTemplateModal from "./components/modals/WhatsAppTemplateModal";
 import styles from "./AdminControls.module.css";
 
 const AdminControls = () => {
   const {
+    allStudents,
     students,
     filteredStudents,
     totalCount,
@@ -30,6 +32,11 @@ const AdminControls = () => {
     uniquePlaces,
     uniqueAcademicYears,
     uniqueRegistrationDays,
+    whatsAppTemplate,
+    whatsAppNameOptions,
+    isWhatsAppModalOpen,
+    setIsWhatsAppModalOpen,
+    handleSaveWhatsAppTemplate,
     page,
     pageSize,
     sortBy,
@@ -134,6 +141,7 @@ const AdminControls = () => {
         presetStats={presetStats}
         onResetFilters={handleResetAllFilters}
         onOpenCreate={handleOpenCreate}
+        onOpenWhatsAppSettings={() => setIsWhatsAppModalOpen(true)}
         onRefresh={loadStudents}
         loading={loading}
         studentsToExport={filteredStudents}
@@ -152,6 +160,8 @@ const AdminControls = () => {
         loading={loading}
         selectedIds={selectedIds}
         expandedRowId={expandedRowId}
+        whatsAppTemplate={whatsAppTemplate}
+        whatsAppNameOptions={whatsAppNameOptions}
         onToggleSelectAll={toggleSelectAll}
         onToggleSelectOne={toggleSelectOne}
         onToggleRowExpansion={toggleRowExpansion}
@@ -176,6 +186,15 @@ const AdminControls = () => {
         onPageSizeChange={setPageSize}
       />
 
+      {/* WhatsApp Template Customization Modal */}
+      <WhatsAppTemplateModal
+        isOpen={isWhatsAppModalOpen}
+        onClose={() => setIsWhatsAppModalOpen(false)}
+        template={whatsAppTemplate}
+        onSaveTemplate={handleSaveWhatsAppTemplate}
+        allStudents={allStudents}
+      />
+
       {/* Create / Edit Modal */}
       <StudentFormModal
         isOpen={isFormModalOpen}
@@ -189,6 +208,8 @@ const AdminControls = () => {
         isOpen={isDetailsModalOpen}
         onClose={() => setIsDetailsModalOpen(false)}
         student={viewingStudent}
+        whatsAppTemplate={whatsAppTemplate}
+        whatsAppNameOptions={whatsAppNameOptions}
         onApprovalChange={handleSingleApproval}
       />
 

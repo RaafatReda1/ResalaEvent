@@ -8,18 +8,24 @@ import {
   ChevronUp,
   MessageCircle,
 } from "lucide-react";
-import { generateWhatsAppApprovalLink } from "@/utils/adminStudentActions";
+import { generateCustomWhatsAppLink } from "@/utils/whatsAppTemplateManager";
 import styles from "../../AdminControls.module.css";
 
 const StudentRow = ({
   student,
   isSelected = false,
   isExpanded = false,
+  whatsAppTemplate,
+  whatsAppNameOptions,
   onToggleSelect,
   onToggleExpand,
   onOpenDetails,
 }) => {
-  const whatsAppLink = generateWhatsAppApprovalLink(student);
+  const whatsAppLink = generateCustomWhatsAppLink(
+    student,
+    whatsAppTemplate,
+    whatsAppNameOptions
+  );
 
   const formatDate = (dateStr) => {
     if (!dateStr) return "—";
@@ -129,14 +135,14 @@ const StudentRow = ({
       {/* Quick Actions */}
       <td onClick={(e) => e.stopPropagation()}>
         <div className={styles.rowActionsClean}>
-          {/* Direct WhatsApp link */}
+          {/* Direct WhatsApp link with customized template */}
           {student.phone && (
             <a
               href={whatsAppLink}
               target="_blank"
               rel="noreferrer"
               className={styles.btnActionWhatsApp}
-              title="إرسال رسالة القبول عبر واتساب"
+              title="إرسال رسالة القبول المخصصة عبر واتساب"
             >
               <MessageCircle size={15} />
             </a>

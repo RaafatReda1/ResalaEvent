@@ -1,6 +1,6 @@
 import React from "react";
 import { X, Check, Clock, MessageCircle, FileText } from "lucide-react";
-import { generateWhatsAppApprovalLink } from "@/utils/adminStudentActions";
+import { generateCustomWhatsAppLink } from "@/utils/whatsAppTemplateManager";
 import CertificateViewer from "./modals/CertificateViewer";
 import StudentInfoGrid from "./modals/StudentInfoGrid";
 import styles from "../AdminControls.module.css";
@@ -9,11 +9,17 @@ const StudentDetailsModal = ({
   isOpen = false,
   onClose,
   student = null,
+  whatsAppTemplate,
+  whatsAppNameOptions,
   onApprovalChange,
 }) => {
   if (!isOpen || !student) return null;
 
-  const whatsAppLink = generateWhatsAppApprovalLink(student);
+  const whatsAppLink = generateCustomWhatsAppLink(
+    student,
+    whatsAppTemplate,
+    whatsAppNameOptions
+  );
 
   const formatDate = (dateStr) => {
     if (!dateStr) return "—";
@@ -130,6 +136,7 @@ const StudentDetailsModal = ({
               rel="noreferrer"
               className={styles.drawerBtnWhatsApp}
               style={{ padding: "9px 16px" }}
+              title="إرسال رسالة القبول المخصصة عبر واتساب"
             >
               <MessageCircle size={15} />
               <span>إرسال رسالة القبول عبر واتساب</span>

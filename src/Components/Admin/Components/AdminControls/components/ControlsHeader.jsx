@@ -27,6 +27,7 @@ const ControlsHeader = ({
   presetStats = {},
   onResetFilters,
   onOpenCreate,
+  onOpenWhatsAppSettings,
   onRefresh,
   loading,
   studentsToExport = [],
@@ -46,6 +47,7 @@ const ControlsHeader = ({
       {/* 1. Header Title & Export / Action Buttons */}
       <ControlsTopBar
         onOpenCreate={onOpenCreate}
+        onOpenWhatsAppSettings={onOpenWhatsAppSettings}
         onRefresh={onRefresh}
         loading={loading}
         studentsToExport={studentsToExport}

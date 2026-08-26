@@ -1,11 +1,19 @@
 import React from "react";
-import { Users, UserPlus, Download, FileText, RefreshCw, Printer } from "lucide-react";
+import {
+  Users,
+  UserPlus,
+  Download,
+  FileText,
+  RefreshCw,
+  MessageCircle,
+} from "lucide-react";
 import { exportStudentsToCSV } from "@/utils/adminStudentActions";
 import { exportStudentsToPDF } from "@/utils/pdfExport";
 import styles from "../../AdminControls.module.css";
 
 const ControlsTopBar = ({
   onOpenCreate,
+  onOpenWhatsAppSettings,
   onRefresh,
   loading = false,
   studentsToExport = [],
@@ -23,6 +31,17 @@ const ControlsTopBar = ({
       </div>
 
       <div className={styles.headerActions}>
+        {/* WhatsApp Template Settings */}
+        <button
+          type="button"
+          className={styles.btnSecondary}
+          onClick={onOpenWhatsAppSettings}
+          title="تخصيص نص ورسالة الواتساب للقبول والتحكم في المتغيرات"
+        >
+          <MessageCircle size={16} className="text-emerald-600" />
+          <span>إعدادات الواتساب 💬</span>
+        </button>
+
         {/* PDF Export */}
         <button
           type="button"
@@ -32,7 +51,7 @@ const ControlsTopBar = ({
           disabled={studentsToExport.length === 0}
         >
           <FileText size={16} />
-          <span>تقرير PDF </span>
+          <span>تقرير PDF</span>
         </button>
 
         {/* CSV Export */}

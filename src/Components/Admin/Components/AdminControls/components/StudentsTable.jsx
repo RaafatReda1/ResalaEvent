@@ -9,6 +9,8 @@ const StudentsTable = ({
   loading = false,
   selectedIds = [],
   expandedRowId = null,
+  whatsAppTemplate,
+  whatsAppNameOptions,
   onToggleSelectAll,
   onToggleSelectOne,
   onToggleRowExpansion,
@@ -118,6 +120,8 @@ const StudentsTable = ({
                       student={student}
                       isSelected={isSelected}
                       isExpanded={isExpanded}
+                      whatsAppTemplate={whatsAppTemplate}
+                      whatsAppNameOptions={whatsAppNameOptions}
                       onToggleSelect={() => onToggleSelectOne(student.id)}
                       onToggleExpand={() => onToggleRowExpansion(student.id)}
                       onOpenDetails={onOpenDetails}
@@ -129,6 +133,8 @@ const StudentsTable = ({
                         <td colSpan="8" className={styles.drawerCell}>
                           <StudentDrawer
                             student={student}
+                            whatsAppTemplate={whatsAppTemplate}
+                            whatsAppNameOptions={whatsAppNameOptions}
                             onOpenDetails={onOpenDetails}
                             onOpenEdit={onOpenEdit}
                             onOpenDelete={onOpenDelete}

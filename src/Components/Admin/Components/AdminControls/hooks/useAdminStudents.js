@@ -10,6 +10,11 @@ import {
 } from "@/utils/adminStudentActions";
 import { smartSearchMatch, smartPhoneMatch } from "@/utils/arabicSearch";
 import { normalizeUniversityName } from "@/utils/dashboardActions";
+import {
+  fetchAdminWhatsAppTemplate,
+  saveAdminWhatsAppTemplate,
+  DEFAULT_WHATSAPP_TEMPLATE,
+} from "@/utils/whatsAppTemplateManager";
 
 export const useAdminStudents = () => {
   // Master in-memory cache of all students (never fetches cookie)
@@ -47,6 +52,14 @@ export const useAdminStudents = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [studentToDelete, setStudentToDelete] = useState(null);
 
+  // WhatsApp Template State & Modal
+  const [whatsAppTemplate, setWhatsAppTemplate] = useState(DEFAULT_WHATSAPP_TEMPLATE);
+  const [whatsAppNameOptions, setWhatsAppNameOptions] = useState({
+    nameMode: "full",
+    autoArabic: true,
+  });
+  const [isWhatsAppModalOpen, setIsWhatsAppModalOpen] = useState(false);
+
   // Toast / notification feedback
   const [toastMsg, setToastMsg] = useState("");
 
@@ -77,8 +90,12 @@ export const useAdminStudents = () => {
     }
   }, []);
 
+  // Load WhatsApp Template from public.admins table
   useEffect(() => {
     loadAllStudents();
+    fetchAdminWhatsAppTemplate().then((tpl) => {
+      if (tpl) setWhatsAppTemplate(tpl);
+    });
   }, [loadAllStudents]);
 
   // Extract dynamic unique lists for dropdown filters
@@ -363,6 +380,14 @@ export const useAdminStudents = () => {
     }
   };
 
+  // Save customized WhatsApp template to public.admins table
+  const handleSaveWhatsAppTemplate = async (newTemplate, options) => {
+    setWhatsAppTemplate(newTemplate);
+    if (options) setWhatsAppNameOptions(options);
+    await saveAdminWhatsAppTemplate(newTemplate);
+    showToast("تم حفظ قالب رسالة الواتساب بنجاح في جدول المشرفين! 💬");
+  };
+
   // Single Approval change (Optimistic UI)
   const handleSingleApproval = async (id, isApproved) => {
     // 1. Instant local update
@@ -468,6 +493,11 @@ export const useAdminStudents = () => {
     uniquePlaces,
     uniqueAcademicYears,
     uniqueRegistrationDays,
+    whatsAppTemplate,
+    whatsAppNameOptions,
+    isWhatsAppModalOpen,
+    setIsWhatsAppModalOpen,
+    handleSaveWhatsAppTemplate,
     page,
     pageSize,
     sortBy,
