@@ -20,8 +20,8 @@ const Admin = () => {
             <Route index element={<AdminDashboard />} />
             <Route path="/" element={<AdminDashboard />} />
             <Route path="/dashboard" element={<AdminDashboard />} />
-            <Route path="/students" element={<AdminControls>Students</AdminControls>} />
-            <Route path="/reports" element={<AdminReports>Reports</AdminReports>} />
+            <Route path="/students" element={<AdminControls />} />
+            <Route path="/reports" element={<AdminReports />} />
           </Routes>
         </div>
       </div>
