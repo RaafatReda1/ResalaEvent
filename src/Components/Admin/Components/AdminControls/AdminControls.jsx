@@ -29,6 +29,7 @@ const AdminControls = () => {
     uniqueUniversities,
     uniquePlaces,
     uniqueAcademicYears,
+    uniqueRegistrationDays,
     page,
     pageSize,
     sortBy,
@@ -125,6 +126,7 @@ const AdminControls = () => {
         uniqueAcademicYears={uniqueAcademicYears}
         dayFilter={dayFilter}
         onDayFilterChange={handleDayFilterChange}
+        uniqueRegistrationDays={uniqueRegistrationDays}
         certFilter={certFilter}
         onCertFilterChange={handleCertFilterChange}
         presetFilter={presetFilter}

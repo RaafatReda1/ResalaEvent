@@ -108,6 +108,36 @@ export const useAdminStudents = () => {
     return Array.from(set).sort();
   }, [allStudents]);
 
+  // Extract dynamic unique registration days (earliest to latest + today)
+  const uniqueRegistrationDays = useMemo(() => {
+    const daySet = new Set();
+    const todayStr = new Date().toISOString().split("T")[0];
+    daySet.add(todayStr);
+
+    allStudents.forEach((s) => {
+      if (s.created_at) {
+        const dayStr = s.created_at.split("T")[0];
+        if (dayStr) daySet.add(dayStr);
+      }
+    });
+
+    // Sort descending (latest first)
+    const sorted = Array.from(daySet).sort((a, b) => (a < b ? 1 : -1));
+
+    return sorted.map((dayStr) => {
+      const d = new Date(dayStr + "T12:00:00");
+      const label = d.toLocaleDateString("ar-EG", {
+        day: "numeric",
+        month: "long",
+        year: "numeric",
+      });
+      return {
+        date: dayStr,
+        label,
+      };
+    });
+  }, [allStudents]);
+
   // Preset Stats Counts (Computed instantly)
   const presetStats = useMemo(() => {
     const todayStr = new Date().toISOString().split("T")[0];
@@ -437,6 +467,7 @@ export const useAdminStudents = () => {
     uniqueUniversities,
     uniquePlaces,
     uniqueAcademicYears,
+    uniqueRegistrationDays,
     page,
     pageSize,
     sortBy,
