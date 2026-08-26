@@ -1,23 +1,24 @@
 /* ─── Admin Reports & Activity Audit Log Styles ─── */
 
-.reportsContainer {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  padding: 8px 0;
-  animation: fadeIn 0.3s ease;
-}
-
-@keyframes fadeIn {
+@keyframes pageEnter {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(18px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
+
+.reportsContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 8px 0;
+  animation: pageEnter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
 
 /* ─── Top Bar ─── */
 .topBar {
@@ -413,6 +414,13 @@
   border: 1px solid #e2e8f0;
 }
 
+.roleAnonymous {
+  background: #f8fafc;
+  color: #94a3b8;
+  border: 1px dashed #cbd5e1;
+  font-style: italic;
+}
+
 /* ─── Action Category Badges ─── */
 .actionBadge {
   display: inline-flex;
@@ -448,6 +456,12 @@
 .badgeSettings {
   background: #f3e8ff;
   color: #7e22ce;
+}
+
+.badgeLinkClick {
+  background: #f0fdfa;
+  color: #0d9488;
+  border: 1px solid #99f6e4;
 }
 
 /* ─── Expandable Drawer ─── */
@@ -685,4 +699,85 @@
   gap: 10px;
   padding-top: 14px;
   border-top: 1px solid #f1f5f9;
+}
+
+/* ─── Responsive Media Queries ─── */
+@media (max-width: 768px) {
+  .topBar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .topActions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .btnPrimary,
+  .btnSecondary,
+  .btnDanger {
+    justify-content: center;
+    padding: 9px 10px;
+    font-size: 0.78rem;
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+
+  .filterBar {
+    padding: 12px;
+    border-radius: 14px;
+    gap: 10px;
+  }
+
+  .searchBox {
+    min-width: 100%;
+  }
+
+  .filterSelectsGroup {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .filterSelect {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .resetFiltersBtn {
+    grid-column: span 2;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .pagination {
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .topActions {
+    grid-template-columns: 1fr;
+  }
+
+  .filterSelectsGroup {
+    grid-template-columns: 1fr;
+  }
+
+  .resetFiltersBtn {
+    grid-column: span 1;
+  }
 }

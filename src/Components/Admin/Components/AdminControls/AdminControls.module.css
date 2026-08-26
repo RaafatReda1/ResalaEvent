@@ -2,6 +2,17 @@
    ADMIN CONTROLS — Pure CSS Module (Self-Contained & Robust)
    ═══════════════════════════════════════════════════════════ */
 
+@keyframes pageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .controlsContainer {
   display: flex;
   flex-direction: column;
@@ -10,6 +21,7 @@
   direction: rtl;
   color: #1e293b;
   font-family: inherit;
+  animation: pageEnter 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /* ── Top Header ── */
@@ -995,6 +1007,19 @@
   scrollbar-width: thin;
 }
 
+.whatsappModalCard {
+  max-width: 960px;
+  width: 100%;
+  padding: 24px 28px;
+}
+
+.whatsappModalGrid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 20px;
+  align-items: start;
+}
+
 .modalHeader {
   display: flex;
   justify-content: space-between;
@@ -1292,6 +1317,11 @@
   cursor: not-allowed;
 }
 
+.metaLabelMobile,
+.actionBtnLabelMobile {
+  display: none;
+}
+
 /* ── Responsive Breakpoints ── */
 @media (max-width: 1200px) {
   .presetGrid {
@@ -1302,16 +1332,311 @@
 @media (max-width: 768px) {
   .presetGrid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
   }
-  .expandedDrawer {
-    grid-template-columns: 1fr;
-  }
-  .drawerDetailsGrid,
-  .modalInfoGrid {
-    grid-template-columns: 1fr 1fr;
-  }
+
   .headerRow {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .headerActions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .btnPrimary,
+  .btnSecondary {
+    justify-content: center;
+    padding: 10px 12px;
+    font-size: 0.82rem;
+  }
+
+  /* Filter Bar Mobile Reflow */
+  .filterBarCard {
+    padding: 12px;
+    border-radius: 14px;
+    gap: 10px;
+  }
+
+  .filterTopRow {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .searchWrap {
+    min-width: 100%;
+  }
+
+  .filterSelect {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .filterSubRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding-top: 8px;
+  }
+
+  .filterLabelWrap {
+    grid-column: span 2;
+  }
+
+  .filterResetBtn {
+    grid-column: span 2;
+    justify-content: center;
+    width: 100%;
+  }
+
+  /* Students Table -> Responsive Mobile Cards */
+  .tableCard {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+  }
+
+  .tableResponsive {
+    overflow-x: visible;
+  }
+
+  .studentsTable {
+    display: block;
+    width: 100%;
+  }
+
+  .studentsTable thead {
+    display: none;
+  }
+
+  .studentsTable tbody {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 12px;
+  }
+
+  .tableRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    width: 100%;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 18px;
+    padding: 14px;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03);
+    gap: 8px;
+    box-sizing: border-box;
+    position: relative;
+  }
+
+  .tableRow.rowExpanded {
+    border-color: #3ab9ac;
+    background: #f0fdfa;
+  }
+
+  .colCheckbox {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 !important;
+    border: none !important;
+    order: 1;
+    flex-shrink: 0;
+    margin-left: 6px;
+  }
+
+  .colStudent {
+    display: flex;
+    flex-direction: column;
+    padding: 0 !important;
+    border: none !important;
+    flex: 1;
+    min-width: 130px;
+    order: 2;
+  }
+
+  .colStatus {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 0 !important;
+    border: none !important;
+    order: 3;
+    flex-shrink: 0;
+  }
+
+  .colUniversity,
+  .colAcademicYear,
+  .colPlace,
+  .colDate {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 8px !important;
+    border: none !important;
+    background: #f8fafc;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    order: 4;
+  }
+
+  .metaLabelMobile {
+    display: inline;
+    font-size: 0.74rem;
+    color: #94a3b8;
+    font-weight: 700;
+  }
+
+  .colActions {
+    display: flex;
+    width: 100%;
+    padding: 10px 0 0 0 !important;
+    border: none !important;
+    border-top: 1px solid #f1f5f9 !important;
+    order: 5;
+    margin-top: 2px;
+  }
+
+  .rowActionsClean {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    width: 100%;
+    gap: 6px;
+  }
+
+  .btnActionQR,
+  .btnActionWhatsApp,
+  .btnActionEye,
+  .expandToggleBtn {
+    width: 100%;
+    height: 38px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 0 4px;
+  }
+
+  .actionBtnLabelMobile {
+    display: inline;
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  /* Drawer Mobile View */
+  .drawerCell {
+    display: block;
+    width: 100%;
+    padding: 0 !important;
+    border: none !important;
+    margin-top: -6px;
+    margin-bottom: 8px;
+  }
+
+  .expandedDrawer {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 14px;
+    border-radius: 18px;
+    border: 1px solid #ccfbf1;
+    background: #f0fdfa;
+  }
+
+  .drawerDetailsGrid,
+  .modalInfoGrid {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .drawerBottomActions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .drawerApprovalGroup {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    width: 100%;
+  }
+
+  .drawerBtnApprove,
+  .drawerBtnPending,
+  .drawerBtnReject,
+  .drawerBtnWhatsApp {
+    width: 100%;
+    justify-content: center;
+    font-size: 0.78rem;
+    padding: 8px 6px;
+  }
+
+  /* Pagination Mobile */
+  .paginationBar {
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+  }
+
+  /* Modals Mobile Overrides */
+  .modalOverlay {
+    padding: 10px !important;
+    align-items: flex-start !important;
+    overflow-y: auto !important;
+  }
+
+  .modalCard,
+  .whatsappModalCard {
+    padding: 18px 14px !important;
+    max-height: 94vh !important;
+    border-radius: 16px !important;
+    gap: 14px !important;
+    margin: auto 0;
+  }
+
+  .whatsappModalGrid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+
+  .modalHeader {
+    padding-bottom: 12px !important;
+  }
+
+  .modalTitle {
+    font-size: 1.05rem !important;
+  }
+
+  .modalSubtitle {
+    font-size: 0.74rem !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .presetGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .filterSubRow {
+    grid-template-columns: 1fr;
+  }
+
+  .rowActionsClean {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .drawerApprovalGroup {
+    grid-template-columns: 1fr;
   }
 }

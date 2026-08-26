@@ -39,6 +39,7 @@ const ReportsFilterBar = ({
           <option value="student">🎓 طلاب (Students)</option>
           <option value="admin">🛡️ مشرفين (Admins)</option>
           <option value="sudo_admin">👑 مسؤولي النظام (Sudo Admins)</option>
+          <option value="anonymous">👁️ زوار غير معروفين (Anonymous)</option>
         </select>
 
         {/* Category Filter */}
@@ -52,6 +53,7 @@ const ReportsFilterBar = ({
           <option value="ADMIN_OPERATION">عمليات وإجراءات المشرفين</option>
           <option value="AUTH">تسجيلات الدخول والخروج</option>
           <option value="SETTINGS">إعدادات النظام والواتساب</option>
+          <option value="LINK_CLICK">🔗 نقرات الروابط الخارجية (تتبع الزوار)</option>
         </select>
 
         {/* Date Filter */}

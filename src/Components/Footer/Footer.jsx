@@ -8,6 +8,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 import styles from "./Footer.module.css";
+import { logLinkClick, ACTION_TYPES } from "../../utils/activityLogger";
 
 const Footer = () => {
   const scrollTo = (e, targetId) => {
@@ -64,6 +65,13 @@ const Footer = () => {
               rel="noopener noreferrer"
               className={styles.fbButton}
               title="صفحتنا على فيسبوك"
+              onClick={() =>
+                logLinkClick(
+                  ACTION_TYPES.LINK_CLICK_FACEBOOK_PAGE,
+                  "صفحة أطباء الخير على فيسبوك",
+                  "https://www.facebook.com/share/14ue4x26FKc/"
+                )
+              }
             >
               <div className={styles.fbIconWrap}>
                 <svg
@@ -175,6 +183,13 @@ const Footer = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className={styles.mapBtn}
+                  onClick={() =>
+                    logLinkClick(
+                      ACTION_TYPES.LINK_CLICK_GOOGLE_MAPS,
+                      "عرض الموقع على خرائط Google",
+                      "https://maps.app.goo.gl/h7u2CFnssncX2WPB6"
+                    )
+                  }
                 >
                   <span>عرض الموقع على خرائط Google</span>
                   <ExternalLink size={13} />
@@ -208,6 +223,13 @@ const Footer = () => {
             rel="noopener noreferrer"
             className={styles.devBadge}
             title="تواصل مع مطور الموقع"
+            onClick={() =>
+              logLinkClick(
+                ACTION_TYPES.LINK_CLICK_FACEBOOK_DEV,
+                "Raafat Shahin (مطور الموقع)",
+                "https://www.facebook.com/raafat.reda.366930"
+              )
+            }
           >
             <span className={styles.devName}>Raafat Shahin</span>
 

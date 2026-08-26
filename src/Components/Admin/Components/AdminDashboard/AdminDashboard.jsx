@@ -11,6 +11,7 @@ import PendingStudents from "./components/PendingStudents";
 import RecentRegistrations from "./components/RecentRegistrations";
 import ProfileCompletion from "./components/ProfileCompletion";
 import ApprovalByUniversityTable from "./components/ApprovalByUniversityTable";
+import LinkClicksChart from "./components/LinkClicksChart";
 import styles from "./AdminDashboard.module.css";
 
 const AdminDashboard = () => {
@@ -24,6 +25,7 @@ const AdminDashboard = () => {
     setTrendDate,
     refresh,
     isRefreshing,
+    isSudoAdmin,
   } = useDashboard();
 
   const hasAnyError = Object.values(errors).some(Boolean);
@@ -132,6 +134,14 @@ const AdminDashboard = () => {
           loading={loading.approvalByUni}
         />
       </div>
+
+      {/* ── 7. Link Click Analytics — Sudo Admin only ── */}
+      {isSudoAdmin && (
+        <LinkClicksChart
+          data={data.linkClicks}
+          loading={loading.linkClicks}
+        />
+      )}
     </div>
   );
 };

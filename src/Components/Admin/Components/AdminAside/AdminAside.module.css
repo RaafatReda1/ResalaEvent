@@ -4,13 +4,14 @@
 
 .sidebar {
   width: 210px;
-  background-color: transparent; /* parent adminWrapper provides deep blue */
+  background-color: transparent;
   display: flex;
   flex-direction: column;
   color: rgba(255, 255, 255, 0.7);
   z-index: 10;
   padding: 12px 0 0 10px;
   overflow: hidden;
+  flex-shrink: 0;
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -18,38 +19,33 @@
   width: 70px;
 }
 
-/* ── Logo Row ── */
+/* ── Logo Container / Top Clearance Row ── */
 .logoContainer {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 10px;
-  margin-bottom: 2.5rem;
+  margin-bottom: 2.2rem;
   padding-right: 1.2rem;
-  height: 60px;
-}
-
-.logoWrapper {
-  margin: auto;
+  height: 50px;
 }
 
 .sidebar.collapsed .logoContainer {
   justify-content: center;
   padding-right: 0;
-  padding-left: 2px;
   margin-bottom: 1.8rem;
 }
 
 /* ── Toggle Button ── */
 .toggleBtn {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   color: white;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 6px;
+  padding: 8px;
   border-radius: 10px;
   transition: all 0.25s ease;
   flex-shrink: 0;
@@ -86,7 +82,6 @@
   color: rgba(255, 255, 255, 0.7);
   font-size: 0.92rem;
   font-weight: 500;
-  /* Left-rounded pill that bleeds into the white content area */
   border-radius: 30px 0 0 30px;
   position: relative;
   margin-right: -1px;
@@ -123,7 +118,7 @@
 
 /* ── Active State ── */
 .navItem.active {
-  color: #0a1628; /* dark text on white notch bg */
+  color: #0a1628;
   font-weight: 700;
 }
 
@@ -155,7 +150,7 @@
   pointer-events: none;
 }
 
-/* Active icon accent + shake */
+/* Active icon accent */
 .navItem.active .icon {
   color: #3ab9ac;
   scale: 1.25;
@@ -171,7 +166,7 @@
   top: 0;
   left: 0;
   border-radius: 30px 0 0 30px;
-  transform: translateX(250px); /* hidden off-screen */
+  transform: translateX(250px);
   transition: transform 0.05s;
   z-index: -1000;
   pointer-events: none;
@@ -182,12 +177,42 @@
   transform: translateX(0);
 }
 
+/* ── Large Brand Logo ── */
+.logoWrapper {
+  margin: auto;
+  padding: 24px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.8s ease, filter 0.3s ease;
+}
+
+.logoImage {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  object-fit: cover;
+  opacity: 0.95;
+  filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.45));
+  transition: transform 0.8s ease, filter 0.3s ease;
+  cursor: pointer;
+}
+
+.logoImage:hover {
+  transform: scale(1.1) rotate(4deg);
+  filter: drop-shadow(0 12px 28px rgba(58, 185, 172, 0.4));
+}
+
+.sidebar.collapsed .logoImage {
+  width: 48px;
+  height: 48px;
+}
+
 /* ── Bottom / Logout ── */
 .bottomLink {
   margin-top: auto;
   padding-top: 1rem;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding-right: 0;
 }
 
 .bottomLink .navItem {
@@ -211,19 +236,20 @@
     height: 68px;
     flex-direction: row;
     padding: 0 14px;
-    background: rgba(10, 22, 40, 0.88);
-    backdrop-filter: blur(14px) saturate(180%);
-    -webkit-backdrop-filter: blur(14px) saturate(180%);
+    background: rgba(10, 22, 40, 0.92);
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
     z-index: 1000;
     border-radius: 22px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
     overflow: visible;
   }
 
-  .sidebar.collapsed {
-    width: 90vw !important;
+  .logoContainer {
+    display: none !important;
   }
+
   .logoWrapper {
     display: none !important;
   }

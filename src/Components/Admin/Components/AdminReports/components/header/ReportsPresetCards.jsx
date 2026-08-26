@@ -5,7 +5,7 @@ import {
   ShieldCheck,
   AlertOctagon,
   KeyRound,
-  CalendarCheck,
+  Link2,
 } from "lucide-react";
 import styles from "../../AdminReports.module.css";
 
@@ -45,6 +45,13 @@ const ReportsPresetCards = ({ presetFilter = "all", onSelectPreset, stats = {} }
       count: stats.authLogs || 0,
       icon: <KeyRound size={18} color="#d97706" />,
       bg: "#fffbeb",
+    },
+    {
+      id: "linkClicks",
+      label: "نقرات الروابط (الزوار)",
+      count: stats.linkClicks || 0,
+      icon: <Link2 size={18} color="#0d9488" />,
+      bg: "#f0fdfa",
     },
   ];
 

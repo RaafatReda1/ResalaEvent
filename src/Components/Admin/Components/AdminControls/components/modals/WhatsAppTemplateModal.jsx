@@ -107,8 +107,7 @@ const WhatsAppTemplateModal = ({
   return (
     <div className={styles.modalOverlay} onClick={onClose}>
       <div
-        className={styles.modalCard}
-        style={{ maxWidth: "960px", padding: "24px 28px", background: "#ffffff" }}
+        className={`${styles.modalCard} ${styles.whatsappModalCard}`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -140,15 +139,8 @@ const WhatsAppTemplateModal = ({
         {/* 2. Variable insertion palette + health badge */}
         <WhatsAppVariablesPalette isHealthy={isHealthy} onInsertTag={handleInsertTag} />
 
-        {/* 3. Two-column: editor + live preview */}
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1.1fr 0.9fr",
-            gap: "20px",
-            alignItems: "start",
-          }}
-        >
+        {/* 3. Two-column: editor + live preview (responsive) */}
+        <div className={styles.whatsappModalGrid}>
           {/* Left: textarea + smart settings */}
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>

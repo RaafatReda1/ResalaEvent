@@ -21,10 +21,10 @@ gsap.registerPlugin(ScrollTrigger);
 function App() {
   const [isIntroActive, setIsIntroActive] = useState(true);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [authChecking, setAuthChecking] = useState(true); // prevent flash
 
   const handleIntroComplete = () => {
     setIsIntroActive(false);
-    // Smoothly refresh ScrollTrigger so all section coordinates accurately calculate
     setTimeout(() => {
       ScrollTrigger.refresh();
     }, 60);
@@ -34,6 +34,7 @@ function App() {
     const checkAdmin = async () => {
       const result = await checkIsAdmin();
       setIsAdmin(result);
+      setAuthChecking(false);
     };
     checkAdmin();
   }, []);
@@ -46,27 +47,29 @@ function App() {
         overflowX: "hidden",
       }}
     >
-      {/* 1. Main Website — Pre-rendered and ready in background for 60fps instant readiness */}
-      {!isAdmin ? (
-        <>
-          <main>
-            <Header />
-            <HeroSection />
-            <About />
-            <Issues />
-            <Speakers />
-            <Agenda />
-            <Form />
-            <Footer />
-          </main>
-          <FloatingWhatsApp />
-          <Analytics />
-        </>
-      ) : (
-        <Admin />
+      {/* Show nothing until auth check resolves — prevents public-site flash for admins */}
+      {!authChecking && (
+        isAdmin ? (
+          <Admin />
+        ) : (
+          <>
+            <main>
+              <Header />
+              <HeroSection />
+              <About />
+              <Issues />
+              <Speakers />
+              <Agenda />
+              <Form />
+              <Footer />
+            </main>
+            <FloatingWhatsApp />
+            <Analytics />
+          </>
+        )
       )}
-      {/* 2. Intro Loader Overlay */}
-      {isIntroActive && <Loader onComplete={handleIntroComplete} />}
+      {/* Intro Loader Overlay — covers auth check delay too */}
+      {(isIntroActive || authChecking) && <Loader onComplete={handleIntroComplete} />}
     </div>
   );
 }

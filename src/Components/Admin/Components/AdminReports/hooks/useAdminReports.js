@@ -96,7 +96,8 @@ export const useAdminReports = () => {
         l.action_type === ACTION_TYPES.BULK_DELETE ||
         l.action_type === ACTION_TYPES.PURGE_LOGS
     ).length;
-    const authLogs = logs.filter((l) => l.action_category === "AUTH").length;
+    const authLogs  = logs.filter((l) => l.action_category === "AUTH").length;
+    const linkClicks = logs.filter((l) => l.action_category === "LINK_CLICK").length;
 
     return {
       total,
@@ -105,6 +106,7 @@ export const useAdminReports = () => {
       adminOperations,
       deletions,
       authLogs,
+      linkClicks,
     };
   }, [logs]);
 
@@ -134,6 +136,8 @@ export const useAdminReports = () => {
           return false;
       } else if (presetFilter === "auth") {
         if (log.action_category !== "AUTH") return false;
+      } else if (presetFilter === "linkClicks") {
+        if (log.action_category !== "LINK_CLICK") return false;
       }
 
       // Role Filter

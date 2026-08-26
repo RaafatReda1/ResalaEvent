@@ -8,6 +8,7 @@ export const ACTION_CATEGORIES = {
   STUDENT_ACTION: "STUDENT_ACTION",
   ADMIN_OPERATION: "ADMIN_OPERATION",
   SETTINGS: "SETTINGS",
+  LINK_CLICK: "LINK_CLICK",
 };
 
 export const ACTION_TYPES = {
@@ -34,6 +35,11 @@ export const ACTION_TYPES = {
   EXPORT_CSV: "EXPORT_CSV",
   PURGE_LOGS: "PURGE_LOGS",
   DELETE_LOG: "DELETE_LOG",
+
+  // Public Link Tracking
+  LINK_CLICK_FACEBOOK_PAGE: "LINK_CLICK_FACEBOOK_PAGE",
+  LINK_CLICK_FACEBOOK_DEV:  "LINK_CLICK_FACEBOOK_DEV",
+  LINK_CLICK_GOOGLE_MAPS:   "LINK_CLICK_GOOGLE_MAPS",
 };
 
 /**
@@ -170,5 +176,73 @@ export const logActivity = async ({
     }
   } catch (err) {
     console.error("Activity logger error:", err);
+  }
+};
+
+/**
+ * Logs a public footer link click.
+ * Works for anonymous visitors — no auth required.
+ * If an admin is signed in, their name appears instead of "زائر غير معروف".
+ *
+ * @param {string} action_type - One of the LINK_CLICK_* ACTION_TYPES
+ * @param {string} linkLabel   - Human-readable link label (shown in the log table)
+ * @param {string} href        - The actual URL that was opened
+ */
+export const logLinkClick = async (action_type, linkLabel, href) => {
+  try {
+    const clientInfo = getClientInfo();
+
+    let actor_id    = null;
+    let actor_email = null;
+    let actor_name  = "زائر غير معروف";
+    let actor_role  = "anonymous";
+
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        actor_id    = session.user.id;
+        actor_email = session.user.email;
+        actor_name  =
+          session.user.user_metadata?.full_name ||
+          session.user.email?.split("@")[0] ||
+          "مستخدم";
+        actor_role  = "student";
+
+        const admin = await getAdminProfile();
+        if (admin) {
+          actor_name = admin.name || actor_name;
+          actor_role = admin.sudo ? "sudo_admin" : "admin";
+        }
+      }
+    } catch { /* anonymous — perfectly fine */ }
+
+    const payload = {
+      actor_id,
+      actor_email,
+      actor_name,
+      actor_role,
+      action_type,
+      action_category: ACTION_CATEGORIES.LINK_CLICK,
+      description: `تم النقر على: ${linkLabel}`,
+      target_id:   null,
+      target_name: linkLabel,
+      metadata: {
+        href,
+        client: clientInfo,
+        timestamp: new Date().toISOString(),
+      },
+    };
+
+    // Fire-and-forget — never blocks navigation
+    console.log("[logLinkClick] inserting →", action_type, linkLabel);
+    supabase.from("activity_logs").insert(payload).then(({ data, error }) => {
+      if (error) {
+        console.error("[logLinkClick] Supabase error:", error.message, error);
+      } else {
+        console.log("[logLinkClick] ✅ inserted successfully", data);
+      }
+    });
+  } catch (err) {
+    console.error("logLinkClick error:", err);
   }
 };

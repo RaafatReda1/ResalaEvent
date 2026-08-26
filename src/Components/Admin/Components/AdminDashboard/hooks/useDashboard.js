@@ -9,11 +9,13 @@ import {
   fetchRecentStudents,
   fetchProfileCompletion,
   fetchApprovalByUniversity,
+  fetchLinkClickStats,
 } from "@/utils/dashboardActions";
+import { getAdminProfile } from "@/utils/activityLogger";
 
 const makeLoading = (val = true) => ({
   kpi: val, trend: val, distributions: val,
-  pending: val, recent: val, completion: val, approvalByUni: val,
+  pending: val, recent: val, completion: val, approvalByUni: val, linkClicks: val,
 });
 
 export const useDashboard = () => {
@@ -26,6 +28,7 @@ export const useDashboard = () => {
   const [recent,        setRecent]        = useState([]);
   const [completion,    setCompletion]    = useState(null);
   const [approvalByUni, setApprovalByUni] = useState([]);
+  const [linkClicks,    setLinkClicks]    = useState([]);
   const [loading,       setLoading]       = useState(makeLoading());
   const [errors,        setErrors]        = useState({});
   const [trendPeriod,   setTrendPeriod]   = useState("30d");
@@ -34,6 +37,14 @@ export const useDashboard = () => {
   );
   const [refreshSeed,   setRefreshSeed]   = useState(0);
   const [isRefreshing,  setIsRefreshing]  = useState(false);
+  const [isSudoAdmin,   setIsSudoAdmin]   = useState(false);
+
+  // Check sudo privilege once on mount
+  useEffect(() => {
+    getAdminProfile(true).then((profile) => {
+      setIsSudoAdmin(Boolean(profile?.sudo));
+    });
+  }, []);
 
   const setL = (key, v) => setLoading((p) => ({ ...p, [key]: v }));
   const setE = (key, err) =>
@@ -93,6 +104,11 @@ export const useDashboard = () => {
         .then(setApprovalByUni)
         .catch((e) => setE("approvalByUni", e))
         .finally(() => setL("approvalByUni", false)),
+
+      fetchLinkClickStats()
+        .then(setLinkClicks)
+        .catch((e) => setE("linkClicks", e))
+        .finally(() => setL("linkClicks", false)),
     ]);
 
     setIsRefreshing(false);
@@ -103,7 +119,7 @@ export const useDashboard = () => {
   const refresh = () => setRefreshSeed((k) => k + 1);
 
   return {
-    data: { kpi, trend, universities, academicYears, places, pending, recent, completion, approvalByUni },
+    data: { kpi, trend, universities, academicYears, places, pending, recent, completion, approvalByUni, linkClicks },
     loading,
     errors,
     trendPeriod,
@@ -112,5 +128,6 @@ export const useDashboard = () => {
     setTrendDate,
     refresh,
     isRefreshing,
+    isSudoAdmin,
   };
 };

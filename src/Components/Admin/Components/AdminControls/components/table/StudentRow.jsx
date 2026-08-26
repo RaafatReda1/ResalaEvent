@@ -75,7 +75,7 @@ const StudentRow = ({
       onClick={onToggleExpand}
     >
       {/* Checkbox */}
-      <td style={{ textAlign: "center" }} onClick={(e) => e.stopPropagation()}>
+      <td className={styles.colCheckbox} onClick={(e) => e.stopPropagation()}>
         <input
           type="checkbox"
           style={{
@@ -90,7 +90,7 @@ const StudentRow = ({
       </td>
 
       {/* Student Info: Name & Email Only */}
-      <td>
+      <td className={styles.colStudent}>
         <div className={styles.studentCell}>
           <span className={styles.studentNameText}>
             {student.name || "بدون اسم"}
@@ -100,14 +100,16 @@ const StudentRow = ({
       </td>
 
       {/* University */}
-      <td>
+      <td className={styles.colUniversity}>
+        <span className={styles.metaLabelMobile}>الجامعة: </span>
         <span style={{ fontWeight: 700, color: "#334155" }}>
           {student.university || "—"}
         </span>
       </td>
 
       {/* Academic Year */}
-      <td>
+      <td className={styles.colAcademicYear}>
+        <span className={styles.metaLabelMobile}>الفرقة: </span>
         <span
           style={{
             fontSize: "0.78rem",
@@ -123,7 +125,8 @@ const StudentRow = ({
       </td>
 
       {/* Place */}
-      <td>
+      <td className={styles.colPlace}>
+        <span className={styles.metaLabelMobile}>المقر: </span>
         <span
           style={{ fontSize: "0.82rem", fontWeight: 600, color: "#475569" }}
         >
@@ -132,7 +135,7 @@ const StudentRow = ({
       </td>
 
       {/* Status */}
-      <td>
+      <td className={styles.colStatus}>
         {student.isApproved === true && (
           <span className={`${styles.statusBadge} ${styles.statusApproved}`}>
             <Check size={12} />
@@ -154,14 +157,15 @@ const StudentRow = ({
       </td>
 
       {/* Registration Date */}
-      <td>
+      <td className={styles.colDate}>
+        <span className={styles.metaLabelMobile}>التسجيل: </span>
         <span style={{ fontSize: "0.8rem", color: "#64748b", fontWeight: 700 }}>
           {formatDate(student.created_at)}
         </span>
       </td>
 
       {/* Quick Actions */}
-      <td onClick={(e) => e.stopPropagation()}>
+      <td className={styles.colActions} onClick={(e) => e.stopPropagation()}>
         <div className={styles.rowActionsClean}>
           {/* QR Code Action (Always available, highlighted when approved) */}
           <button
@@ -177,7 +181,8 @@ const StudentRow = ({
                 : "توليد وتحميل رمز الـ QR للطالب"
             }
           >
-            <QrCode size={15} />
+            <QrCode size={16} />
+            <span className={styles.actionBtnLabelMobile}>رمز QR</span>
           </button>
 
           {/* Direct WhatsApp link with customized template */}
@@ -188,7 +193,8 @@ const StudentRow = ({
               className={styles.btnActionWhatsApp}
               title="تحميل ونسخ رمز الـ QR ثم فتح محادثة الواتساب"
             >
-              <MessageCircle size={15} />
+              <MessageCircle size={16} />
+              <span className={styles.actionBtnLabelMobile}>واتساب</span>
             </button>
           )}
 
@@ -199,7 +205,8 @@ const StudentRow = ({
             onClick={() => onOpenDetails(student)}
             title="عرض التفاصيل والشهادة"
           >
-            <Eye size={15} />
+            <Eye size={16} />
+            <span className={styles.actionBtnLabelMobile}>التفاصيل</span>
           </button>
 
           {/* Accordion Expand / Collapse toggle */}
@@ -209,7 +216,10 @@ const StudentRow = ({
             onClick={onToggleExpand}
             title={isExpanded ? "طي التفاصيل" : "عرض التفاصيل والشهادة بالأسفل"}
           >
-            {isExpanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
+            {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            <span className={styles.actionBtnLabelMobile}>
+              {isExpanded ? "طي" : "المزيد"}
+            </span>
           </button>
         </div>
       </td>

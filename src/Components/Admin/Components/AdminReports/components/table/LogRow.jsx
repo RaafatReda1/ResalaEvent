@@ -14,6 +14,8 @@ import {
   Key,
   FileText,
   Settings,
+  Link2,
+  Ghost,
 } from "lucide-react";
 import styles from "../../AdminReports.module.css";
 
@@ -66,6 +68,17 @@ const LogRow = ({
           avatarInitial: "م",
         };
       default:
+        // anonymous — public visitor with no session
+        if (role === "anonymous") {
+          return {
+            label: "زائر غير معروف",
+            badgeClass: styles.roleAnonymous,
+            icon: <Ghost size={12} />,
+            avatarBg: "#f8fafc",
+            avatarColor: "#94a3b8",
+            avatarInitial: "?",
+          };
+        }
         return {
           label: "طالب",
           badgeClass: styles.roleStudent,
@@ -108,6 +121,14 @@ const LogRow = ({
         <span className={`${styles.actionBadge} ${styles.badgeSettings}`}>
           <Settings size={12} />
           <span>إعدادات النظام</span>
+        </span>
+      );
+    }
+    if (cat === "LINK_CLICK") {
+      return (
+        <span className={`${styles.actionBadge} ${styles.badgeLinkClick}`}>
+          <Link2 size={12} />
+          <span>نقر رابط</span>
         </span>
       );
     }

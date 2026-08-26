@@ -426,3 +426,55 @@ export const getStatusInfo = (isApproved) => {
   if (isApproved === false) return { label: "مرفوض",         color: "#ef4444", bg: "#fee2e2" };
   return                           { label: "في الانتظار",   color: "#f59e0b", bg: "#fef3c7" };
 };
+
+// ─────────────────────────────────────────────────────
+// Link Click Analytics
+// ─────────────────────────────────────────────────────
+
+const LINK_LABELS = {
+  LINK_CLICK_FACEBOOK_PAGE: { label: "صفحة أطباء الخير على فيسبوك", icon: "📘", href: "https://www.facebook.com/share/14ue4x26FKc/" },
+  LINK_CLICK_FACEBOOK_DEV:  { label: "Raafat Shahin (مطور الموقع)",  icon: "👤", href: "https://www.facebook.com/raafat.reda.366930" },
+  LINK_CLICK_GOOGLE_MAPS:   { label: "عرض الموقع على خرائط Google",  icon: "📍", href: "https://maps.app.goo.gl/h7u2CFnssncX2WPB6" },
+};
+
+/**
+ * Fetches link click counts grouped by link type from activity_logs.
+ * Returns an array of { actionType, label, icon, href, count, lastClickedAt }.
+ */
+export const fetchLinkClickStats = async () => {
+  try {
+    const { data, error } = await supabase
+      .from("activity_logs")
+      .select("action_type, created_at, actor_name, actor_role")
+      .eq("action_category", "LINK_CLICK")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    // Group by action_type
+    const grouped = {};
+    for (const row of data || []) {
+      if (!grouped[row.action_type]) {
+        grouped[row.action_type] = { count: 0, lastClickedAt: null };
+      }
+      grouped[row.action_type].count += 1;
+      if (!grouped[row.action_type].lastClickedAt) {
+        grouped[row.action_type].lastClickedAt = row.created_at;
+      }
+    }
+
+    // Shape into sorted array
+    return Object.entries(LINK_LABELS).map(([actionType, meta]) => ({
+      actionType,
+      label: meta.label,
+      icon: meta.icon,
+      href: meta.href,
+      count: grouped[actionType]?.count || 0,
+      lastClickedAt: grouped[actionType]?.lastClickedAt || null,
+    })).sort((a, b) => b.count - a.count);
+  } catch (err) {
+    console.error("fetchLinkClickStats error:", err);
+    return [];
+  }
+};
+
