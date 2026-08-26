@@ -11,7 +11,7 @@ gsap.registerPlugin(ScrollTrigger);
 const speakers = [
   {
     name: "أ.د. نجلاء فاروق",
-    nameEn: "Dr. Naglaa Farouk",
+    nameEn: "Prof.Dr. Naglaa Farouk",
     title: "رئيسة قسم الميكرو بجامعه الازهر",
     titleEn: "Head of Microbiology Department",
     imageSrc: "/drNagalaa.png",

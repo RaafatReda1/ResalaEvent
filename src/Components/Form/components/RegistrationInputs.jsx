@@ -3,6 +3,10 @@ import styles from "../Form.module.css";
 
 const ACADEMIC_YEAR_OPTIONS = [
   { value: "فرقة أولى", label: "فرقة أولى" },
+  { value: "فرقة تانية", label: "فرقة تانية" },
+  { value: "فرقة تالتة", label: "فرقة تالتة" },
+  { value: "فرقة رابعة", label: "فرقة رابعة" },
+  { value: "فرقة خامسة", label: "فرقة خامسة" },
 ];
 
 const RegistrationInputs = ({ form, onChange, isEditing, authUser }) => {
@@ -150,22 +154,7 @@ const RegistrationInputs = ({ form, onChange, isEditing, authUser }) => {
             <BookOpen size={16} />
           </span>
           <span>السنة الدراسية *</span>
-          <span
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              fontSize: "0.68rem",
-              color: "#eab308",
-              background: "rgba(234,179,8,0.12)",
-              border: "1px solid rgba(234,179,8,0.3)",
-              borderRadius: "6px",
-              padding: "2px 7px",
-              marginRight: "auto",
-              fontWeight: 700,
-            }}
-          >
-            فرقة أولى فقط
-          </span>
+
         </label>
         <div className={styles.inputWrapper}>
           <select
