@@ -449,6 +449,7 @@ export const useRegistrationForm = () => {
         place: form.place.trim(),
         imgSrc: publicImgUrl || null,
         cookie: cookieToken,
+        user_id: authUser?.id || (await supabase.auth.getUser())?.data?.user?.id || null,
       };
 
       const dbRow = await uploadData(payload);
