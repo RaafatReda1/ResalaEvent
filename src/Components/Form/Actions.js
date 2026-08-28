@@ -1,6 +1,6 @@
 import supabase from "@/utils/supabaseClient";
 
-const BUCKET = "studentImg";
+export const BUCKET = "studentImg";
 
 // ─────────────────────────────────────────────
 // Cookie token helpers (browser storage)

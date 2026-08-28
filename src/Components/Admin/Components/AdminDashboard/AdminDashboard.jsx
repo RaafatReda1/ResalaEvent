@@ -12,6 +12,7 @@ import RecentRegistrations from "./components/RecentRegistrations";
 import ProfileCompletion from "./components/ProfileCompletion";
 import ApprovalByUniversityTable from "./components/ApprovalByUniversityTable";
 import LinkClicksChart from "./components/LinkClicksChart";
+import BucketStorageWidget from "./components/BucketStorageWidget";
 import styles from "./AdminDashboard.module.css";
 
 const AdminDashboard = () => {
@@ -135,12 +136,15 @@ const AdminDashboard = () => {
         />
       </div>
 
-      {/* ── 7. Link Click Analytics — Sudo Admin only ── */}
+      {/* ── 7. Link Click Analytics & Storage Manager — Sudo Admin only ── */}
       {isSudoAdmin && (
-        <LinkClicksChart
-          data={data.linkClicks}
-          loading={loading.linkClicks}
-        />
+        <>
+          <LinkClicksChart
+            data={data.linkClicks}
+            loading={loading.linkClicks}
+          />
+          <BucketStorageWidget />
+        </>
       )}
     </div>
   );
