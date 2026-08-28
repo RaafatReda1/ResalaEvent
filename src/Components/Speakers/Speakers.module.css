@@ -238,8 +238,7 @@
 .mobileTabsWrapper {
   display: flex;
   align-items: center;
-  /* LTR so pills 01→05 read left-to-right, matching LTR card scroll order */
-  direction: ltr;
+  direction: rtl;
   justify-content: flex-start;
   gap: 8px;
   width: 100%;
@@ -693,12 +692,9 @@
     margin-bottom: 16px;
   }
 
-  /* Carousel horizontal snap track */
+  /* Carousel horizontal snap track (Natural RTL) */
   .speakersContainer {
-    /* Force LTR so scrollLeft is always positive and scrollTo() works in all browsers.
-       The section is RTL, but RTL scroll containers have negative scrollLeft in Chrome/Firefox,
-       which breaks scrollTo(). LTR here fixes dots, arrows, and pill navigation. */
-    direction: ltr;
+    direction: rtl;
     flex-direction: row;
     height: auto;
     overflow-x: auto;

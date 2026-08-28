@@ -256,25 +256,41 @@ const Speakers = () => {
     { scope: sectionRef },
   );
 
-  // ── Mobile Carousel Scroll Listener for Active Index Sync ──
-  // Uses ref so the handler is stable and the effect never re-subscribes during scrolling
+  const tabsWrapperRef = useRef(null);
+
+  // ── Mobile Carousel Scroll Listener for Active Index Sync (RTL & LTR compatible) ──
   const handleCarouselScroll = useCallback(() => {
     if (!carouselTrackRef.current) return;
     const track = carouselTrackRef.current;
-    // Container is forced to direction:ltr on mobile, so scrollLeft is always positive
-    const scrollLeft = track.scrollLeft;
-    const cardWidth = track.firstElementChild?.offsetWidth || 280;
-    const gap = 14;
-    const newIndex = Math.round(scrollLeft / (cardWidth + gap));
-    if (
-      newIndex >= 0 &&
-      newIndex < speakers.length &&
-      newIndex !== mobileActiveIndexRef.current
-    ) {
-      mobileActiveIndexRef.current = newIndex;
-      setMobileActiveIndex(newIndex);
+    const trackRect = track.getBoundingClientRect();
+    const trackCenter = trackRect.left + trackRect.width / 2;
+
+    let closestIndex = 0;
+    let minDistance = Infinity;
+
+    Array.from(track.children).forEach((child, index) => {
+      const childRect = child.getBoundingClientRect();
+      const childCenter = childRect.left + childRect.width / 2;
+      const distance = Math.abs(trackCenter - childCenter);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestIndex = index;
+      }
+    });
+
+    if (closestIndex !== mobileActiveIndexRef.current) {
+      mobileActiveIndexRef.current = closestIndex;
+      setMobileActiveIndex(closestIndex);
+      // Auto-scroll the active quick tab into view
+      if (tabsWrapperRef.current?.children[closestIndex]) {
+        tabsWrapperRef.current.children[closestIndex].scrollIntoView({
+          behavior: "smooth",
+          inline: "nearest",
+          block: "nearest",
+        });
+      }
     }
-  }, []); // stable — no deps needed thanks to the ref
+  }, []);
 
   useEffect(() => {
     const track = carouselTrackRef.current;
@@ -284,18 +300,25 @@ const Speakers = () => {
     return () => track.removeEventListener("scroll", handleCarouselScroll);
   }, [isMobile, handleCarouselScroll]);
 
-  // ── Scroll to specific speaker on mobile ──
+  // ── Scroll to specific speaker on mobile (RTL smooth centering) ──
   const scrollToSpeaker = (index) => {
     mobileActiveIndexRef.current = index;
     setMobileActiveIndex(index);
     if (carouselTrackRef.current) {
-      const track = carouselTrackRef.current;
-      const cardWidth = track.firstElementChild?.offsetWidth || 280;
-      const gap = 14;
-      // Use scrollLeft for instant, jank-free positioning (browser handles the smooth animation)
-      track.scrollTo({
-        left: index * (cardWidth + gap),
+      const targetCard = carouselTrackRef.current.children[index];
+      if (targetCard) {
+        targetCard.scrollIntoView({
+          behavior: "smooth",
+          inline: "center",
+          block: "nearest",
+        });
+      }
+    }
+    if (tabsWrapperRef.current?.children[index]) {
+      tabsWrapperRef.current.children[index].scrollIntoView({
         behavior: "smooth",
+        inline: "nearest",
+        block: "nearest",
       });
     }
   };
@@ -334,7 +357,7 @@ const Speakers = () => {
 
       {/* Mobile Quick Selector Tabs */}
       {isMobile && (
-        <div className={styles.mobileTabsWrapper}>
+        <div ref={tabsWrapperRef} className={styles.mobileTabsWrapper}>
           {speakers.map((spk, idx) => {
             const isTabActive = mobileActiveIndex === idx;
             return (
