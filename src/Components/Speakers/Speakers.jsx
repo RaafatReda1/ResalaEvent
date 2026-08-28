@@ -14,7 +14,7 @@ const speakers = [
     nameEn: "Prof. Dr. Medhat Morsy",
     title: "أستاذ التشريح والأجنة بكلية طب قصر العيني – جامعة القاهرة",
     titleEn:
-      "Professor of Anatomy and Embryology, Faculty of Medicine, Kasr Al-Ainy, Cairo University",
+      "Professor of Anatomy and Embryology at Kasr Al-Ainy, Cairo University, and Head of Anatomy Departments at Nahda and Ahram Canadian Universities.",
     imageSrc: "/drMedhatNofill2.png",
     accent: "#3AB9AC",
     accentRgb: "58,185,172",
@@ -94,9 +94,8 @@ const SpeakerCard = ({
 }) => {
   return (
     <div
-      className={`${styles.speakerCard} ${
-        isExpanded ? styles.speakerCardExpanded : ""
-      } ${isMobile && isMobileActive ? styles.speakerCardMobileActive : ""}`}
+      className={`${styles.speakerCard} ${isExpanded ? styles.speakerCardExpanded : ""
+        } ${isMobile && isMobileActive ? styles.speakerCardMobileActive : ""}`}
       onMouseEnter={() => !isMobile && onHover(index)}
       onClick={() => isMobile && onCardClick(index)}
       style={{ "--accent": speaker.accent, "--accent-rgb": speaker.accentRgb }}
@@ -105,7 +104,7 @@ const SpeakerCard = ({
       <div
         className={styles.cardBgLayer}
         style={{
-          backgroundImage: `url(${speaker.bgImage || speaker.imageSrc})`,
+          backgroundImage: `url(${speaker.imageSrc})`,
         }}
       />
 
