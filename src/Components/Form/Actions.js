@@ -78,25 +78,97 @@ export const verifyStudentCookie = async (cookieToken) => {
 };
 
 // ─────────────────────────────────────────────
-// Image upload
+// Storage Path Helper & Cleaner
 // ─────────────────────────────────────────────
-export const uploadImg = async (file, studentName = "student") => {
+/**
+ * Extracts the relative bucket file path from a Supabase storage URL or relative path.
+ * e.g. "https://xyz.supabase.co/storage/v1/object/public/studentImg/Ahmed_0101234/card.jpg"
+ * -> "Ahmed_0101234/card.jpg"
+ */
+export const extractStoragePath = (urlOrPath) => {
+  if (!urlOrPath || typeof urlOrPath !== "string") return null;
+  if (!urlOrPath.startsWith("http")) return urlOrPath;
+
+  try {
+    const parsed = new URL(urlOrPath);
+    const searchMarker = `/${BUCKET}/`;
+    const markerIndex = parsed.pathname.indexOf(searchMarker);
+    if (markerIndex !== -1) {
+      return decodeURIComponent(parsed.pathname.substring(markerIndex + searchMarker.length));
+    }
+  } catch (e) {
+    console.warn("Could not parse storage URL:", e);
+  }
+  return null;
+};
+
+/**
+ * Delete a file or list of files from the Supabase storage bucket.
+ */
+export const deleteImgFromStorage = async (publicUrlsOrPaths) => {
+  if (!publicUrlsOrPaths) return;
+  const items = Array.isArray(publicUrlsOrPaths) ? publicUrlsOrPaths : [publicUrlsOrPaths];
+  const pathsToDelete = items
+    .map(extractStoragePath)
+    .filter((p) => Boolean(p) && typeof p === "string");
+
+  if (pathsToDelete.length === 0) return;
+
+  try {
+    const { error } = await supabase.storage.from(BUCKET).remove(pathsToDelete);
+    if (error) {
+      console.warn("Storage deletion error:", error);
+    }
+  } catch (err) {
+    console.warn("Exception during storage deletion:", err);
+  }
+};
+
+/**
+ * Generate a clean, organized folder name for each student.
+ * Uses the student's name + an identifier (phone, email prefix, or unique token).
+ * e.g. "أحمد_محمد_01012345678" or "Ahmed_Ali_1234"
+ */
+export const getStudentFolderName = (studentName = "student", identifier = "") => {
+  // Support Arabic letters (\u0600-\u06FF), alphanumeric, hyphens, and underscores
+  const cleanName = (studentName || "student")
+    .trim()
+    .replace(/[^\w\u0600-\u06FF-]/g, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 40) || "student";
+
+  const cleanId = (identifier || "")
+    .toString()
+    .trim()
+    .replace(/[^\w\u0600-\u06FF-]/g, "")
+    .slice(0, 15);
+
+  return cleanId ? `${cleanName}_${cleanId}` : cleanName;
+};
+
+// ─────────────────────────────────────────────
+// Image upload with per-student folder & automatic old-photo cleanup
+// ─────────────────────────────────────────────
+export const uploadImg = async (file, studentName = "student", options = {}) => {
   if (!file) throw new Error("No image selected");
+
+  const { oldImgUrl = null, identifier = "" } = options;
+
+  // 1. If updating, delete the previous photo from Supabase Storage so no orphaned files remain
+  if (oldImgUrl) {
+    await deleteImgFromStorage(oldImgUrl);
+  }
 
   const rawExt = file.name ? file.name.split(".").pop() : "jpg";
   const fileExt = (rawExt || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
-  
-  // Safe ASCII-only prefix: remove any spaces, Arabic or non-ASCII characters, or special symbols
-  const cleanPrefix = (studentName || "student")
-    .trim()
-    .replace(/[^a-zA-Z0-9_-]/g, "_")
-    .replace(/_+/g, "_")
-    .replace(/^_+|_+$/g, "")
-    .slice(0, 25);
 
-  const uniqueId = `${Date.now()}_${crypto.randomUUID().slice(0, 8)}`;
-  const filePath = cleanPrefix ? `${cleanPrefix}_${uniqueId}.${fileExt}` : `student_${uniqueId}.${fileExt}`;
+  // 2. Build organized student folder path: [StudentFolder]/nomination_card_[Timestamp].[ext]
+  const folder = getStudentFolderName(studentName, identifier);
+  const fileName = `nomination_card_${Date.now()}.${fileExt}`;
+  const filePath = `${folder}/${fileName}`;
 
+  // 3. Upload to student's dedicated folder in the bucket
   const { error } = await supabase.storage
     .from(BUCKET)
     .upload(filePath, file, { cacheControl: "3600", upsert: true });

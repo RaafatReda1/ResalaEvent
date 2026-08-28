@@ -433,7 +433,9 @@ export const useRegistrationForm = () => {
       setLoadingStage("uploading_image");
       let publicImgUrl = "";
       if (file) {
-        publicImgUrl = await uploadImg(file, form.name);
+        publicImgUrl = await uploadImg(file, form.name, {
+          identifier: form.phone || form.email,
+        });
       }
 
       // Step 2: Database saving
@@ -533,16 +535,21 @@ export const useRegistrationForm = () => {
       setLoading(true);
       setLoadingStage("updating");
 
-      let publicImgUrl =
+      let previousImgUrl =
         savedAttendee?.imgSrc ||
         savedAttendee?.["imgSrc"] ||
         savedAttendee?.image ||
         savedAttendee?.image_url ||
         "";
 
+      let publicImgUrl = previousImgUrl;
+
       if (file && (!filePreview || !filePreview.startsWith("http"))) {
         setLoadingStage("uploading_image");
-        publicImgUrl = await uploadImg(file, form.name);
+        publicImgUrl = await uploadImg(file, form.name, {
+          oldImgUrl: previousImgUrl,
+          identifier: form.phone || form.email,
+        });
       }
 
       setLoadingStage("saving_data");

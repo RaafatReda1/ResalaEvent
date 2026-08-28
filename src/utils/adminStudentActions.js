@@ -1,4 +1,5 @@
 import supabase from "./supabaseClient";
+import { deleteImgFromStorage } from "@/Components/Form/Actions";
 
 /**
  * Fetch students with search, filters, pagination, and sorting
@@ -158,19 +159,48 @@ export const bulkSetApprovalStatus = async (ids, isApproved) => {
 };
 
 /**
- * Delete a single student
+ * Delete a single student (and remove photo from storage bucket)
  */
 export const deleteStudentAdmin = async (id) => {
+  try {
+    const { data: student } = await supabase
+      .from("students")
+      .select("imgSrc")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (student?.imgSrc) {
+      await deleteImgFromStorage(student.imgSrc);
+    }
+  } catch (storageErr) {
+    console.warn("Storage cleanup failed before student deletion:", storageErr);
+  }
+
   const { error } = await supabase.from("students").delete().eq("id", id);
   if (error) throw error;
   return true;
 };
 
 /**
- * Bulk delete students
+ * Bulk delete students (and remove all their photos from storage bucket)
  */
 export const bulkDeleteStudentsAdmin = async (ids) => {
   if (!ids || ids.length === 0) return;
+
+  try {
+    const { data: students } = await supabase
+      .from("students")
+      .select("imgSrc")
+      .in("id", ids);
+
+    const imgUrls = (students || []).map((s) => s.imgSrc).filter(Boolean);
+    if (imgUrls.length > 0) {
+      await deleteImgFromStorage(imgUrls);
+    }
+  } catch (storageErr) {
+    console.warn("Storage bulk cleanup failed before student deletion:", storageErr);
+  }
+
   const { error } = await supabase.from("students").delete().in("id", ids);
   if (error) throw error;
   return true;
