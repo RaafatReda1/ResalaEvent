@@ -1,11 +1,23 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { AlertTriangle, Trash2, X } from "lucide-react";
 import styles from "../../AdminReports.module.css";
 
 const DeleteLogModal = ({ isOpen = false, onClose, log, onConfirmDelete }) => {
+  // Body scroll lock while modal is open
+  useEffect(() => {
+    if (isOpen) {
+      const original = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = original;
+      };
+    }
+  }, [isOpen]);
+
   if (!isOpen || !log) return null;
 
-  return (
+  return createPortal(
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalCard} style={{ maxWidth: "460px" }} onClick={(e) => e.stopPropagation()}>
         {/* Header */}
@@ -56,7 +68,8 @@ const DeleteLogModal = ({ isOpen = false, onClose, log, onConfirmDelete }) => {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { AlertTriangle, Trash2, X } from "lucide-react";
 import styles from "../AdminControls.module.css";
 
@@ -9,11 +10,22 @@ const DeleteConfirmModal = ({
   selectedCount = 0,
   onConfirm,
 }) => {
+  // Body scroll lock while modal is open
+  useEffect(() => {
+    if (isOpen) {
+      const original = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = original;
+      };
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   const isSingle = Boolean(student);
 
-  return (
+  return createPortal(
     <div className={styles.modalOverlay} onClick={onClose}>
       <div
         className={styles.modalCard}
@@ -65,7 +77,8 @@ const DeleteConfirmModal = ({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

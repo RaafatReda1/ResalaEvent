@@ -1,10 +1,22 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { AlertTriangle, Trash2, X } from "lucide-react";
 import styles from "../../AdminReports.module.css";
 
 const PurgeLogsModal = ({ isOpen = false, onClose, onConfirmPurge }) => {
   const [days, setDays] = useState(30);
   const [purging, setPurging] = useState(false);
+
+  // Body scroll lock while modal is open
+  useEffect(() => {
+    if (isOpen) {
+      const original = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = original;
+      };
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -17,7 +29,7 @@ const PurgeLogsModal = ({ isOpen = false, onClose, onConfirmPurge }) => {
     }
   };
 
-  return (
+  return createPortal(
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
         {/* Header */}
@@ -92,7 +104,8 @@ const PurgeLogsModal = ({ isOpen = false, onClose, onConfirmPurge }) => {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

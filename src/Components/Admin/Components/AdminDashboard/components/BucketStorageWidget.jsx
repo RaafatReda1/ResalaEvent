@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { createPortal } from "react-dom";
 import {
   HardDrive,
   Trash2,
@@ -362,162 +363,168 @@ const BucketStorageWidget = () => {
       )}
 
       {/* ── 5. Full Image Preview Modal ── */}
-      {previewImage && (
-        <div className={styles.modalBackdrop} onClick={() => setPreviewImage(null)}>
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>معاينة الصورة</h3>
-              <button
-                type="button"
-                className={styles.modalCloseBtn}
-                onClick={() => setPreviewImage(null)}
-              >
-                <X size={18} />
-              </button>
-            </div>
+      {previewImage &&
+        createPortal(
+          <div className={styles.modalBackdrop} onClick={() => setPreviewImage(null)}>
+            <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+              <div className={styles.modalHeader}>
+                <h3 className={styles.modalTitle}>معاينة الصورة</h3>
+                <button
+                  type="button"
+                  className={styles.modalCloseBtn}
+                  onClick={() => setPreviewImage(null)}
+                >
+                  <X size={18} />
+                </button>
+              </div>
 
-            <div className={styles.previewImgWrap}>
-              <img
-                src={previewImage.publicUrl}
-                alt={previewImage.name}
-                className={styles.previewFullImg}
-              />
-            </div>
+              <div className={styles.previewImgWrap}>
+                <img
+                  src={previewImage.publicUrl}
+                  alt={previewImage.name}
+                  className={styles.previewFullImg}
+                />
+              </div>
 
-            <div className="text-xs text-slate-500 font-bold flex justify-between">
-              <span>المسار: {previewImage.path}</span>
-              <span>الحجم: {previewImage.formattedSize}</span>
-            </div>
+              <div className="text-xs text-slate-500 font-bold flex justify-between">
+                <span>المسار: {previewImage.path}</span>
+                <span>الحجم: {previewImage.formattedSize}</span>
+              </div>
 
-            <div className={styles.modalFooter}>
-              <button
-                type="button"
-                className={styles.btnCancel}
-                onClick={() => setPreviewImage(null)}
-              >
-                إغلاق
-              </button>
-              <button
-                type="button"
-                className={styles.btnDangerConfirm}
-                onClick={() => {
-                  const toDelete = previewImage;
-                  setPreviewImage(null);
-                  setSingleDeleteCandidate(toDelete);
-                }}
-              >
-                <Trash2 size={16} />
-                <span>حذف هذه الصورة</span>
-              </button>
+              <div className={styles.modalFooter}>
+                <button
+                  type="button"
+                  className={styles.btnCancel}
+                  onClick={() => setPreviewImage(null)}
+                >
+                  إغلاق
+                </button>
+                <button
+                  type="button"
+                  className={styles.btnDangerConfirm}
+                  onClick={() => {
+                    const toDelete = previewImage;
+                    setPreviewImage(null);
+                    setSingleDeleteCandidate(toDelete);
+                  }}
+                >
+                  <Trash2 size={16} />
+                  <span>حذف هذه الصورة</span>
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
 
       {/* ── 6. Single Delete Confirmation Modal ── */}
-      {singleDeleteCandidate && (
-        <div
-          className={styles.modalBackdrop}
-          onClick={() => setSingleDeleteCandidate(null)}
-        >
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>تأكيد حذف الصورة المعلقة</h3>
-              <button
-                type="button"
-                className={styles.modalCloseBtn}
-                onClick={() => setSingleDeleteCandidate(null)}
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <div className="text-sm text-slate-600 font-semibold leading-relaxed">
-              هل أنت متأكد من حذف هذه الصورة نهائياً من الـ Bucket؟
-              <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 mt-3 text-xs font-mono direction-ltr text-right">
-                <div>📁 <strong>الملف:</strong> {singleDeleteCandidate.name}</div>
-                <div>💾 <strong>الحجم:</strong> {singleDeleteCandidate.formattedSize}</div>
-                <div>🔗 <strong>المسار:</strong> {singleDeleteCandidate.path}</div>
+      {singleDeleteCandidate &&
+        createPortal(
+          <div
+            className={styles.modalBackdrop}
+            onClick={() => setSingleDeleteCandidate(null)}
+          >
+            <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+              <div className={styles.modalHeader}>
+                <h3 className={styles.modalTitle}>تأكيد حذف الصورة المعلقة</h3>
+                <button
+                  type="button"
+                  className={styles.modalCloseBtn}
+                  onClick={() => setSingleDeleteCandidate(null)}
+                >
+                  <X size={18} />
+                </button>
               </div>
-              <p className="text-xs text-red-600 font-bold mt-2">
-                ⚠️ هذا الإجراء سيقوم بحذف الملف نهائياً ولن يمكن التراجع عنه.
-              </p>
-            </div>
 
-            <div className={styles.modalFooter}>
-              <button
-                type="button"
-                className={styles.btnCancel}
-                onClick={() => setSingleDeleteCandidate(null)}
-                disabled={isPurging}
-              >
-                إلغاء
-              </button>
-              <button
-                type="button"
-                className={styles.btnDangerConfirm}
-                onClick={executeSingleDelete}
-                disabled={isPurging}
-              >
-                <Trash2 size={16} />
-                <span>{isPurging ? "جاري الحذف..." : "نعم، احذف الصورة"}</span>
-              </button>
+              <div className="text-sm text-slate-600 font-semibold leading-relaxed">
+                هل أنت متأكد من حذف هذه الصورة نهائياً من الـ Bucket؟
+                <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 mt-3 text-xs font-mono direction-ltr text-right">
+                  <div>📁 <strong>الملف:</strong> {singleDeleteCandidate.name}</div>
+                  <div>💾 <strong>الحجم:</strong> {singleDeleteCandidate.formattedSize}</div>
+                  <div>🔗 <strong>المسار:</strong> {singleDeleteCandidate.path}</div>
+                </div>
+                <p className="text-xs text-red-600 font-bold mt-2">
+                  ⚠️ هذا الإجراء سيقوم بحذف الملف نهائياً ولن يمكن التراجع عنه.
+                </p>
+              </div>
+
+              <div className={styles.modalFooter}>
+                <button
+                  type="button"
+                  className={styles.btnCancel}
+                  onClick={() => setSingleDeleteCandidate(null)}
+                  disabled={isPurging}
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="button"
+                  className={styles.btnDangerConfirm}
+                  onClick={executeSingleDelete}
+                  disabled={isPurging}
+                >
+                  <Trash2 size={16} />
+                  <span>{isPurging ? "جاري الحذف..." : "نعم، احذف الصورة"}</span>
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
 
       {/* ── 7. Bulk Purge Confirmation Modal ── */}
-      {isBulkPurgeModalOpen && (
-        <div
-          className={styles.modalBackdrop}
-          onClick={() => setIsBulkPurgeModalOpen(false)}
-        >
-          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
-            <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>تنظيف كافة الصور غير المرتبطة (Bulk Purge)</h3>
-              <button
-                type="button"
-                className={styles.modalCloseBtn}
-                onClick={() => setIsBulkPurgeModalOpen(false)}
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <div className="text-sm text-slate-600 font-semibold leading-relaxed">
-              بصفتك مسجلاً بصلاحية <strong className="text-purple-600">مسؤول رئيسي (Sudo Admin)</strong>، يمكنك تنظيف كافة الصور المعلقة التي لا تنتمي لأي طالب مسجل في قاعدة البيانات.
-              <div className="bg-rose-50 p-4 rounded-xl border border-rose-200 mt-3 text-sm text-rose-800 font-bold space-y-1">
-                <div>🗑️ <strong>عدد الصور المراد حذفها:</strong> {stats?.orphanedCount} صورة</div>
-                <div>💾 <strong>المساحة التي سيتم توفيرها:</strong> {stats?.formattedOrphaned || "0 MB"}</div>
+      {isBulkPurgeModalOpen &&
+        createPortal(
+          <div
+            className={styles.modalBackdrop}
+            onClick={() => setIsBulkPurgeModalOpen(false)}
+          >
+            <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+              <div className={styles.modalHeader}>
+                <h3 className={styles.modalTitle}>تنظيف كافة الصور غير المرتبطة (Bulk Purge)</h3>
+                <button
+                  type="button"
+                  className={styles.modalCloseBtn}
+                  onClick={() => setIsBulkPurgeModalOpen(false)}
+                >
+                  <X size={18} />
+                </button>
               </div>
-              <p className="text-xs text-slate-500 mt-2">
-                ✅ لن تتأثر صور الطلاب المسجلين بالاستمارات نهائياً، وسيتم حذف الصور المهدرة فقط.
-              </p>
-            </div>
 
-            <div className={styles.modalFooter}>
-              <button
-                type="button"
-                className={styles.btnCancel}
-                onClick={() => setIsBulkPurgeModalOpen(false)}
-                disabled={isPurging}
-              >
-                إلغاء
-              </button>
-              <button
-                type="button"
-                className={styles.btnDangerConfirm}
-                onClick={executeBulkPurge}
-                disabled={isPurging}
-              >
-                <Trash2 size={16} />
-                <span>{isPurging ? "جاري التنظيف والحذف..." : "تأكيد تنظيف وحذف الكل"}</span>
-              </button>
+              <div className="text-sm text-slate-600 font-semibold leading-relaxed">
+                بصفتك مسجلاً بصلاحية <strong className="text-purple-600">مسؤول رئيسي (Sudo Admin)</strong>، يمكنك تنظيف كافة الصور المعلقة التي لا تنتمي لأي طالب مسجل في قاعدة البيانات.
+                <div className="bg-rose-50 p-4 rounded-xl border border-rose-200 mt-3 text-sm text-rose-800 font-bold space-y-1">
+                  <div>🗑️ <strong>عدد الصور المراد حذفها:</strong> {stats?.orphanedCount} صورة</div>
+                  <div>💾 <strong>المساحة التي سيتم توفيرها:</strong> {stats?.formattedOrphaned || "0 MB"}</div>
+                </div>
+                <p className="text-xs text-slate-500 mt-2">
+                  ✅ لن تتأثر صور الطلاب المسجلين بالاستمارات نهائياً، وسيتم حذف الصور المهدرة فقط.
+                </p>
+              </div>
+
+              <div className={styles.modalFooter}>
+                <button
+                  type="button"
+                  className={styles.btnCancel}
+                  onClick={() => setIsBulkPurgeModalOpen(false)}
+                  disabled={isPurging}
+                >
+                  إلغاء
+                </button>
+                <button
+                  type="button"
+                  className={styles.btnDangerConfirm}
+                  onClick={executeBulkPurge}
+                  disabled={isPurging}
+                >
+                  <Trash2 size={16} />
+                  <span>{isPurging ? "جاري التنظيف والحذف..." : "تأكيد تنظيف وحذف الكل"}</span>
+                </button>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
+          </div>,
+          document.body
+        )}
     </div>
   );
 };

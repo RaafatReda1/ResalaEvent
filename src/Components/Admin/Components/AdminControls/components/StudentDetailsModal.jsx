@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   X,
   Check,
@@ -30,6 +31,17 @@ const StudentDetailsModal = ({
 }) => {
   const [qrDataUrl, setQrDataUrl] = useState(null);
   const [copied, setCopied] = useState(false);
+
+  // Body scroll lock while modal is open
+  useEffect(() => {
+    if (isOpen) {
+      const original = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = original;
+      };
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     let isMounted = true;
@@ -97,7 +109,7 @@ const StudentDetailsModal = ({
     }
   };
 
-  return (
+  return createPortal(
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
         {/* 1. Modal Header */}
@@ -146,29 +158,30 @@ const StudentDetailsModal = ({
           </div>
         </div>
 
-        {/* 2. Interactive Certificate Viewer with Drag & Wheel Zoom */}
-        <CertificateViewer imgSrc={student.imgSrc} />
+        {/* 2. Modal Body (Scrollable) */}
+        <div className={styles.modalBody}>
+          {/* Interactive Certificate Viewer with Drag & Wheel Zoom */}
+          <CertificateViewer imgSrc={student.imgSrc} />
 
-        {/* 3. Structured Details Cards Grid */}
-        <StudentInfoGrid student={student} />
+          {/* Structured Details Cards Grid */}
+          <StudentInfoGrid student={student} />
 
-        {/* 4. QR Code Card (Always available, status-aware) */}
-        <div className={styles.drawerQRCard} style={{ margin: "16px 0 0 0" }}>
-          <div className={styles.drawerQRTitle}>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <QrCode size={16} />
-              <span>رمز الدخول الخاص بالفعالية (QR Code)</span>
+          {/* QR Code Card (Always available, status-aware) */}
+          <div className={styles.drawerQRCard} style={{ margin: "4px 0 0 0" }}>
+            <div className={styles.drawerQRTitle}>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <QrCode size={16} />
+                <span>رمز الدخول الخاص بالفعالية (QR Code)</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                {student.isApproved === true ? (
+                  <span style={{ fontSize: "0.74rem", color: "#16a34a", fontWeight: 800 }}>مقبول ✅</span>
+                ) : (
+                  <span style={{ fontSize: "0.74rem", color: "#d97706", fontWeight: 800 }}>في الانتظار ⏳</span>
+                )}
+                <span className={styles.qrBadgeId}>Student ID: #{student.id}</span>
+              </div>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              {student.isApproved === true ? (
-                <span style={{ fontSize: "0.74rem", color: "#16a34a", fontWeight: 800 }}>مقبول ✅</span>
-              ) : (
-                <span style={{ fontSize: "0.74rem", color: "#d97706", fontWeight: 800 }}>في الانتظار ⏳</span>
-              )}
-              <span className={styles.qrBadgeId}>Student ID: #{student.id}</span>
-            </div>
-          </div>
-
 
             <div className={styles.drawerQRContent}>
               {qrDataUrl ? (
@@ -224,8 +237,9 @@ const StudentDetailsModal = ({
               </div>
             </div>
           </div>
+        </div>
 
-        {/* 5. Action Buttons Footer */}
+        {/* 3. Action Buttons Footer (Pinned) */}
         <div className={styles.modalFooterActions}>
           <div
             style={{
@@ -281,7 +295,8 @@ const StudentDetailsModal = ({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

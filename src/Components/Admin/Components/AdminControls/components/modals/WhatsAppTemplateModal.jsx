@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X, MessageCircle, Save, RotateCcw, Check } from "lucide-react";
 import {
   DEFAULT_WHATSAPP_TEMPLATE,
@@ -27,6 +28,17 @@ const WhatsAppTemplateModal = ({
   const [selectedStudentId, setSelectedStudentId] = useState("");
 
   const textareaRef = useRef(null);
+
+  // Body scroll lock while modal is open
+  useEffect(() => {
+    if (isOpen) {
+      const original = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = original;
+      };
+    }
+  }, [isOpen]);
 
   // Sync template when prop changes or modal opens
   useEffect(() => {
@@ -104,7 +116,7 @@ const WhatsAppTemplateModal = ({
     }
   };
 
-  return (
+  return createPortal(
     <div className={styles.modalOverlay} onClick={onClose}>
       <div
         className={`${styles.modalCard} ${styles.whatsappModalCard}`}
@@ -133,63 +145,66 @@ const WhatsAppTemplateModal = ({
           </button>
         </div>
 
-        {/* 1. Quick preset templates */}
-        <WhatsAppPresetBar onSelectPreset={setCurrentTemplate} />
+        {/* Body (Scrollable) */}
+        <div className={styles.modalBody}>
+          {/* 1. Quick preset templates */}
+          <WhatsAppPresetBar onSelectPreset={setCurrentTemplate} />
 
-        {/* 2. Variable insertion palette + health badge */}
-        <WhatsAppVariablesPalette isHealthy={isHealthy} onInsertTag={handleInsertTag} />
+          {/* 2. Variable insertion palette + health badge */}
+          <WhatsAppVariablesPalette isHealthy={isHealthy} onInsertTag={handleInsertTag} />
 
-        {/* 3. Two-column: editor + live preview (responsive) */}
-        <div className={styles.whatsappModalGrid}>
-          {/* Left: textarea + smart settings */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <span style={{ fontSize: "0.84rem", fontWeight: 800, color: "#0f172a" }}>
-                نص الرسالة:
-              </span>
-              <span style={{ fontSize: "0.72rem", color: "#64748b", fontWeight: 600 }}>
-                (استخدم *لتغميق النص* و _لجعله مائلاً_)
-              </span>
+          {/* 3. Two-column: editor + live preview (responsive) */}
+          <div className={styles.whatsappModalGrid}>
+            {/* Left: textarea + smart settings */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ fontSize: "0.84rem", fontWeight: 800, color: "#0f172a" }}>
+                  نص الرسالة:
+                </span>
+                <span style={{ fontSize: "0.72rem", color: "#64748b", fontWeight: 600 }}>
+                  (استخدم *لتغميق النص* و _لجعله مائلاً_)
+                </span>
+              </div>
+
+              <textarea
+                ref={textareaRef}
+                rows={9}
+                className={styles.fieldInput}
+                style={{
+                  fontFamily: "inherit",
+                  fontSize: "0.88rem",
+                  lineHeight: "1.65",
+                  minHeight: "180px",
+                  border: "1.5px solid #cbd5e1",
+                  background: "#ffffff",
+                }}
+                value={currentTemplate}
+                onChange={(e) => setCurrentTemplate(e.target.value)}
+                placeholder="اكتب نص رسالة الواتساب هنا..."
+              />
+
+              <WhatsAppSmartSettings
+                nameMode={nameMode}
+                onNameModeChange={setNameMode}
+                autoArabic={autoArabic}
+                onAutoArabicChange={setAutoArabic}
+              />
             </div>
 
-            <textarea
-              ref={textareaRef}
-              rows={11}
-              className={styles.fieldInput}
-              style={{
-                fontFamily: "inherit",
-                fontSize: "0.88rem",
-                lineHeight: "1.65",
-                minHeight: "220px",
-                border: "1.5px solid #cbd5e1",
-                background: "#ffffff",
-              }}
-              value={currentTemplate}
-              onChange={(e) => setCurrentTemplate(e.target.value)}
-              placeholder="اكتب نص رسالة الواتساب هنا..."
-            />
-
-            <WhatsAppSmartSettings
-              nameMode={nameMode}
-              onNameModeChange={setNameMode}
-              autoArabic={autoArabic}
-              onAutoArabicChange={setAutoArabic}
+            {/* Right: live WhatsApp chat preview */}
+            <WhatsAppChatPreview
+              compiledMessage={compiledMessage}
+              allStudents={allStudents}
+              selectedStudentId={selectedStudentId}
+              onSelectStudent={setSelectedStudentId}
+              onPickRandomStudent={handlePickRandom}
+              copied={copiedPreview}
+              onCopyText={handleCopyPreview}
             />
           </div>
-
-          {/* Right: live WhatsApp chat preview */}
-          <WhatsAppChatPreview
-            compiledMessage={compiledMessage}
-            allStudents={allStudents}
-            selectedStudentId={selectedStudentId}
-            onSelectStudent={setSelectedStudentId}
-            onPickRandomStudent={handlePickRandom}
-            copied={copiedPreview}
-            onCopyText={handleCopyPreview}
-          />
         </div>
 
-        {/* Footer actions */}
+        {/* Footer actions (Pinned bottom) */}
         <div className={styles.modalFooterActions}>
           <button
             type="button"
@@ -233,7 +248,8 @@ const WhatsAppTemplateModal = ({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 

@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { X, Save, UserPlus, Edit3 } from "lucide-react";
 import { useStudentForm } from "./modals/form/useStudentForm";
 import StudentFormFields from "./modals/form/StudentFormFields";
@@ -13,9 +14,20 @@ const StudentFormModal = ({ isOpen, onClose, student, onSave }) => {
     onClose
   );
 
+  // Body scroll lock while modal is open
+  useEffect(() => {
+    if (isOpen) {
+      const original = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
+      return () => {
+        document.body.style.overflow = original;
+      };
+    }
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
         {/* Header */}
@@ -38,35 +50,37 @@ const StudentFormModal = ({ isOpen, onClose, student, onSave }) => {
           </button>
         </div>
 
-        {/* Error Alert */}
-        {err && (
-          <div
-            style={{
-              background: "#fef2f2",
-              color: "#b91c1c",
-              fontSize: "0.8rem",
-              fontWeight: 800,
-              padding: "10px 14px",
-              borderRadius: "10px",
-              border: "1px solid #fecaca",
-            }}
-          >
-            {err}
-          </div>
-        )}
-
         {/* Form Fields & Approval Toggle */}
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
-          <div className={styles.formGrid}>
-            <StudentFormFields formData={formData} onChange={handleChange} />
-            <StudentFormApprovalToggle
-              isApproved={formData.isApproved}
-              onChange={handleChange}
-            />
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", flex: 1, minHeight: 0, overflow: "hidden" }}>
+          <div className={styles.modalBody}>
+            {/* Error Alert */}
+            {err && (
+              <div
+                style={{
+                  background: "#fef2f2",
+                  color: "#b91c1c",
+                  fontSize: "0.8rem",
+                  fontWeight: 800,
+                  padding: "10px 14px",
+                  borderRadius: "10px",
+                  border: "1px solid #fecaca",
+                }}
+              >
+                {err}
+              </div>
+            )}
+
+            <div className={styles.formGrid}>
+              <StudentFormFields formData={formData} onChange={handleChange} />
+              <StudentFormApprovalToggle
+                isApproved={formData.isApproved}
+                onChange={handleChange}
+              />
+            </div>
           </div>
 
-          {/* Footer Actions */}
-          <div className={styles.modalFooter}>
+          {/* Footer Actions (Pinned) */}
+          <div className={styles.modalFooterActions} style={{ justifyContent: "flex-end", gap: "10px" }}>
             <button
               type="button"
               className={styles.btnSecondary}
@@ -86,7 +100,8 @@ const StudentFormModal = ({ isOpen, onClose, student, onSave }) => {
           </div>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
