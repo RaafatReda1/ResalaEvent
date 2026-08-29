@@ -32,7 +32,7 @@ const Loader = ({ onComplete }) => {
 
     gsap.to(containerRef.current, {
       opacity: 0,
-      duration: 0.5,
+      duration: 1.5,
       ease: "power2.inOut",
       onComplete: () => {
         if (onComplete) onComplete();
@@ -60,49 +60,63 @@ const Loader = ({ onComplete }) => {
         opacity: 1,
       });
 
-      // 2. Master GSAP Timeline (Scenes 01 to 07 without Date Merge)
+      // 2. Master GSAP Timeline with graceful, cinematic pacing
       const masterTl = gsap.timeline({
+        delay: 0.5, // Smooth initialization and settling buffer
         onComplete: () => {
           finishIntro();
         },
       });
       masterTimelineRef.current = masterTl;
 
-      // SCENE 01: Fast, rhythmic drawing of the ECG heartbeat (3.5s)
-      masterTl.to(path, {
-        strokeDashoffset: 0,
-        duration: 3.5,
-        ease: "power2.inOut",
-      });
+      // SCENE 00: Ambient spotlight gently breathing in
+      masterTl.fromTo(
+        `.${styles.ambientSpotlight}`,
+        { opacity: 0.3, scale: 0.95 },
+        { opacity: 1, scale: 1, duration: 0.6, ease: "power1.out" },
+        0
+      );
 
-      // SCENE 02: Thought popups pop out in snappy sequence
+      // SCENE 01: Smooth, rhythmic & elegant drawing of the ECG heartbeat (2.6s)
+      masterTl.to(
+        path,
+        {
+          strokeDashoffset: 0,
+          duration: 2.6,
+          ease: "power2.inOut",
+        },
+        0.2
+      );
+
+      // SCENE 02: Thought popups popping out in relaxed, readable sequence
       masterTl.fromTo(
         `.${styles.thoughtItem}`,
-        { opacity: 0, scale: 0.5 },
+        { opacity: 0, scale: 0.6, y: 20 },
         {
           opacity: 1,
           scale: 1,
-          duration: 0.4,
-          ease: "back.out(2)",
-          stagger: 0.22,
+          y: 0,
+          duration: 0.5,
+          ease: "back.out(1.8)",
+          stagger: 0.14,
         },
         0.6
       );
 
-      // SCENE 03: Final Heartbeat Pulse Flash (0.25s)
+      // SCENE 03: Final Heartbeat Pulse Flash
       masterTl.to(
         path,
         {
-          filter: "drop-shadow(0px 0px 35px rgba(58, 185, 172, 1))",
-          strokeWidth: 5,
+          strokeWidth: 4.5,
           duration: 0.25,
           yoyo: true,
           repeat: 1,
+          ease: "power1.inOut",
         },
-        3.0
+        2.4
       );
 
-      // SCENE 04: Heartbeat line flattens into the SVG timeline track
+      // SCENE 04: Heartbeat line smoothly flattens into the SVG timeline track
       masterTl.to(
         path,
         {
@@ -117,18 +131,18 @@ const Loader = ({ onComplete }) => {
 
       masterTl.to(
         timelineTrackRef.current,
-        { opacity: 0.4, duration: 0.3 },
+        { opacity: 0.45, duration: 0.35 },
         "<"
       );
 
       masterTl.fromTo(
         [date03Ref.current, date04Ref.current],
-        { opacity: 0, scale: 0.7 },
-        { opacity: 1, scale: 1, duration: 0.4, ease: "back.out(1.7)", stagger: 0.1 },
+        { opacity: 0, scale: 0.75 },
+        { opacity: 1, scale: 1, duration: 0.45, ease: "back.out(1.7)", stagger: 0.12 },
         "-=0.2"
       );
 
-      // SCENE 05: Energy Orb shoots across line to 04 SEP (2.2s laser glide)
+      // SCENE 05: Energy Orb shoots across line to 04 SEP (1.8s graceful laser glide)
       masterTl.to(
         energyOrbGroupRef.current,
         { opacity: 1, duration: 0.2 },
@@ -141,15 +155,8 @@ const Loader = ({ onComplete }) => {
         {
           x: 1450,
           y: 200,
-          duration: 2.2,
+          duration: 1.8,
           ease: "power2.inOut",
-          onUpdate: function () {
-            const currentX = gsap.getProperty(energyOrbGroupRef.current, "x");
-            const progressPercent = ((currentX - 150) / 1300) * 100;
-            if (containerRef.current) {
-              containerRef.current.style.setProperty("--spotlight-x", `${progressPercent}%`);
-            }
-          },
         },
         "<"
       );
@@ -158,38 +165,39 @@ const Loader = ({ onComplete }) => {
         timelineBeamRef.current,
         {
           strokeDashoffset: 0,
-          duration: 2.2,
+          duration: 1.8,
           ease: "power2.inOut",
         },
         "<"
       );
 
-      // SCENE 06: Thoughts drift backwards to the left and dissolve into mist
+      // SCENE 06: Thoughts drift and dissolve gracefully
       masterTl.to(
         `.${styles.thoughtItem}`,
         {
-          x: "-=80",
-          scale: 0.2,
+          x: "-=50",
+          scale: 0.45,
           opacity: 0,
           duration: 0.5,
           ease: "power2.in",
           stagger: {
-            amount: 1.6,
+            amount: 1.0,
             from: "start",
           },
         },
-        "<"
+        "<+=0.2"
       );
 
-      // SCENE 07: Arrival impact pulse on 04 SEP & fade out 03 SEP (No merging!)
+      // SCENE 07: Arrival impact pulse on 04 SEP & fade out 03 SEP
       masterTl.to(
         date03Ref.current,
         {
           opacity: 0,
-          scale: 0.8,
-          duration: 0.4,
+          scale: 0.85,
+          duration: 0.35,
           ease: "power2.out",
-        }
+        },
+        "-=0.2"
       );
 
       masterTl.to(
@@ -204,12 +212,12 @@ const Loader = ({ onComplete }) => {
         "<"
       );
 
-      // Pause briefly at 04 SEP highlight before transitioning to Hero
-      masterTl.to({}, { duration: 0.5 });
+      // Comfortable pause on 04 SEP highlight before smooth fade-out
+      masterTl.to({}, { duration: 0.6 });
 
-      // Shockwave ripple loops for energy orb
+      // Energy orb ripple shockwaves
       gsap.to(ripple1Ref.current, {
-        scale: 2.4,
+        scale: 2.3,
         opacity: 0,
         duration: 1.0,
         repeat: -1,
@@ -217,24 +225,12 @@ const Loader = ({ onComplete }) => {
       });
 
       gsap.to(ripple2Ref.current, {
-        scale: 1.9,
+        scale: 1.8,
         opacity: 0,
         duration: 0.8,
         repeat: -1,
         ease: "power1.out",
         delay: 0.2,
-      });
-
-      // Subtle floating movement for thoughts
-      gsap.utils.toArray(`.${styles.thoughtItem}`).forEach((item, index) => {
-        gsap.to(item, {
-          y: index % 2 === 0 ? "-=8" : "+=8",
-          duration: 2 + (index % 3) * 0.4,
-          repeat: -1,
-          yoyo: true,
-          ease: "sine.inOut",
-          delay: 0.6 + index * 0.22,
-        });
       });
     },
     { scope: containerRef }
@@ -249,7 +245,7 @@ const Loader = ({ onComplete }) => {
 
   return (
     <div ref={containerRef} className={styles.container}>
-      {/* Dynamic Background Spotlight */}
+      {/* Background ambient lighting */}
       <div className={styles.ambientSpotlight} />
       <div className={styles.bgGlowLeft} />
       <div className={styles.bgGlowRight} />

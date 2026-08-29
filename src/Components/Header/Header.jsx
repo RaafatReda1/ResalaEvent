@@ -136,11 +136,12 @@ const Header = () => {
     );
   });
 
-  // ── ScrollSpy: Track active section dynamically ──
+  // ── ScrollSpy: Track active section dynamically (Throttled with requestAnimationFrame) ──
   useEffect(() => {
     const sectionIds = ["home", "about", "issues", "speakers", "agenda", "register"];
+    let ticking = false;
 
-    const handleScroll = () => {
+    const updateActiveSection = () => {
       const scrollPos = window.scrollY + 200;
 
       for (let i = sectionIds.length - 1; i >= 0; i--) {
@@ -153,10 +154,18 @@ const Header = () => {
           }
         }
       }
+      ticking = false;
+    };
+
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(updateActiveSection);
+        ticking = true;
+      }
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll();
+    updateActiveSection();
 
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -165,9 +174,13 @@ const Header = () => {
   const scrollTo = (e, targetId) => {
     e.preventDefault();
     setMobileMenuOpen(false);
-    const target = document.getElementById(targetId);
-    if (target) {
-      target.scrollIntoView({ behavior: "smooth" });
+    if (window.lenis) {
+      window.lenis.scrollTo(`#${targetId}`, { offset: -40, duration: 1.2 });
+    } else {
+      const target = document.getElementById(targetId);
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth" });
+      }
     }
   };
 

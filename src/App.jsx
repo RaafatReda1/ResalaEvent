@@ -1,6 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, lazy, Suspense } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import Lenis from "lenis";
+import "lenis/dist/lenis.css";
 import "./App.css";
 import Loader from "./Components/Loader/Loader";
 import HeroSection from "./Components/HeroSection/HeroSection";
@@ -14,7 +16,8 @@ import Footer from "./Components/Footer/Footer";
 import FloatingWhatsApp from "./Components/FloatingWhatsApp/FloatingWhatsApp";
 import { Analytics } from "@vercel/analytics/react";
 import { checkIsAdmin } from "./utils/checkIsAdmin";
-import Admin from "./Components/Admin/Admin";
+
+const Admin = lazy(() => import("./Components/Admin/Admin"));
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -23,11 +26,42 @@ function App() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [authChecking, setAuthChecking] = useState(true); // prevent flash
 
+  // ── GSAP Smooth Scrolling with Lenis ──
+  useEffect(() => {
+    if (isAdmin) return;
+
+    const lenis = new Lenis({
+      duration: 1.2,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+      touchMultiplier: 1.3,
+    });
+
+    window.lenis = lenis;
+
+    // Sync Lenis with GSAP ScrollTrigger
+    lenis.on("scroll", ScrollTrigger.update);
+
+    const updateTicker = (time) => {
+      lenis.raf(time * 1000);
+    };
+
+    gsap.ticker.add(updateTicker);
+    gsap.ticker.lagSmoothing(0);
+
+    return () => {
+      gsap.ticker.remove(updateTicker);
+      lenis.destroy();
+      window.lenis = null;
+    };
+  }, [isAdmin]);
+
   const handleIntroComplete = () => {
     setIsIntroActive(false);
-    setTimeout(() => {
+    requestAnimationFrame(() => {
       ScrollTrigger.refresh();
-    }, 60);
+      window.lenis?.resize();
+    });
   };
 
   useEffect(() => {
@@ -50,7 +84,15 @@ function App() {
       {/* Show nothing until auth check resolves — prevents public-site flash for admins */}
       {!authChecking && (
         isAdmin ? (
-          <Admin />
+          <Suspense
+            fallback={
+              <div className="min-h-screen flex items-center justify-center bg-slate-900 text-teal-400">
+                <div className="w-8 h-8 border-4 border-teal-400/30 border-t-teal-400 rounded-full animate-spin" />
+              </div>
+            }
+          >
+            <Admin />
+          </Suspense>
         ) : (
           <>
             <main>

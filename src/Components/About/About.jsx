@@ -101,24 +101,22 @@ const About = () => {
         // ظهور السطر بالكامل
         tl.set(line, { opacity: 1 });
 
-        // دخول الكلمات واحدة تلو الأخرى بتأثير 3D ثلاثي الأبعاد مع سينمائية الباور
+        // دخول الكلمات واحدة تلو الأخرى بتأثير سلس وسريع جداً على كارت الشاشة
         tl.fromTo(
           words,
           {
             opacity: 0,
-            y: 45,
-            scale: 0.85,
-            filter: "blur(12px)",
-            rotateX: 65,
+            y: 35,
+            scale: 0.9,
+            rotateX: 45,
           },
           {
             opacity: 1,
             y: 0,
             scale: 1,
-            filter: "blur(0px)",
             rotateX: 0,
-            duration: 0.7,
-            stagger: 0.09,
+            duration: 0.65,
+            stagger: 0.08,
             ease: "power3.out",
           },
         );
@@ -129,12 +127,11 @@ const About = () => {
         // خروج الجملة بسلاسة قبل الجملة التالية
         tl.to(words, {
           opacity: 0,
-          y: -35,
-          scale: 0.95,
-          filter: "blur(8px)",
-          rotateX: -45,
-          duration: 0.5,
-          stagger: 0.04,
+          y: -25,
+          scale: 0.96,
+          rotateX: -30,
+          duration: 0.45,
+          stagger: 0.03,
           ease: "power2.in",
         });
 

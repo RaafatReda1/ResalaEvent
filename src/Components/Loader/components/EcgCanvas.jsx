@@ -13,25 +13,22 @@ const EcgCanvas = ({
       <svg viewBox="0 0 1600 400" xmlns="http://www.w3.org/2000/svg" className={styles.svgElement}>
         <defs>
           <linearGradient id="ecgGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="var(--teal-500)" />
-            <stop offset="40%" stopColor="var(--teal-200)" />
-            <stop offset="80%" stopColor="var(--teal-300)" />
-            <stop offset="100%" stopColor="var(--teal-400)" />
+            <stop offset="0%" stopColor="var(--teal-500, #1fa6a0)" />
+            <stop offset="40%" stopColor="var(--teal-200, #8fdcd3)" />
+            <stop offset="80%" stopColor="var(--teal-300, #5dccc0)" />
+            <stop offset="100%" stopColor="var(--teal-400, #3ab9ac)" />
           </linearGradient>
 
           <linearGradient id="timelineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="var(--teal-500)" />
-            <stop offset="100%" stopColor="var(--teal-300)" />
+            <stop offset="0%" stopColor="var(--teal-500, #1fa6a0)" />
+            <stop offset="100%" stopColor="var(--teal-300, #5dccc0)" />
           </linearGradient>
 
-          <filter id="laserGlow" x="-20%" y="-20%" width="140%" height="140%">
-            <feGaussianBlur stdDeviation="5" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
+          <radialGradient id="orbGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="#ffffff" />
+            <stop offset="60%" stopColor="var(--teal-300, #5dccc0)" />
+            <stop offset="100%" stopColor="rgba(58, 185, 172, 0)" />
+          </radialGradient>
         </defs>
 
         {/* SCENE 01 & 03: ECG Path */}
@@ -59,6 +56,7 @@ const EcgCanvas = ({
           strokeWidth="3.5"
           strokeLinecap="round"
           strokeLinejoin="round"
+          vectorEffect="non-scaling-stroke"
         />
 
         {/* SCENE 04: SVG Base Track Line */}
@@ -70,6 +68,7 @@ const EcgCanvas = ({
           y2="200"
           className={styles.timelineTrack}
           strokeLinecap="round"
+          vectorEffect="non-scaling-stroke"
         />
 
         {/* SCENE 05: Glowing Progress Laser Beam */}
@@ -81,13 +80,14 @@ const EcgCanvas = ({
           y2="200"
           className={styles.timelineBeam}
           strokeLinecap="round"
+          vectorEffect="non-scaling-stroke"
         />
 
         {/* SCENE 05: Energy Orb travelling along timeline */}
         <g ref={energyOrbGroupRef} className={styles.energyOrbGroup}>
-          <circle ref={ripple1Ref} r="18" fill="none" stroke="var(--teal-300)" strokeWidth="1.5" opacity="0.6" />
-          <circle ref={ripple2Ref} r="10" fill="none" stroke="var(--teal-200)" strokeWidth="2" opacity="0.8" />
-          <circle r="6" fill="var(--gray-0)" filter="url(#laserGlow)" />
+          <circle ref={ripple1Ref} r="18" fill="none" stroke="var(--teal-300, #5dccc0)" strokeWidth="1.5" opacity="0.6" />
+          <circle ref={ripple2Ref} r="10" fill="none" stroke="var(--teal-200, #8fdcd3)" strokeWidth="2" opacity="0.8" />
+          <circle r="7" fill="url(#orbGlow)" />
         </g>
       </svg>
     </div>

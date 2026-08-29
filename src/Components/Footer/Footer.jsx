@@ -13,9 +13,13 @@ import { logLinkClick, ACTION_TYPES } from "../../utils/activityLogger";
 const Footer = () => {
   const scrollTo = (e, targetId) => {
     e.preventDefault();
-    const target = document.getElementById(targetId);
-    if (target) {
-      target.scrollIntoView({ behavior: "smooth" });
+    if (window.lenis) {
+      window.lenis.scrollTo(`#${targetId}`, { offset: -40, duration: 1.2 });
+    } else {
+      const target = document.getElementById(targetId);
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth" });
+      }
     }
   };
 

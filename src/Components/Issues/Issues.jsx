@@ -47,11 +47,10 @@ const Issues = () => {
       // ─────────────────────────────────────────────────────────────
       tl.fromTo(
         ".headerScene1",
-        { opacity: 0, y: 25, filter: "blur(6px)" },
+        { opacity: 0, y: 25 },
         {
           opacity: 1,
           y: 0,
-          filter: "blur(0px)",
           duration: 0.08,
           ease: "power2.out",
         },
@@ -114,7 +113,7 @@ const Issues = () => {
       );
       tl.to(
         ".headerScene1",
-        { opacity: 0, y: -15, filter: "blur(4px)", duration: 0.05 },
+        { opacity: 0, y: -15, duration: 0.05 },
         0.25,
       );
       tl.to(".moodAnxietyBg", { opacity: 0, duration: 0.06 }, 0.25);
@@ -129,11 +128,10 @@ const Issues = () => {
       // ─────────────────────────────────────────────────────────────
       tl.fromTo(
         ".headerScene2",
-        { opacity: 0, y: 25, filter: "blur(6px)" },
+        { opacity: 0, y: 25 },
         {
           opacity: 1,
           y: 0,
-          filter: "blur(0px)",
           duration: 0.08,
           ease: "power2.out",
         },
@@ -164,12 +162,11 @@ const Issues = () => {
       // Ticket entrance
       tl.fromTo(
         ".resalaTicketCard",
-        { opacity: 0, y: 35, scale: 0.88, filter: "blur(6px)" },
+        { opacity: 0, y: 35, scale: 0.88 },
         {
           opacity: 1,
           y: 0,
           scale: 1,
-          filter: "blur(0px)",
           duration: 0.09,
           ease: "back.out(1.6)",
         },
@@ -186,7 +183,6 @@ const Issues = () => {
           opacity: 0,
           y: -20,
           scale: 0.92,
-          filter: "blur(4px)",
           duration: 0.05,
           ease: "power2.in",
         },
@@ -194,7 +190,7 @@ const Issues = () => {
       );
       tl.to(
         ".headerScene2",
-        { opacity: 0, y: -15, filter: "blur(4px)", duration: 0.05 },
+        { opacity: 0, y: -15, duration: 0.05 },
         0.54,
       );
       tl.to(".moodNotifBg", { opacity: 0, duration: 0.06 }, 0.54);
@@ -205,11 +201,10 @@ const Issues = () => {
       // ─────────────────────────────────────────────────────────────
       tl.fromTo(
         ".headerScene3",
-        { opacity: 0, y: 25, filter: "blur(6px)" },
+        { opacity: 0, y: 25 },
         {
           opacity: 1,
           y: 0,
-          filter: "blur(0px)",
           duration: 0.08,
           ease: "power2.out",
         },
@@ -278,7 +273,7 @@ const Issues = () => {
       );
       tl.to(
         ".headerScene3",
-        { opacity: 0, y: -15, filter: "blur(4px)", duration: 0.05 },
+        { opacity: 0, y: -15, duration: 0.05 },
         0.92,
       );
       tl.to(".emoji3", { opacity: 0, scale: 0.8, duration: 0.05 }, 0.93);

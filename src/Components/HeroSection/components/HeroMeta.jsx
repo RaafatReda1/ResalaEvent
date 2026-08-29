@@ -63,9 +63,13 @@ const HeroMeta = () => {
         className={`${styles.ctaButton} ${isRegistered ? styles.ctaButtonRegistered : ""}`}
         type="button"
         onClick={() => {
-          const target = document.getElementById("register");
-          if (target) {
-            target.scrollIntoView({ behavior: "smooth" });
+          if (window.lenis) {
+            window.lenis.scrollTo("#register", { offset: -40, duration: 1.2 });
+          } else {
+            const target = document.getElementById("register");
+            if (target) {
+              target.scrollIntoView({ behavior: "smooth" });
+            }
           }
         }}
       >

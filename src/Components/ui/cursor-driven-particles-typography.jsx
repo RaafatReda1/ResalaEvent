@@ -116,7 +116,9 @@ export function CursorDrivenParticleTypography({
     const ctx = canvas.getContext("2d", { willReadFrequently: true });
     if (!ctx) return;
 
-    let animationFrameId;
+    let animationFrameId = 0;
+    let isVisible = false;
+    let isPageVisible = !document.hidden;
     let particles = [];
     let shockwaves = [];
     let pointers = []; // supports multiple touches
@@ -133,7 +135,7 @@ export function CursorDrivenParticleTypography({
       containerWidth = container.clientWidth || 300;
       containerHeight = container.clientHeight || 200;
 
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
       canvas.width = containerWidth * dpr;
       canvas.height = containerHeight * dpr;
       canvas.style.width = `${containerWidth}px`;
@@ -173,7 +175,7 @@ export function CursorDrivenParticleTypography({
       );
 
       particles = [];
-      const densityStep = Math.max(2, Math.floor(particleDensity * dpr));
+      const densityStep = Math.max(3, Math.floor(particleDensity * dpr));
 
       for (let y = 0; y < textCoordinates.height; y += densityStep) {
         for (let x = 0; x < textCoordinates.width; x += densityStep) {
@@ -208,6 +210,10 @@ export function CursorDrivenParticleTypography({
     };
 
     const animate = () => {
+      if (!isVisible || !isPageVisible) {
+        animationFrameId = 0;
+        return;
+      }
       const now = (Date.now() - startTime) * 0.001;
       ctx.clearRect(0, 0, containerWidth, containerHeight);
 
@@ -229,6 +235,43 @@ export function CursorDrivenParticleTypography({
 
       animationFrameId = requestAnimationFrame(animate);
     };
+
+    const startAnimation = () => {
+      if (isVisible && isPageVisible && animationFrameId === 0) {
+        animationFrameId = requestAnimationFrame(animate);
+      }
+    };
+
+    const stopAnimation = () => {
+      if (animationFrameId !== 0) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = 0;
+      }
+    };
+
+    // IntersectionObserver to only animate when in view
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isVisible = entry.isIntersecting;
+        if (isVisible) {
+          startAnimation();
+        } else {
+          stopAnimation();
+        }
+      },
+      { threshold: 0.05 }
+    );
+    observer.observe(container);
+
+    const onVisibilityChange = () => {
+      isPageVisible = !document.hidden;
+      if (isPageVisible && isVisible) {
+        startAnimation();
+      } else {
+        stopAnimation();
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
 
     // ── Mouse Events (Desktop) ──
     const handleMouseMove = (e) => {
@@ -325,7 +368,6 @@ export function CursorDrivenParticleTypography({
 
     const timeoutId = setTimeout(() => {
       init();
-      animate();
     }, 50);
 
     const resizeObserver = new ResizeObserver(handleResize);
@@ -347,6 +389,8 @@ export function CursorDrivenParticleTypography({
 
     return () => {
       clearTimeout(timeoutId);
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", onVisibilityChange);
       resizeObserver.disconnect();
 
       canvas.removeEventListener("mousemove", handleMouseMove);
@@ -362,7 +406,7 @@ export function CursorDrivenParticleTypography({
         window.removeEventListener("deviceorientation", handleOrientation);
       }
 
-      cancelAnimationFrame(animationFrameId);
+      stopAnimation();
     };
   }, [
     text,

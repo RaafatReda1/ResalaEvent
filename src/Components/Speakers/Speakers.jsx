@@ -3,7 +3,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import useIsMobile from "../../hooks/useIsMobile";
-import { ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import styles from "./Speakers.module.css";
 
 gsap.registerPlugin(ScrollTrigger);
@@ -94,25 +94,18 @@ const SpeakerCard = ({
 }) => {
   return (
     <div
-      className={`${styles.speakerCard} ${isExpanded ? styles.speakerCardExpanded : ""
-        } ${isMobile && isMobileActive ? styles.speakerCardMobileActive : ""}`}
+      className={`${styles.speakerCard} ${
+        isExpanded ? styles.speakerCardExpanded : ""
+      } ${isMobile && isMobileActive ? styles.speakerCardMobileActive : ""}`}
       onMouseEnter={() => !isMobile && onHover(index)}
       onClick={() => isMobile && onCardClick(index)}
       style={{ "--accent": speaker.accent, "--accent-rgb": speaker.accentRgb }}
     >
-      {/* Ambient Bokeh Blur Background Layer */}
-      <div
-        className={styles.cardBgLayer}
-        style={{
-          backgroundImage: `url(${speaker.imageSrc})`,
-        }}
-      />
-
       {/* Studio stage backlight halo */}
       <div
         className={styles.cardBacklightHalo}
         style={{
-          background: `radial-gradient(circle at 50% 40%, rgba(${speaker.accentRgb}, 0.45) 0%, rgba(${speaker.accentRgb}, 0.12) 50%, transparent 75%)`,
+          background: `radial-gradient(circle at 50% 35%, rgba(${speaker.accentRgb}, 0.35) 0%, rgba(${speaker.accentRgb}, 0.08) 55%, transparent 75%)`,
         }}
       />
 
@@ -120,7 +113,7 @@ const SpeakerCard = ({
       <div
         className={styles.cardGlowOverlay}
         style={{
-          background: `radial-gradient(ellipse at bottom, rgba(${speaker.accentRgb},0.65) 0%, rgba(${speaker.accentRgb},0.15) 50%, transparent 75%)`,
+          background: `radial-gradient(ellipse at bottom, rgba(${speaker.accentRgb},0.5) 0%, rgba(${speaker.accentRgb},0.1) 50%, transparent 75%)`,
         }}
       />
 
@@ -134,6 +127,7 @@ const SpeakerCard = ({
           alt={speaker.nameEn}
           className={styles.speakerImg}
           loading="lazy"
+          decoding="async"
         />
       </div>
 
@@ -190,11 +184,8 @@ const SpeakerCard = ({
 
 const Speakers = () => {
   const isMobile = useIsMobile(768);
-  // Desktop hover state: null initially so all cards are equally balanced in rest state
   const [hoveredIndex, setHoveredIndex] = useState(null);
-  // Mobile carousel active index: 0 initially for the first card in swipe view
   const [mobileActiveIndex, setMobileActiveIndex] = useState(0);
-  // Ref mirror of mobileActiveIndex to avoid re-creating the scroll listener on every change
   const mobileActiveIndexRef = useRef(0);
 
   const sectionRef = useRef(null);
@@ -203,6 +194,7 @@ const Speakers = () => {
   const cardsRef = useRef(null);
   const decorRef = useRef(null);
   const carouselTrackRef = useRef(null);
+  const tabsWrapperRef = useRef(null);
 
   // ── GSAP Entrance Animation ──
   useGSAP(
@@ -221,66 +213,53 @@ const Speakers = () => {
         {
           scaleX: 1,
           opacity: 1,
-          duration: 0.8,
+          duration: 0.6,
           ease: "power3.out",
           transformOrigin: "left center",
         },
       )
         .fromTo(
           subtitleRef.current,
-          { opacity: 0, y: 20 },
-          { opacity: 1, y: 0, duration: 0.65, ease: "power3.out" },
-          "-=0.45",
+          { opacity: 0, y: 15 },
+          { opacity: 1, y: 0, duration: 0.5, ease: "power3.out" },
+          "-=0.35",
         )
         .fromTo(
           headingRef.current,
-          { opacity: 0, y: 40 },
-          { opacity: 1, y: 0, duration: 0.85, ease: "power3.out" },
-          "-=0.45",
+          { opacity: 0, y: 25 },
+          { opacity: 1, y: 0, duration: 0.6, ease: "power3.out" },
+          "-=0.35",
         )
         .fromTo(
           Array.from(cardsRef.current?.children || []),
-          { opacity: 0, y: 50, scale: 0.94 },
+          { opacity: 0, y: 35 },
           {
             opacity: 1,
             y: 0,
-            scale: 1,
-            duration: 0.8,
+            duration: 0.6,
             ease: "power3.out",
-            stagger: 0.12,
+            stagger: 0.08,
           },
-          "-=0.4",
+          "-=0.3",
         );
     },
     { scope: sectionRef },
   );
 
-  const tabsWrapperRef = useRef(null);
-
-  // ── Mobile Carousel Scroll Listener for Active Index Sync (RTL & LTR compatible) ──
+  // ── Throttled Mobile Carousel Scroll Listener ──
   const handleCarouselScroll = useCallback(() => {
     if (!carouselTrackRef.current) return;
     const track = carouselTrackRef.current;
-    const trackRect = track.getBoundingClientRect();
-    const trackCenter = trackRect.left + trackRect.width / 2;
-
-    let closestIndex = 0;
-    let minDistance = Infinity;
-
-    Array.from(track.children).forEach((child, index) => {
-      const childRect = child.getBoundingClientRect();
-      const childCenter = childRect.left + childRect.width / 2;
-      const distance = Math.abs(trackCenter - childCenter);
-      if (distance < minDistance) {
-        minDistance = distance;
-        closestIndex = index;
-      }
-    });
+    const cardWidth = track.firstElementChild?.clientWidth || 280;
+    const scrollPos = Math.abs(track.scrollLeft);
+    const closestIndex = Math.min(
+      speakers.length - 1,
+      Math.max(0, Math.round(scrollPos / (cardWidth + 14)))
+    );
 
     if (closestIndex !== mobileActiveIndexRef.current) {
       mobileActiveIndexRef.current = closestIndex;
       setMobileActiveIndex(closestIndex);
-      // Auto-scroll the active quick tab into view
       if (tabsWrapperRef.current?.children[closestIndex]) {
         tabsWrapperRef.current.children[closestIndex].scrollIntoView({
           behavior: "smooth",
@@ -295,11 +274,22 @@ const Speakers = () => {
     const track = carouselTrackRef.current;
     if (!track || !isMobile) return;
 
-    track.addEventListener("scroll", handleCarouselScroll, { passive: true });
-    return () => track.removeEventListener("scroll", handleCarouselScroll);
+    let ticking = false;
+    const onScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          handleCarouselScroll();
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    track.addEventListener("scroll", onScroll, { passive: true });
+    return () => track.removeEventListener("scroll", onScroll);
   }, [isMobile, handleCarouselScroll]);
 
-  // ── Scroll to specific speaker on mobile (RTL smooth centering) ──
+  // ── Scroll to specific speaker on mobile ──
   const scrollToSpeaker = (index) => {
     mobileActiveIndexRef.current = index;
     setMobileActiveIndex(index);
@@ -339,9 +329,6 @@ const Speakers = () => {
       <div className={styles.bgGrid} />
       <div className={styles.bgCoronaLeft} />
       <div className={styles.bgCoronaRight} />
-      <div className={styles.bgScanLine} />
-      <div className={styles.bgOrb1} />
-      <div className={styles.bgOrb2} />
 
       {/* Section heading */}
       <div className={styles.sectionHeading}>
@@ -363,7 +350,9 @@ const Speakers = () => {
               <button
                 key={idx}
                 type="button"
-                className={`${styles.mobileTabPill} ${isTabActive ? styles.mobileTabPillActive : ""}`}
+                className={`${styles.mobileTabPill} ${
+                  isTabActive ? styles.mobileTabPillActive : ""
+                }`}
                 onClick={() => scrollToSpeaker(idx)}
                 style={{
                   "--accent": spk.accent,
@@ -420,7 +409,9 @@ const Speakers = () => {
                 <button
                   key={idx}
                   type="button"
-                  className={`${styles.mobileDot} ${isDotActive ? styles.mobileDotActive : ""}`}
+                  className={`${styles.mobileDot} ${
+                    isDotActive ? styles.mobileDotActive : ""
+                  }`}
                   onClick={() => scrollToSpeaker(idx)}
                   aria-label={`انتقل إلى ${spk.name}`}
                   style={{

@@ -10,18 +10,16 @@
   overflow: hidden;
   direction: rtl;
   z-index: 99999;
+  contain: strict;
 }
 
-/* Background Ambient Lighting */
+/* Background Ambient Lighting — Pure GPU radial gradients without heavy filters */
 .ambientSpotlight {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   background: radial-gradient(
-    circle at var(--spotlight-x, 50%) 50%, 
-    rgba(31, 166, 160, 0.22) 0%, 
+    circle at 50% 50%, 
+    rgba(31, 166, 160, 0.16) 0%, 
     rgba(10, 21, 38, 0) 65%
   );
   pointer-events: none;
@@ -30,24 +28,24 @@
 
 .bgGlowLeft {
   position: absolute;
-  top: 20%;
-  right: -10%;
-  width: min(500px, 60vw);
-  height: min(500px, 60vw);
-  background: radial-gradient(circle, rgba(31, 166, 160, 0.12) 0%, rgba(10, 21, 38, 0) 70%);
+  top: 15%;
+  right: -8%;
+  width: min(480px, 55vw);
+  height: min(480px, 55vw);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(31, 166, 160, 0.15) 0%, rgba(31, 166, 160, 0.03) 45%, transparent 70%);
   pointer-events: none;
-  filter: blur(40px);
 }
 
 .bgGlowRight {
   position: absolute;
-  bottom: 10%;
-  left: -10%;
-  width: min(600px, 70vw);
-  height: min(600px, 70vw);
-  background: radial-gradient(circle, rgba(21, 42, 74, 0.25) 0%, rgba(10, 21, 38, 0) 70%);
+  bottom: 8%;
+  left: -8%;
+  width: min(520px, 60vw);
+  height: min(520px, 60vw);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(21, 42, 74, 0.35) 0%, rgba(21, 42, 74, 0.08) 50%, transparent 70%);
   pointer-events: none;
-  filter: blur(50px);
 }
 
 /* Skip Intro Button */
@@ -56,22 +54,22 @@
   top: clamp(14px, 3vh, 32px);
   left: clamp(14px, 3vw, 40px);
   z-index: 110;
-  background: rgba(14, 30, 53, 0.75);
-  border: 1px solid var(--border-dark);
-  color: var(--text-on-dark-secondary);
+  background: rgba(14, 30, 53, 0.92);
+  border: 1px solid rgba(58, 185, 172, 0.3);
+  color: var(--text-on-dark-secondary, #cbd5e1);
   font-size: clamp(0.72rem, 1.8vw, 0.85rem);
   padding: clamp(6px, 1.5vh, 10px) clamp(12px, 2.5vw, 22px);
   border-radius: 30px;
   cursor: pointer;
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease, transform 0.25s ease;
   letter-spacing: 0.5px;
 }
 
 .skipBtn:hover {
-  background: rgba(31, 166, 160, 0.25);
-  color: var(--teal-200);
-  border-color: var(--teal-400);
+  background: rgba(31, 166, 160, 0.3);
+  color: #ffffff;
+  border-color: var(--teal-400, #3ab9ac);
   transform: translateY(-2px);
 }
 
@@ -95,12 +93,11 @@
 .ecgPath {
   stroke: url(#ecgGradient);
   stroke-width: 3.5;
-  filter: drop-shadow(0 0 10px var(--teal-300)) 
-          drop-shadow(0 0 28px rgba(58, 185, 172, 0.65));
+  filter: drop-shadow(0 0 12px rgba(58, 185, 172, 0.8));
 }
 
 .timelineTrack {
-  stroke: var(--navy-700);
+  stroke: var(--navy-700, #152a4a);
   stroke-width: 4;
   opacity: 0;
 }
@@ -109,8 +106,7 @@
   stroke: url(#timelineGradient);
   stroke-width: 4;
   opacity: 0;
-  filter: drop-shadow(0 0 12px var(--teal-300)) 
-          drop-shadow(0 0 30px rgba(31, 166, 160, 0.8));
+  filter: drop-shadow(0 0 14px rgba(31, 166, 160, 0.9));
 }
 
 .energyOrbGroup {
@@ -135,39 +131,48 @@
   top: var(--thought-y);
   transform: rotate(var(--thought-rot, 0deg));
   font-size: clamp(0.72rem, 1.8vw, 0.95rem);
-  font-weight: 500;
+  font-weight: 600;
   white-space: nowrap;
   opacity: 0;
   transform-origin: center center;
   letter-spacing: 0.2px;
   max-width: 80vw;
   text-overflow: ellipsis;
+  will-change: transform, opacity;
+  animation: floatThought 4s ease-in-out infinite alternate;
+}
+
+@keyframes floatThought {
+  0% {
+    transform: translateY(0px) rotate(var(--thought-rot, 0deg));
+  }
+  100% {
+    transform: translateY(-8px) rotate(var(--thought-rot, 0deg));
+  }
 }
 
 .card {
-  background: rgba(14, 30, 53, 0.88);
-  color: var(--text-on-dark-primary);
-  border: 1px solid var(--border-dark);
-  backdrop-filter: blur(12px);
+  background: rgba(14, 30, 53, 0.95);
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   padding: clamp(6px, 1.2vh, 10px) clamp(10px, 2vw, 18px);
   border-radius: clamp(10px, 2vw, 14px);
-  box-shadow: 0 10px 30px rgba(10, 21, 38, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  box-shadow: 0 8px 24px rgba(5, 10, 20, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.15);
 }
 
 .tag {
-  background: rgba(31, 166, 160, 0.14);
-  color: var(--teal-200);
-  border: 1px solid var(--teal-400);
-  backdrop-filter: blur(6px);
+  background: rgba(14, 38, 58, 0.95);
+  color: var(--teal-200, #8fdcd3);
+  border: 1px solid rgba(58, 185, 172, 0.5);
   padding: clamp(4px, 1vh, 7px) clamp(8px, 1.8vw, 16px);
   border-radius: 20px;
-  box-shadow: 0 4px 20px rgba(31, 166, 160, 0.25);
+  box-shadow: 0 4px 16px rgba(31, 166, 160, 0.25);
 }
 
 .plain {
-  color: var(--text-on-dark-secondary);
+  color: #e2e8f0;
   padding: clamp(3px, 0.8vh, 6px) clamp(6px, 1.5vw, 12px);
-  text-shadow: 0 2px 12px rgba(10, 21, 38, 0.9), 0 0 15px rgba(255, 255, 255, 0.15);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
 }
 
 /* Date Badges */
@@ -185,42 +190,41 @@
 
 .date03 {
   left: clamp(1%, 2.5vw, 3%);
-  background: rgba(14, 30, 53, 0.85);
-  border: 1px solid var(--navy-600);
+  background: rgba(14, 30, 53, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   padding: clamp(5px, 1vh, 8px) clamp(8px, 1.5vw, 16px);
   border-radius: 30px;
-  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
 }
 
 .date04 {
   right: clamp(1%, 2vw, 2%);
-  background: rgba(14, 30, 53, 0.92);
-  border: 1.5px solid var(--teal-400);
+  background: rgba(14, 30, 53, 0.96);
+  border: 1.5px solid var(--teal-400, #3ab9ac);
   padding: clamp(6px, 1.2vh, 10px) clamp(10px, 2vw, 20px);
   border-radius: clamp(10px, 2vw, 16px);
-  backdrop-filter: blur(12px);
-  box-shadow: 0 0 25px rgba(31, 166, 160, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  box-shadow: 0 0 24px rgba(31, 166, 160, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
 }
 
 .badgeDot {
   width: clamp(6px, 1vw, 10px);
   height: clamp(6px, 1vw, 10px);
-  background: var(--navy-300);
+  background: var(--navy-300, #7b96b9);
   border-radius: 50%;
 }
 
 .badgeDotTarget {
   width: clamp(8px, 1.2vw, 12px);
   height: clamp(8px, 1.2vw, 12px);
-  background: var(--teal-300);
+  background: var(--teal-300, #5dccc0);
   border-radius: 50%;
-  box-shadow: 0 0 12px var(--teal-300);
+  box-shadow: 0 0 12px var(--teal-300, #5dccc0);
 }
 
 .badgeText {
   font-size: clamp(0.72rem, 1.5vw, 0.9rem);
   font-weight: 700;
-  color: var(--text-on-dark-muted);
+  color: var(--text-on-dark-muted, #8393ab);
   letter-spacing: 1px;
 }
 
@@ -234,14 +238,14 @@
   font-size: clamp(0.52rem, 1vw, 0.65rem);
   font-weight: 800;
   letter-spacing: 1.5px;
-  color: var(--teal-400);
+  color: var(--teal-400, #3ab9ac);
   text-transform: uppercase;
 }
 
 .badgeTextTarget {
   font-size: clamp(0.85rem, 1.8vw, 1.15rem);
   font-weight: 800;
-  color: var(--text-on-dark-primary);
+  color: #ffffff;
   letter-spacing: 1px;
   text-shadow: 0 0 14px rgba(58, 185, 172, 0.6);
 }
