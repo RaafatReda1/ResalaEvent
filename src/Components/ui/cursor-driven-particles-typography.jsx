@@ -4,23 +4,23 @@ import React, { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 
 class Particle {
-  constructor(x, y, size, color, dispersion, returnSpd) {
-    this.x = x + (Math.random() - 0.5) * 8;
-    this.y = y + (Math.random() - 0.5) * 8;
+  constructor(x, y, size, dispersion, returnSpd) {
+    this.x = x;
+    this.y = y;
     this.originX = x;
     this.originY = y;
-    this.vx = (Math.random() - 0.5) * 4;
-    this.vy = (Math.random() - 0.5) * 4;
+    this.vx = 0;
+    this.vy = 0;
     this.size = size;
-    this.color = color;
     this.dispersion = dispersion;
     this.returnSpd = returnSpd;
-    this.damping = 0.88;
-    this.glowAlpha = 0.9;
+    this.damping = 0.86;
   }
 
-  update(pointers, shockwaves, tiltX = 0, tiltY = 0, time = 0) {
-    // 1. Interaction with all active pointers (mouse & multi-touch fingers)
+  update(pointers, shockwaves, tiltX = 0, tiltY = 0) {
+    let moved = false;
+
+    // 1. Pointers interaction (Mouse & Touch)
     if (pointers && pointers.length > 0) {
       for (let i = 0; i < pointers.length; i++) {
         const p = pointers[i];
@@ -28,24 +28,25 @@ class Particle {
 
         const dx = p.x - this.x;
         const dy = p.y - this.y;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        const radius = p.radius || 130;
+        const distSq = dx * dx + dy * dy;
+        const radius = p.radius || 110;
+        const radiusSq = radius * radius;
 
-        if (distance < radius && distance > 0) {
+        if (distSq < radiusSq && distSq > 0) {
+          const distance = Math.sqrt(distSq);
           const forceDirectionX = dx / distance;
           const forceDirectionY = dy / distance;
           const force = (radius - distance) / radius;
-
-          // Stronger non-linear repulsion for satisfying mobile touch
-          const repulsion = Math.pow(force, 1.3) * this.dispersion * (p.strength || 1);
+          const repulsion = force * force * this.dispersion * (p.strength || 1);
 
           this.vx -= forceDirectionX * repulsion;
           this.vy -= forceDirectionY * repulsion;
+          moved = true;
         }
       }
     }
 
-    // 2. Shockwave explosion ripples (from taps/clicks)
+    // 2. Shockwave explosion ripples
     if (shockwaves && shockwaves.length > 0) {
       for (let i = 0; i < shockwaves.length; i++) {
         const sw = shockwaves[i];
@@ -54,43 +55,39 @@ class Particle {
         const dist = Math.sqrt(dx * dx + dy * dy);
         const ringDist = Math.abs(dist - sw.radius);
 
-        if (ringDist < 45 && dist > 0) {
-          const force = (1 - ringDist / 45) * sw.strength * (1 - sw.radius / sw.maxRadius);
-          this.vx += (dx / dist) * force * 18;
-          this.vy += (dy / dist) * force * 18;
+        if (ringDist < 40 && dist > 0) {
+          const force = (1 - ringDist / 40) * sw.strength * (1 - sw.radius / sw.maxRadius);
+          this.vx += (dx / dist) * force * 14;
+          this.vy += (dy / dist) * force * 14;
+          moved = true;
         }
       }
     }
 
-    // 3. Device Tilt / Gyroscope subtle influence
+    // 3. Gyroscope tilt
     if (tiltX !== 0 || tiltY !== 0) {
-      this.vx += tiltX * 0.4;
-      this.vy += tiltY * 0.4;
+      this.vx += tiltX * 0.3;
+      this.vy += tiltY * 0.3;
     }
 
-    // 4. Subtle ambient idle wave (keeps dots looking alive)
-    if ((!pointers || pointers.length === 0 || pointers[0]?.x === -1000) && (!shockwaves || shockwaves.length === 0)) {
-      const wave = Math.sin(time * 2 + this.originX * 0.03 + this.originY * 0.03) * 0.12;
-      this.vx += wave * 0.25;
-      this.vy += Math.cos(time * 1.5 + this.originX * 0.02) * 0.15;
-    }
-
-    // 5. Spring back to origin with smooth damping
-    this.vx += (this.originX - this.x) * this.returnSpd;
-    this.vy += (this.originY - this.y) * this.returnSpd;
+    // 4. Spring back to origin
+    const dx = this.originX - this.x;
+    const dy = this.originY - this.y;
+    this.vx += dx * this.returnSpd;
+    this.vy += dy * this.returnSpd;
 
     this.vx *= this.damping;
     this.vy *= this.damping;
 
     this.x += this.vx;
     this.y += this.vy;
-  }
 
-  draw(ctx) {
-    ctx.fillStyle = this.color;
-    ctx.beginPath();
-    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-    ctx.fill();
+    // Check if still moving
+    if (Math.abs(this.vx) > 0.05 || Math.abs(this.vy) > 0.05 || Math.abs(dx) > 0.5 || Math.abs(dy) > 0.5) {
+      moved = true;
+    }
+
+    return moved;
   }
 }
 
@@ -99,8 +96,8 @@ export function CursorDrivenParticleTypography({
   text,
   fontSize = 135,
   fontFamily = "Cairo, sans-serif",
-  particleSize = 1.8,
-  particleDensity = 4.5,
+  particleSize = 2.4,
+  particleDensity = 6.5,
   dispersionStrength = 18,
   returnSpeed = 0.085,
   color,
@@ -119,15 +116,16 @@ export function CursorDrivenParticleTypography({
     let animationFrameId = 0;
     let isVisible = false;
     let isPageVisible = !document.hidden;
+    let isSleeping = false;
     let particles = [];
     let shockwaves = [];
-    let pointers = []; // supports multiple touches
+    let pointers = [];
 
     let tiltX = 0;
     let tiltY = 0;
     let containerWidth = 0;
     let containerHeight = 0;
-    let startTime = Date.now();
+    let activeColor = "#3AB9AC";
 
     const init = () => {
       if (!container) return;
@@ -145,37 +143,32 @@ export function CursorDrivenParticleTypography({
       ctx.scale(dpr, dpr);
 
       const computedStyle = window.getComputedStyle(container);
-      const textColor = color || computedStyle.color || "#3AB9AC";
+      activeColor = color || computedStyle.color || "#3AB9AC";
 
       ctx.clearRect(0, 0, containerWidth, containerHeight);
 
       // Responsive font sizing for mobile vs desktop
       const maxTextWidth = containerWidth * 0.88;
       let effectiveFontSize = Math.min(fontSize, containerWidth * 0.22);
-      
+
       ctx.font = `900 ${effectiveFontSize}px ${fontFamily}`;
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
 
-      // Measure and scale down font if text overflows
       let measuredWidth = ctx.measureText(text).width;
       if (measuredWidth > maxTextWidth && measuredWidth > 0) {
         effectiveFontSize = Math.floor(effectiveFontSize * (maxTextWidth / measuredWidth));
         ctx.font = `900 ${effectiveFontSize}px ${fontFamily}`;
       }
 
-      ctx.fillStyle = textColor;
+      ctx.fillStyle = activeColor;
       ctx.fillText(text, containerWidth / 2, containerHeight / 2);
 
-      const textCoordinates = ctx.getImageData(
-        0,
-        0,
-        canvas.width,
-        canvas.height
-      );
+      const textCoordinates = ctx.getImageData(0, 0, canvas.width, canvas.height);
 
       particles = [];
-      const densityStep = Math.max(3, Math.floor(particleDensity * dpr));
+      // Clean, well-spaced density step for crisp performance
+      const densityStep = Math.max(5, Math.floor(particleDensity * dpr));
 
       for (let y = 0; y < textCoordinates.height; y += densityStep) {
         for (let x = 0; x < textCoordinates.width; x += densityStep) {
@@ -188,7 +181,6 @@ export function CursorDrivenParticleTypography({
                 x / dpr,
                 y / dpr,
                 particleSize,
-                textColor,
                 dispersionStrength,
                 returnSpeed
               )
@@ -196,6 +188,8 @@ export function CursorDrivenParticleTypography({
           }
         }
       }
+
+      wakeUp();
     };
 
     const addShockwave = (x, y) => {
@@ -204,17 +198,19 @@ export function CursorDrivenParticleTypography({
         y,
         radius: 5,
         maxRadius: Math.min(containerWidth, containerHeight) * 0.65,
-        speed: 9,
-        strength: 1.8,
+        speed: 8,
+        strength: 1.6,
       });
+      wakeUp();
     };
 
+    // ── Single-Batch High Performance Render Loop ──
     const animate = () => {
       if (!isVisible || !isPageVisible) {
         animationFrameId = 0;
         return;
       }
-      const now = (Date.now() - startTime) * 0.001;
+
       ctx.clearRect(0, 0, containerWidth, containerHeight);
 
       // Update shockwaves
@@ -226,19 +222,41 @@ export function CursorDrivenParticleTypography({
         }
       }
 
-      // Update & Draw particles
+      let anyParticleMoved = false;
+
+      // Update particles physics
+      for (let i = 0; i < particles.length; i++) {
+        const moved = particles[i].update(pointers, shockwaves, tiltX, tiltY);
+        if (moved) anyParticleMoved = true;
+      }
+
+      // ── BATCHED DRAW CALL (1 Draw Call instead of 1500 individual beginPath/fill calls) ──
+      ctx.fillStyle = activeColor;
+      ctx.beginPath();
       for (let i = 0; i < particles.length; i++) {
         const p = particles[i];
-        p.update(pointers, shockwaves, tiltX, tiltY, now);
-        p.draw(ctx);
+        ctx.moveTo(p.x + p.size, p.y);
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+      }
+      ctx.fill();
+
+      // If nothing is moving and no pointers/shockwaves active, sleep to save 100% CPU
+      if (!anyParticleMoved && pointers.length === 0 && shockwaves.length === 0) {
+        isSleeping = true;
+        animationFrameId = 0;
+        return;
       }
 
       animationFrameId = requestAnimationFrame(animate);
     };
 
-    const startAnimation = () => {
-      if (isVisible && isPageVisible && animationFrameId === 0) {
-        animationFrameId = requestAnimationFrame(animate);
+    const wakeUp = () => {
+      if (!isVisible || !isPageVisible) return;
+      if (isSleeping || animationFrameId === 0) {
+        isSleeping = false;
+        if (animationFrameId === 0) {
+          animationFrameId = requestAnimationFrame(animate);
+        }
       }
     };
 
@@ -247,14 +265,15 @@ export function CursorDrivenParticleTypography({
         cancelAnimationFrame(animationFrameId);
         animationFrameId = 0;
       }
+      isSleeping = true;
     };
 
-    // IntersectionObserver to only animate when in view
+    // ── Intersection Observer ──
     const observer = new IntersectionObserver(
       ([entry]) => {
         isVisible = entry.isIntersecting;
         if (isVisible) {
-          startAnimation();
+          wakeUp();
         } else {
           stopAnimation();
         }
@@ -266,24 +285,25 @@ export function CursorDrivenParticleTypography({
     const onVisibilityChange = () => {
       isPageVisible = !document.hidden;
       if (isPageVisible && isVisible) {
-        startAnimation();
+        wakeUp();
       } else {
         stopAnimation();
       }
     };
     document.addEventListener("visibilitychange", onVisibilityChange);
 
-    // ── Mouse Events (Desktop) ──
+    // ── Event Handlers with WakeUp ──
     const handleMouseMove = (e) => {
       const rect = canvas.getBoundingClientRect();
       pointers = [
         {
           x: e.clientX - rect.left,
           y: e.clientY - rect.top,
-          radius: 120,
+          radius: 110,
           strength: 1.2,
         },
       ];
+      wakeUp();
     };
 
     const handleMouseLeave = () => {
@@ -292,51 +312,42 @@ export function CursorDrivenParticleTypography({
 
     const handleClick = (e) => {
       const rect = canvas.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      addShockwave(x, y);
+      addShockwave(e.clientX - rect.left, e.clientY - rect.top);
     };
 
-    // ── Touch Events (Mobile Multi-Touch) ──
     const handleTouchStart = (e) => {
       const rect = canvas.getBoundingClientRect();
       const newPointers = [];
-
-      for (let i = 0; i < e.touches.length; i++) {
-        const touch = e.touches[i];
-        const x = touch.clientX - rect.left;
-        const y = touch.clientY - rect.top;
-        newPointers.push({
-          x,
-          y,
-          radius: 140, // larger finger radius for touch
-          strength: 1.5,
-        });
-
-        // Trigger tap explosion shockwave on first touch
-        if (i === 0) {
-          addShockwave(x, y);
-        }
-      }
-
-      pointers = newPointers;
-    };
-
-    const handleTouchMove = (e) => {
-      const rect = canvas.getBoundingClientRect();
-      const newPointers = [];
-
       for (let i = 0; i < e.touches.length; i++) {
         const touch = e.touches[i];
         newPointers.push({
           x: touch.clientX - rect.left,
           y: touch.clientY - rect.top,
-          radius: 140,
+          radius: 120,
+          strength: 1.4,
+        });
+        if (i === 0) {
+          addShockwave(touch.clientX - rect.left, touch.clientY - rect.top);
+        }
+      }
+      pointers = newPointers;
+      wakeUp();
+    };
+
+    const handleTouchMove = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const newPointers = [];
+      for (let i = 0; i < e.touches.length; i++) {
+        const touch = e.touches[i];
+        newPointers.push({
+          x: touch.clientX - rect.left,
+          y: touch.clientY - rect.top,
+          radius: 120,
           strength: 1.4,
         });
       }
-
       pointers = newPointers;
+      wakeUp();
     };
 
     const handleTouchEnd = (e) => {
@@ -347,18 +358,17 @@ export function CursorDrivenParticleTypography({
         pointers = Array.from(e.touches).map((t) => ({
           x: t.clientX - rect.left,
           y: t.clientY - rect.top,
-          radius: 140,
+          radius: 120,
           strength: 1.4,
         }));
       }
     };
 
-    // ── Device Orientation (Phone Tilt / Gyroscope) ──
     const handleOrientation = (e) => {
       if (e.gamma !== null && e.beta !== null) {
-        // gamma is left/right [-90, 90], beta is front/back [-180, 180]
         tiltX = Math.max(-1, Math.min(1, e.gamma / 30));
         tiltY = Math.max(-1, Math.min(1, (e.beta - 45) / 30));
+        wakeUp();
       }
     };
 
@@ -368,16 +378,14 @@ export function CursorDrivenParticleTypography({
 
     const timeoutId = setTimeout(() => {
       init();
-    }, 50);
+    }, 40);
 
     const resizeObserver = new ResizeObserver(handleResize);
     resizeObserver.observe(container);
 
-    // Attach all desktop & mobile listeners
     canvas.addEventListener("mousemove", handleMouseMove, { passive: true });
     canvas.addEventListener("mouseleave", handleMouseLeave, { passive: true });
     canvas.addEventListener("click", handleClick, { passive: true });
-
     canvas.addEventListener("touchstart", handleTouchStart, { passive: true });
     canvas.addEventListener("touchmove", handleTouchMove, { passive: true });
     canvas.addEventListener("touchend", handleTouchEnd, { passive: true });
@@ -396,7 +404,6 @@ export function CursorDrivenParticleTypography({
       canvas.removeEventListener("mousemove", handleMouseMove);
       canvas.removeEventListener("mouseleave", handleMouseLeave);
       canvas.removeEventListener("click", handleClick);
-
       canvas.removeEventListener("touchstart", handleTouchStart);
       canvas.removeEventListener("touchmove", handleTouchMove);
       canvas.removeEventListener("touchend", handleTouchEnd);
@@ -432,5 +439,3 @@ export function CursorDrivenParticleTypography({
     </div>
   );
 }
-
-

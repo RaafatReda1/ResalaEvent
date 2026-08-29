@@ -153,8 +153,8 @@ export default function Agenda() {
                     : "Cairo, system-ui, sans-serif"
                 }
                 color="#3AB9AC"
-                particleSize={1.8}
-                particleDensity={4.2}
+                particleSize={2.4}
+                particleDensity={6.5}
                 dispersionStrength={20}
                 returnSpeed={0.085}
               />
