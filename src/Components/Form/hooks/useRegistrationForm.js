@@ -435,6 +435,7 @@ export const useRegistrationForm = () => {
       if (file) {
         publicImgUrl = await uploadImg(file, form.name, {
           identifier: form.phone || form.email,
+          email: form.email,
         });
       }
 
@@ -549,6 +550,7 @@ export const useRegistrationForm = () => {
         publicImgUrl = await uploadImg(file, form.name, {
           oldImgUrl: previousImgUrl,
           identifier: form.phone || form.email,
+          email: form.email,
         });
       }
 

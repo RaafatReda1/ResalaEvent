@@ -125,26 +125,45 @@ export const deleteImgFromStorage = async (publicUrlsOrPaths) => {
 };
 
 /**
- * Generate a clean, organized folder name for each student.
- * Uses the student's name + an identifier (phone, email prefix, or unique token).
- * e.g. "أحمد_محمد_01012345678" or "Ahmed_Ali_1234"
+ * Generate a clean, organized, ASCII-safe folder name for each student.
+ * If the student's name contains Arabic / non-ASCII letters (which causes S3/Supabase Invalid Key errors),
+ * it uses the student's email prefix or clean identifier.
+ * e.g. "student_ahmed12_01012345678" or "John_Doe_01012345678"
  */
-export const getStudentFolderName = (studentName = "student", identifier = "") => {
-  // Support Arabic letters (\u0600-\u06FF), alphanumeric, hyphens, and underscores
-  const cleanName = (studentName || "student")
-    .trim()
-    .replace(/[^\w\u0600-\u06FF-]/g, "_")
-    .replace(/_+/g, "_")
-    .replace(/^_+|_+$/g, "")
-    .slice(0, 40) || "student";
+export const getStudentFolderName = (studentName = "student", identifier = "", email = "") => {
+  const hasNonAscii = /[\u0600-\u06FF]|[^\x00-\x7F]/.test(studentName || "");
+
+  let baseName = "";
+
+  if (hasNonAscii) {
+    // If name is Arabic/non-ASCII, use email prefix
+    const emailPrefix = (email || identifier || "")
+      .toString()
+      .split("@")[0]
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]/g, "_")
+      .replace(/_+/g, "_")
+      .replace(/^_+|_+$/g, "")
+      .slice(0, 30);
+
+    baseName = emailPrefix ? `student_${emailPrefix}` : "student";
+  } else {
+    // English name: clean and keep ASCII letters/numbers
+    baseName = (studentName || "student")
+      .trim()
+      .replace(/[^a-zA-Z0-9_-]/g, "_")
+      .replace(/_+/g, "_")
+      .replace(/^_+|_+$/g, "")
+      .slice(0, 30) || "student";
+  }
 
   const cleanId = (identifier || "")
     .toString()
     .trim()
-    .replace(/[^\w\u0600-\u06FF-]/g, "")
+    .replace(/[^a-zA-Z0-9_-]/g, "")
     .slice(0, 15);
 
-  return cleanId ? `${cleanName}_${cleanId}` : cleanName;
+  return cleanId && !baseName.includes(cleanId) ? `${baseName}_${cleanId}` : baseName;
 };
 
 // ─────────────────────────────────────────────
@@ -153,7 +172,7 @@ export const getStudentFolderName = (studentName = "student", identifier = "") =
 export const uploadImg = async (file, studentName = "student", options = {}) => {
   if (!file) throw new Error("No image selected");
 
-  const { oldImgUrl = null, identifier = "" } = options;
+  const { oldImgUrl = null, identifier = "", email = "" } = options;
 
   // 1. If updating, delete the previous photo from Supabase Storage so no orphaned files remain
   if (oldImgUrl) {
@@ -164,7 +183,7 @@ export const uploadImg = async (file, studentName = "student", options = {}) => 
   const fileExt = (rawExt || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "") || "jpg";
 
   // 2. Build organized student folder path: [StudentFolder]/nomination_card_[Timestamp].[ext]
-  const folder = getStudentFolderName(studentName, identifier);
+  const folder = getStudentFolderName(studentName, identifier, email);
   const fileName = `nomination_card_${Date.now()}.${fileExt}`;
   const filePath = `${folder}/${fileName}`;
 
