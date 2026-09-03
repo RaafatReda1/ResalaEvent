@@ -181,21 +181,45 @@ const AdminScanner = () => {
     try {
       let foundStudent = null;
 
-      // Step A: Primary Lookup by UUID primary key
-      const { data: byId } = await supabase
-        .from("students")
-        .select("*")
-        .eq("id", identifier)
-        .maybeSingle();
+      // Step A: Primary Lookup by exact UUID
+      const isUuid =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+          identifier
+        );
+      if (isUuid) {
+        const { data: byId } = await supabase
+          .from("students")
+          .select("*")
+          .eq("id", identifier)
+          .maybeSingle();
+        if (byId) foundStudent = byId;
+      }
 
-      if (byId) {
-        foundStudent = byId;
-      } else {
-        // Step B: Fallback search by Phone or Email
+      // Step B: Short 8-character ID matching (e.g. 9477FF3E from event pass card)
+      if (!foundStudent) {
+        const cleanShort = String(identifier).trim().replace(/^#/, "").trim();
+        if (/^[0-9a-fA-F]{8}$/.test(cleanShort)) {
+          const prefix = cleanShort.toLowerCase();
+          const startUuid = `${prefix}-0000-0000-0000-000000000000`;
+          const endUuid = `${prefix}-ffff-ffff-ffff-ffffffffffff`;
+          const { data: byShortId } = await supabase
+            .from("students")
+            .select("*")
+            .gte("id", startUuid)
+            .lte("id", endUuid)
+            .maybeSingle();
+          if (byShortId) foundStudent = byShortId;
+        }
+      }
+
+      // Step C: Fallback search by Phone, Email, or Name
+      if (!foundStudent) {
+        const cleanSearch = String(identifier).trim();
         const { data: byContact } = await supabase
           .from("students")
           .select("*")
-          .or(`phone.eq.${identifier},email.eq.${identifier}`)
+          .or(`phone.eq.${cleanSearch},email.eq.${cleanSearch},name.ilike.%${cleanSearch}%`)
+          .limit(1)
           .maybeSingle();
 
         if (byContact) {

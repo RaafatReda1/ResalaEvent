@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode";
 import {
   Camera,
@@ -14,6 +14,7 @@ import {
   Monitor,
   Smartphone,
 } from "lucide-react";
+import { decodeQrFromImageFile } from "../utils/imageQrScanner";
 import styles from "./ScannerCamera.module.css";
 
 const READER_ID = "admin-qr-reader-viewport";
@@ -44,22 +45,125 @@ const ScannerCamera = ({
   const [hasTorch, setHasTorch] = useState(false);
   const [cameraError, setCameraError] = useState(null);
   const [isStarting, setIsStarting] = useState(true);
+  const [isSwitching, setIsSwitching] = useState(false);
   const [manualInput, setManualInput] = useState("");
   const [isCameraActive, setIsCameraActive] = useState(false);
 
-  // Keep track of active scan lock to avoid duplicate triggering within 1 second
+  // Keep track of active scan lock to avoid duplicate triggering within 1.2s
   const lastScanTimeRef = useRef(0);
+  const isOperatingRef = useRef(false);
 
-  // 1. Initialize camera list
+  // QR config
+  const getQrConfig = () => ({
+    fps: 15,
+    qrbox: (viewfinderWidth, viewfinderHeight) => {
+      const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+      const qrEdge = Math.floor(minEdge * 0.72);
+      return { width: Math.max(180, qrEdge), height: Math.max(180, qrEdge) };
+    },
+    aspectRatio: 1.0,
+  });
+
+  const handleDecoded = useCallback(
+    (decodedText, decodedResult) => {
+      const now = Date.now();
+      if (now - lastScanTimeRef.current < 1200) {
+        return;
+      }
+      lastScanTimeRef.current = now;
+      if (onScanSuccess) {
+        onScanSuccess(decodedText, decodedResult);
+      }
+    },
+    [onScanSuccess]
+  );
+
+  // Helper to safely stop scanner without throwing
+  const stopScannerSafely = async () => {
+    if (!scannerRef.current) return;
+    try {
+      if (scannerRef.current.isScanning) {
+        await scannerRef.current.stop();
+      }
+    } catch {
+      // Ignore if not running
+    }
+  };
+
+  // Helper to start scanning with a given target
+  const startScannerWith = async (cameraTarget) => {
+    setIsStarting(true);
+    setCameraError(null);
+    setIsCameraActive(false);
+
+    try {
+      if (!scannerRef.current) {
+        scannerRef.current = new Html5Qrcode(READER_ID, {
+          formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
+          verbose: false,
+        });
+      }
+
+      await stopScannerSafely();
+
+      try {
+        await scannerRef.current.start(
+          cameraTarget,
+          getQrConfig(),
+          handleDecoded,
+          () => {}
+        );
+      } catch (primaryErr) {
+        console.warn("Primary camera target failed, trying fallback:", primaryErr);
+        // Fallback constraint
+        const fallback =
+          typeof cameraTarget === "object" && cameraTarget.facingMode === "environment"
+            ? { facingMode: "user" }
+            : { facingMode: "environment" };
+
+        await scannerRef.current.start(
+          fallback,
+          getQrConfig(),
+          handleDecoded,
+          () => {}
+        );
+      }
+
+      setIsCameraActive(true);
+      setIsStarting(false);
+
+      // Check torch capability
+      try {
+        const capabilities = scannerRef.current.getRunningTrackCapabilities?.();
+        setHasTorch(Boolean(capabilities && capabilities.torch));
+      } catch {
+        setHasTorch(false);
+      }
+    } catch (err) {
+      console.error("Camera start error:", err);
+      setIsStarting(false);
+      setIsCameraActive(false);
+      setCameraError(
+        isMobile
+          ? "تعذر تشغيل كاميرا الهاتف. يرجى التأكد من منح الإذن للمتصفح."
+          : "شاشة الكاميرا معطلة أو غير متصلة بالكمبيوتر (يمكنك استخدام البحث اليدوي أو رفع صورة QR)."
+      );
+    }
+  };
+
+  // Initial Camera Mount
   useEffect(() => {
     let isMounted = true;
 
-    Html5Qrcode.getCameras()
-      .then((devices) => {
+    const init = async () => {
+      try {
+        const devices = await Html5Qrcode.getCameras();
         if (!isMounted) return;
+
         if (devices && devices.length > 0) {
           setCameras(devices);
-          // Prefer back camera if mobile, or first camera
+
+          // On mobile: prefer back camera
           const backCam = isMobile
             ? devices.find((d) =>
                 d.label?.toLowerCase().includes("back") ||
@@ -68,160 +172,41 @@ const ScannerCamera = ({
               )
             : null;
 
-          const chosen = backCam ? backCam.id : devices[0].id;
-          setCurrentCameraId(chosen);
+          const chosenCam = backCam ? backCam : devices[0];
+          setCurrentCameraId(chosenCam.id);
+          await startScannerWith(chosenCam.id);
         } else {
-          setCameraError(
-            isMobile
-              ? "لم يتم العثور على كاميرا نشطة بالهاتف."
-              : "لا توجد كاميرا ويب متصلة بجهاز الكمبيوتر المكتبي. يمكنك استخدام البحث اليدوي أو رفع صورة QR."
-          );
-          setIsStarting(false);
-        }
-      })
-      .catch((err) => {
-        if (!isMounted) return;
-        console.warn("Camera enumeration error:", err);
-        setCameraError(
-          isMobile
-            ? "يرجى منح إذن استخدام الكاميرا من إعدادات المتصفح."
-            : "تعذر تشغيل كاميرا الكمبيوتر (تأكد من توصيلها ومنح الإذن، أو استخدم البحث اليدوي أدناه)."
-        );
-        setIsStarting(false);
-      });
-
-    return () => {
-      isMounted = false;
-    };
-  }, [isMobile]);
-
-  // 2. Start or switch scanner stream
-  useEffect(() => {
-    let html5QrCode = null;
-    let isMounted = true;
-
-    const startCamera = async () => {
-      setIsStarting(true);
-      setCameraError(null);
-      setIsCameraActive(false);
-
-      try {
-        // Clean up previous instance if running
-        if (scannerRef.current) {
-          try {
-            await scannerRef.current.stop();
-          } catch {
-            // ignore
-          }
-        }
-
-        html5QrCode = new Html5Qrcode(READER_ID, {
-          formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
-          verbose: false,
-        });
-        scannerRef.current = html5QrCode;
-
-        const config = {
-          fps: 15,
-          qrbox: (viewfinderWidth, viewfinderHeight) => {
-            const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-            const qrEdge = Math.floor(minEdge * 0.72);
-            return { width: Math.max(180, qrEdge), height: Math.max(180, qrEdge) };
-          },
-          aspectRatio: 1.0,
-        };
-
-        const handleDecoded = (decodedText, decodedResult) => {
-          const now = Date.now();
-          if (now - lastScanTimeRef.current < 1200) {
-            return;
-          }
-          lastScanTimeRef.current = now;
-          if (onScanSuccess) {
-            onScanSuccess(decodedText, decodedResult);
-          }
-        };
-
-        // Determine camera target
-        let cameraIdOrConfig;
-        if (currentCameraId) {
-          cameraIdOrConfig = currentCameraId;
-        } else if (isMobile) {
-          cameraIdOrConfig = { facingMode: "environment" };
-        } else {
-          cameraIdOrConfig = { facingMode: "user" };
-        }
-
-        try {
-          await html5QrCode.start(
-            cameraIdOrConfig,
-            config,
-            handleDecoded,
-            () => {}
-          );
-        } catch (firstErr) {
-          // Fallback: if environment failed (common on desktop/laptops), try user camera or first device
-          console.warn("Primary camera start failed, trying fallback:", firstErr);
-          await html5QrCode.start(
-            { facingMode: "user" },
-            config,
-            handleDecoded,
-            () => {}
-          );
-        }
-
-        if (!isMounted) return;
-        setIsStarting(false);
-        setIsCameraActive(true);
-
-        // Check if torch capability exists
-        try {
-          const capabilities = html5QrCode.getRunningTrackCapabilities();
-          if (capabilities && capabilities.torch) {
-            setHasTorch(true);
-          } else {
-            setHasTorch(false);
-          }
-        } catch {
-          setHasTorch(false);
+          // No devices listed explicitly, try standard facingMode
+          const defaultTarget = isMobile
+            ? { facingMode: "environment" }
+            : { facingMode: "user" };
+          await startScannerWith(defaultTarget);
         }
       } catch (err) {
         if (!isMounted) return;
-        console.warn("Scanner start failed:", err);
-        setCameraError(
-          isMobile
-            ? "تعذر تشغيل كاميرا الهاتف. تأكد من منح الإذن للمتصفح."
-            : "شاشة الكاميرا معطلة أو غير متصلة بالكمبيوتر (يمكنك استخدام البحث اليدوي أو رفع صورة QR أو فتح الصفحة من الهاتف)."
-        );
-        setIsStarting(false);
-        setIsCameraActive(false);
+        console.warn("Camera enum error:", err);
+        // Try fallback facingMode
+        const defaultTarget = isMobile
+          ? { facingMode: "environment" }
+          : { facingMode: "user" };
+        await startScannerWith(defaultTarget);
       }
     };
 
-    if (currentCameraId || cameras.length > 0) {
-      startCamera();
-    } else {
-      // If after 2.5 seconds getCameras hasn't returned, try with default facing mode
-      const timer = setTimeout(() => {
-        if (!currentCameraId) {
-          startCamera();
-        }
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
+    init();
 
     return () => {
       isMounted = false;
-      if (scannerRef.current) {
-        scannerRef.current
-          .stop()
-          .then(() => {
-            scannerRef.current?.clear();
-          })
-          .catch(() => {});
-      }
+      stopScannerSafely().then(() => {
+        try {
+          scannerRef.current?.clear();
+        } catch {
+          // ignore
+        }
+        scannerRef.current = null;
+      });
     };
-  }, [currentCameraId, facingMode, isMobile, cameras.length]);
+  }, [isMobile]);
 
   // Handle Pause / Resume state
   useEffect(() => {
@@ -239,7 +224,7 @@ const ScannerCamera = ({
 
   // Toggle Torch
   const handleToggleTorch = async () => {
-    if (!scannerRef.current) return;
+    if (!scannerRef.current || !isCameraActive) return;
     try {
       const nextState = !isTorchOn;
       await scannerRef.current.applyVideoConstraints({
@@ -251,36 +236,83 @@ const ScannerCamera = ({
     }
   };
 
-  // Flip Front / Back Camera
-  const handleFlipCamera = () => {
-    if (cameras.length > 1) {
-      const currentIndex = cameras.findIndex((c) => c.id === currentCameraId);
-      const nextIndex = (currentIndex + 1) % cameras.length;
-      setCurrentCameraId(cameras[nextIndex].id);
-    } else {
-      setFacingMode((prev) => (prev === "environment" ? "user" : "environment"));
+  // Flip / Switch Camera
+  const handleFlipCamera = async () => {
+    if (isOperatingRef.current || isSwitching) return;
+    isOperatingRef.current = true;
+    setIsSwitching(true);
+    setIsTorchOn(false);
+
+    try {
+      const nextFacing = facingMode === "environment" ? "user" : "environment";
+      setFacingMode(nextFacing);
+
+      let nextTarget;
+
+      if (cameras.length > 1) {
+        // Find matching camera in list by label
+        const targetCam = cameras.find((c) => {
+          const lbl = (c.label || "").toLowerCase();
+          if (nextFacing === "user") {
+            return (
+              lbl.includes("front") ||
+              lbl.includes("user") ||
+              lbl.includes("selfie") ||
+              lbl.includes("face")
+            );
+          } else {
+            return (
+              lbl.includes("back") ||
+              lbl.includes("rear") ||
+              lbl.includes("environment") ||
+              lbl.includes("main")
+            );
+          }
+        });
+
+        if (targetCam) {
+          nextTarget = targetCam.id;
+          setCurrentCameraId(targetCam.id);
+        } else {
+          // Cycle to next camera ID in array
+          const curIndex = cameras.findIndex((c) => c.id === currentCameraId);
+          const nextIndex = (curIndex + 1) % cameras.length;
+          nextTarget = cameras[nextIndex].id;
+          setCurrentCameraId(cameras[nextIndex].id);
+        }
+      } else {
+        // Use facingMode constraint directly (standard for mobile devices)
+        nextTarget = { facingMode: nextFacing };
+        setCurrentCameraId(null);
+      }
+
+      await startScannerWith(nextTarget);
+    } catch (err) {
+      console.error("Camera flip error:", err);
+    } finally {
+      setIsSwitching(false);
+      isOperatingRef.current = false;
     }
   };
 
-  // Scan from uploaded file / image (great on desktop!)
+  // Scan from uploaded file / image
   const handleFileScan = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     try {
       setIsStarting(true);
-      let tempScanner = scannerRef.current;
-      if (!tempScanner) {
-        tempScanner = new Html5Qrcode(READER_ID, { verbose: false });
-      }
-
-      const decodedText = await tempScanner.scanFile(file, true);
+      const decodedText = await decodeQrFromImageFile(file);
       if (decodedText && onScanSuccess) {
         onScanSuccess(decodedText);
+      } else {
+        alert(
+          "لم يتم العثور على رمز QR واضح في الصورة. يمكنك كتابة كود الحضور الظاهر على البطاقة (مثل 9477FF3E) في البحث اليدوي."
+        );
       }
     } catch (err) {
       console.warn("File QR scan error:", err);
-      alert("لم يتم العثور على رمز QR واضح في الصورة المختارة. يرجى تجربة صورة أوضح.");
+      alert("حدث خطأ أثناء قراءة الصورة. يمكنك إدخال الكود يدوياً بالأسفل.");
     } finally {
       setIsStarting(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -304,19 +336,23 @@ const ScannerCamera = ({
                 ? styles.dotError
                 : isPaused
                 ? styles.dotPaused
-                : isStarting
+                : isStarting || isSwitching
                 ? styles.dotStarting
                 : styles.dotActive
             }`}
           />
           <span className={styles.statusText}>
-            {isStarting
+            {isSwitching
+              ? "جاري تبديل الكاميرا..."
+              : isStarting
               ? "جاري تشغيل الكاميرا..."
               : cameraError
               ? "الكاميرا غير متاحة"
               : isPaused
               ? "المسح متوقف مؤقتاً"
-              : "الكاميرا نشطة وجاهزة"}
+              : facingMode === "environment"
+              ? "الكاميرا الخلفية نشطة"
+              : "الكاميرا الأمامية نشطة"}
           </span>
         </div>
 
@@ -333,28 +369,35 @@ const ScannerCamera = ({
             </button>
           )}
 
-          {cameras.length > 1 && (
+          {/* Switch Camera Button (Always available on mobile phones or whenever >1 camera) */}
+          {(isMobile || cameras.length > 1) && (
             <button
               type="button"
               onClick={handleFlipCamera}
-              className={styles.ctrlBtn}
-              title="تبديل الكاميرا"
+              disabled={isSwitching}
+              className={`${styles.ctrlBtn} ${isSwitching ? styles.btnSwitching : ""}`}
+              title={`تبديل الكاميرا إلى (${
+                facingMode === "environment" ? "الأمامية" : "الخلفية"
+              })`}
             >
-              <SwitchCamera size={18} />
+              <SwitchCamera
+                size={18}
+                className={isSwitching ? styles.spinIcon : ""}
+              />
             </button>
           )}
 
           <button
             type="button"
             onClick={onTogglePause}
-            disabled={!isCameraActive}
+            disabled={!isCameraActive || isSwitching}
             className={`${styles.ctrlBtn} ${isPaused ? styles.btnResume : ""}`}
             title={isPaused ? "استئناف المسح" : "إيقاف مؤقت"}
           >
             {isPaused ? <Play size={18} /> : <Pause size={18} />}
           </button>
 
-          {/* Upload QR image file (convenient for desktop) */}
+          {/* Upload QR image file */}
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
@@ -377,8 +420,8 @@ const ScannerCamera = ({
       <div className={styles.viewportWrapper}>
         <div id={READER_ID} className={styles.readerElement} />
 
-        {/* Laser Scanning Line Animation (active when camera stream is live) */}
-        {isCameraActive && !isPaused && !cameraError && !isStarting && (
+        {/* Laser Scanning Line Animation */}
+        {isCameraActive && !isPaused && !cameraError && !isStarting && !isSwitching && (
           <div className={styles.scanLaserOverlay}>
             <div className={styles.laserBeam} />
             <div className={styles.cornerTopLeft} />
@@ -438,8 +481,9 @@ const ScannerCamera = ({
                   type="button"
                   onClick={() => {
                     setCameraError(null);
-                    setCurrentCameraId(null);
-                    setFacingMode("user");
+                    startScannerWith(
+                      isMobile ? { facingMode: "environment" } : { facingMode: "user" }
+                    );
                   }}
                   className={styles.retryBtn}
                 >
@@ -459,7 +503,7 @@ const ScannerCamera = ({
             type="text"
             value={manualInput}
             onChange={(e) => setManualInput(e.target.value)}
-            placeholder="أو اكتب كود الطالب (UUID)، رقم الهاتف، أو الإيميل..."
+            placeholder="أو اكتب كود الطالب (UUID)، كود الحضور، رقم الهاتف..."
             className={styles.searchInput}
             disabled={isSearching}
           />
