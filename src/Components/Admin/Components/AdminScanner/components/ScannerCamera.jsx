@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { decodeQrFromImageFile } from "../utils/imageQrScanner";
 import ScannerSearch from "./ScannerSearch";
+import AdminModal from "../../Common/AdminModal";
 import styles from "./ScannerCamera.module.css";
 
 const READER_ID = "admin-qr-reader-viewport";
@@ -22,6 +23,11 @@ const isMobileDevice = () => {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
     navigator.userAgent || ""
   );
+};
+
+const isAppleDevice = () => {
+  if (typeof navigator === "undefined") return false;
+  return /iPhone|iPad|iPod|Macintosh/i.test(navigator.userAgent || "");
 };
 
 const ScannerCamera = ({
@@ -34,31 +40,36 @@ const ScannerCamera = ({
   const scannerRef = useRef(null);
   const fileInputRef = useRef(null);
   const isMobile = isMobileDevice();
+  const isIOS = isAppleDevice();
 
   const [cameras, setCameras] = useState([]);
   const [currentCameraId, setCurrentCameraId] = useState(null);
-  const [facingMode, setFacingMode] = useState(isMobile ? "environment" : "user");
+  const [facingMode, setFacingMode] = useState("environment");
   const [isTorchOn, setIsTorchOn] = useState(false);
   const [hasTorch, setHasTorch] = useState(false);
   const [cameraError, setCameraError] = useState(null);
   const [isStarting, setIsStarting] = useState(true);
   const [isSwitching, setIsSwitching] = useState(false);
-  const [manualInput, setManualInput] = useState("");
   const [isCameraActive, setIsCameraActive] = useState(false);
 
   // Keep track of active scan lock to avoid duplicate triggering within 1.2s
   const lastScanTimeRef = useRef(0);
   const isOperatingRef = useRef(false);
 
-  // QR config
+  // QR config: scan whole frame on mobile/iPhone for maximum recognition sensitivity
   const getQrConfig = () => ({
-    fps: 15,
-    qrbox: (viewfinderWidth, viewfinderHeight) => {
-      const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-      const qrEdge = Math.floor(minEdge * 0.72);
-      return { width: Math.max(180, qrEdge), height: Math.max(180, qrEdge) };
-    },
+    fps: 20,
     aspectRatio: 1.0,
+    disableFlip: false,
+    qrbox: (viewfinderWidth, viewfinderHeight) => {
+      // Return comfortable box that covers 85% of viewport
+      const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+      const edge = Math.floor(minEdge * 0.85);
+      return { width: Math.max(220, edge), height: Math.max(220, edge) };
+    },
+    experimentalFeatures: {
+      useBarCodeDetectorIfSupported: true,
+    },
   });
 
   const handleDecoded = useCallback(
@@ -98,6 +109,9 @@ const ScannerCamera = ({
         scannerRef.current = new Html5Qrcode(READER_ID, {
           formatsToSupport: [Html5QrcodeSupportedFormats.QR_CODE],
           verbose: false,
+          experimentalFeatures: {
+            useBarCodeDetectorIfSupported: true,
+          },
         });
       }
 
@@ -111,19 +125,45 @@ const ScannerCamera = ({
           () => {}
         );
       } catch (primaryErr) {
-        console.warn("Primary camera target failed, trying fallback:", primaryErr);
-        // Fallback constraint
-        const fallback =
-          typeof cameraTarget === "object" && cameraTarget.facingMode === "environment"
-            ? { facingMode: "user" }
-            : { facingMode: "environment" };
+        console.warn("Primary camera target failed, trying fallback constraints:", primaryErr);
 
-        await scannerRef.current.start(
-          fallback,
-          getQrConfig(),
-          handleDecoded,
-          () => {}
-        );
+        // Fallback 1: Direct facingMode constraint (critical for iPhone Safari)
+        try {
+          const targetFacing =
+            typeof cameraTarget === "object" && cameraTarget.facingMode === "user"
+              ? "user"
+              : "environment";
+
+          await scannerRef.current.start(
+            { facingMode: { exact: targetFacing } },
+            getQrConfig(),
+            handleDecoded,
+            () => {}
+          );
+        } catch (fbErr1) {
+          // Fallback 2: Loose facingMode
+          console.warn("Exact facingMode failed, trying loose facingMode:", fbErr1);
+          await scannerRef.current.start(
+            { facingMode: "environment" },
+            getQrConfig(),
+            handleDecoded,
+            () => {}
+          );
+        }
+      }
+
+      // Ensure playsinline and autoplay on iOS Safari video element
+      try {
+        const videoEl = document.querySelector(`#${READER_ID} video`);
+        if (videoEl) {
+          videoEl.setAttribute("playsinline", "true");
+          videoEl.setAttribute("webkit-playsinline", "true");
+          videoEl.setAttribute("autoplay", "true");
+          videoEl.setAttribute("muted", "true");
+          videoEl.play().catch(() => {});
+        }
+      } catch {
+        // ignore
       }
 
       setIsCameraActive(true);
@@ -142,7 +182,7 @@ const ScannerCamera = ({
       setIsCameraActive(false);
       setCameraError(
         isMobile
-          ? "تعذر تشغيل كاميرا الهاتف. يرجى التأكد من منح الإذن للمتصفح."
+          ? "تعذر تشغيل كاميرا الهاتف. تأكد من منح إذن الكاميرا في إعدادات Safari / Chrome."
           : "شاشة الكاميرا معطلة أو غير متصلة بالكمبيوتر (يمكنك استخدام البحث اليدوي أو رفع صورة QR)."
       );
     }
@@ -154,6 +194,12 @@ const ScannerCamera = ({
 
     const init = async () => {
       try {
+        // On iOS Safari: directly start with { facingMode: "environment" } for fastest hardware camera capture
+        if (isIOS) {
+          await startScannerWith({ facingMode: "environment" });
+          return;
+        }
+
         const devices = await Html5Qrcode.getCameras();
         if (!isMounted) return;
 
@@ -165,7 +211,8 @@ const ScannerCamera = ({
             ? devices.find((d) =>
                 d.label?.toLowerCase().includes("back") ||
                 d.label?.toLowerCase().includes("rear") ||
-                d.label?.toLowerCase().includes("environment")
+                d.label?.toLowerCase().includes("environment") ||
+                d.label?.toLowerCase().includes("0")
               )
             : null;
 
@@ -183,10 +230,7 @@ const ScannerCamera = ({
         if (!isMounted) return;
         console.warn("Camera enum error:", err);
         // Try fallback facingMode
-        const defaultTarget = isMobile
-          ? { facingMode: "environment" }
-          : { facingMode: "user" };
-        await startScannerWith(defaultTarget);
+        await startScannerWith({ facingMode: "environment" });
       }
     };
 
@@ -203,7 +247,7 @@ const ScannerCamera = ({
         scannerRef.current = null;
       });
     };
-  }, [isMobile]);
+  }, [isMobile, isIOS]);
 
   // Handle Pause / Resume state
   useEffect(() => {
@@ -246,7 +290,7 @@ const ScannerCamera = ({
 
       let nextTarget;
 
-      if (cameras.length > 1) {
+      if (!isIOS && cameras.length > 1) {
         // Find matching camera in list by label
         const targetCam = cameras.find((c) => {
           const lbl = (c.label || "").toLowerCase();
@@ -278,7 +322,7 @@ const ScannerCamera = ({
           setCurrentCameraId(cameras[nextIndex].id);
         }
       } else {
-        // Use facingMode constraint directly (standard for mobile devices)
+        // On iOS: use standard facingMode
         nextTarget = { facingMode: nextFacing };
         setCurrentCameraId(null);
       }
@@ -292,6 +336,8 @@ const ScannerCamera = ({
     }
   };
 
+  const [fileModal, setFileModal] = useState({ isOpen: false, title: "", message: "", type: "info" });
+
   // Scan from uploaded file / image
   const handleFileScan = async (e) => {
     const file = e.target.files?.[0];
@@ -303,13 +349,21 @@ const ScannerCamera = ({
       if (decodedText && onScanSuccess) {
         onScanSuccess(decodedText);
       } else {
-        alert(
-          "لم يتم العثور على رمز QR واضح في الصورة. يمكنك كتابة كود الحضور الظاهر على البطاقة (مثل 9477FF3E) في البحث اليدوي."
-        );
+        setFileModal({
+          isOpen: true,
+          title: "تعذر قراءة الرمز",
+          message: "لم يتم العثور على رمز QR واضح في الصورة. يمكنك كتابة كود الحضور الظاهر على البطاقة (مثل 9477FF3E) في شريط البحث بالأسفل.",
+          type: "warning",
+        });
       }
     } catch (err) {
       console.warn("File QR scan error:", err);
-      alert("حدث خطأ أثناء قراءة الصورة. يمكنك إدخال الكود يدوياً بالأسفل.");
+      setFileModal({
+        isOpen: true,
+        title: "خطأ في قراءة الصورة",
+        message: "حدث خطأ أثناء فحص الصورة. يرجى إدخال الكود يدوياً بالأسفل.",
+        type: "error",
+      });
     } finally {
       setIsStarting(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
@@ -360,7 +414,7 @@ const ScannerCamera = ({
             </button>
           )}
 
-          {/* Switch Camera Button (Always available on mobile phones or whenever >1 camera) */}
+          {/* Switch Camera Button */}
           {(isMobile || cameras.length > 1) && (
             <button
               type="button"
@@ -489,6 +543,15 @@ const ScannerCamera = ({
 
       {/* ── Intelligent Search Bar ── */}
       <ScannerSearch onSelect={onManualSearch} isSearching={isSearching} />
+
+      {/* ── Upload / Scan Modal ── */}
+      <AdminModal
+        isOpen={fileModal.isOpen}
+        onClose={() => setFileModal((prev) => ({ ...prev, isOpen: false }))}
+        title={fileModal.title}
+        message={fileModal.message}
+        type={fileModal.type}
+      />
     </div>
   );
 };

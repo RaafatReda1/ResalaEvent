@@ -75,6 +75,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .btnPdf {
@@ -806,7 +807,7 @@
   cursor: not-allowed;
 }
 
-/* ── Expandable Drawer ── */
+/* ── Expandable Drawer (Desktop) ── */
 .drawerRow td {
   padding: 0 !important;
   background: #f8fafc;
@@ -988,6 +989,182 @@
 .drawerBtnUndo:hover {
   background: #dc2626;
   color: #ffffff;
+}
+
+/* ── Mobile Cards Grid (Hidden on desktop, shown on mobile <= 768px) ── */
+.mobileCardsGrid {
+  display: none;
+  flex-direction: column;
+  gap: 12px;
+  padding: 12px;
+}
+
+@media (max-width: 768px) {
+  .tableScroll {
+    display: none;
+  }
+  .mobileCardsGrid {
+    display: flex;
+  }
+}
+
+.mobileCard {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease;
+}
+
+.mobileCard:hover {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+  border-color: #cbd5e1;
+}
+
+.mobileCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.mobileCardUser {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.mobileCardName {
+  font-size: 0.96rem;
+  font-weight: 800;
+  color: #0f172a;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mobileCardSub {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.mobileCardBody {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 12px;
+  background: #f8fafc;
+  border: 1px solid #f1f5f9;
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+@media (max-width: 480px) {
+  .mobileCardBody {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mobileInfoItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+.mobileInfoIcon {
+  color: #3ab9ac;
+  flex-shrink: 0;
+}
+
+.mobileCardActions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-top: 6px;
+  border-top: 1px solid #f1f5f9;
+}
+
+.mobileBtnView,
+.mobileBtnWa,
+.mobileBtnApprove,
+.mobileBtnUndo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid transparent;
+  flex: 1;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.mobileBtnView {
+  background: #f1f5f9;
+  color: #334155;
+  border-color: #e2e8f0;
+}
+
+.mobileBtnView:hover {
+  background: #e2e8f0;
+}
+
+.mobileBtnWa {
+  background: #dcfce7;
+  color: #15803d;
+  border-color: #bbf7d0;
+  text-decoration: none;
+}
+
+.mobileBtnWa:hover {
+  background: #22c55e;
+  color: #ffffff;
+}
+
+.mobileBtnApprove {
+  background: #f0fdf4;
+  color: #16a34a;
+  border-color: #bbf7d0;
+}
+
+.mobileBtnApprove:hover {
+  background: #16a34a;
+  color: #ffffff;
+}
+
+.mobileBtnUndo {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fca5a5;
+}
+
+.mobileBtnUndo:hover {
+  background: #dc2626;
+  color: #ffffff;
+}
+
+.mobileBtnUndo:disabled,
+.mobileBtnApprove:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* ── Table Footer ── */

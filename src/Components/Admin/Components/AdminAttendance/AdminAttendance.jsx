@@ -35,6 +35,7 @@ import {
   FileText,
 } from "lucide-react";
 import StudentDetailsModal from "../AdminControls/components/StudentDetailsModal";
+import AdminModal from "../Common/AdminModal";
 import { exportAttendanceToPDF } from "@/utils/pdfExport";
 import styles from "./AdminAttendance.module.css";
 
@@ -92,6 +93,21 @@ const AdminAttendance = () => {
   const [detailsStudent, setDetailsStudent] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
   const [totalApprovedInDB, setTotalApprovedInDB] = useState(0);
+
+  // Modal State for Confirmations / Alerts
+  const [modalConfig, setModalConfig] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "info",
+    confirmText: "تأكيد",
+    cancelText: "إلغاء",
+    onConfirm: null,
+  });
+
+  const closeModal = () => {
+    setModalConfig((prev) => ({ ...prev, isOpen: false }));
+  };
 
   /* ─── Fetch ─── */
   const fetchData = useCallback(async () => {
@@ -234,27 +250,68 @@ const AdminAttendance = () => {
     }
   };
 
-  /* ─── Actions ─── */
-  const handleUndoAttendance = async (student) => {
-    if (!window.confirm(`هل تريد إلغاء تسجيل حضور "${student.name}"؟\nسيُحذف من قائمة الحاضرين.`)) return;
-    setActionLoading(student.id + "_undo");
-    await supabase
-      .from("students")
-      .update({ hasScannedQr: false, scannedAt: null, adminScanner: null })
-      .eq("id", student.id);
-    setAll((prev) => prev.filter((s) => s.id !== student.id));
-    setActionLoading(null);
+  /* ─── Actions with Modal Confirmations ─── */
+  const requestUndoAttendance = (student) => {
+    setModalConfig({
+      isOpen: true,
+      type: "danger",
+      title: "تأكيد إلغاء الحضور",
+      message: `هل أنت متأكد من إلغاء تسجيل حضور الطالب "${student.name || "الطالب"}"؟ سيتم حذفه من سجل الحاضرين وإعادة التذكرة كغير مستخدمة.`,
+      confirmText: "نعم، إلغاء الحضور",
+      cancelText: "تراجع",
+      onConfirm: async () => {
+        setActionLoading(student.id + "_undo");
+        closeModal();
+        const { error } = await supabase
+          .from("students")
+          .update({ hasScannedQr: false, scannedAt: null, adminScanner: null })
+          .eq("id", student.id);
+
+        if (!error) {
+          setAll((prev) => prev.filter((s) => s.id !== student.id));
+        } else {
+          setModalConfig({
+            isOpen: true,
+            type: "error",
+            title: "خطأ في العملية",
+            message: "حدث خطأ أثناء إلغاء الحضور: " + error.message,
+            onConfirm: null,
+          });
+        }
+        setActionLoading(null);
+      },
+    });
   };
 
   const handleApprove = async (student) => {
     setActionLoading(student.id + "_approve");
-    await supabase.from("students").update({ isApproved: true }).eq("id", student.id);
-    setAll((prev) => prev.map((s) => (s.id === student.id ? { ...s, isApproved: true } : s)));
+    const { error } = await supabase.from("students").update({ isApproved: true }).eq("id", student.id);
+    if (!error) {
+      setAll((prev) => prev.map((s) => (s.id === student.id ? { ...s, isApproved: true } : s)));
+    } else {
+      setModalConfig({
+        isOpen: true,
+        type: "error",
+        title: "خطأ في التحديث",
+        message: "تعذر تحديث حالة القبول: " + error.message,
+        onConfirm: null,
+      });
+    }
     setActionLoading(null);
   };
 
   /* ─── Export CSV / Excel ─── */
   const handleExportCSV = () => {
+    if (filtered.length === 0) {
+      setModalConfig({
+        isOpen: true,
+        type: "warning",
+        title: "لا توجد بيانات",
+        message: "لا توجد بيانات مطابقة لتصديرها كملف Excel.",
+        onConfirm: null,
+      });
+      return;
+    }
     const header = [
       "#",
       "الاسم",
@@ -295,6 +352,16 @@ const AdminAttendance = () => {
 
   /* ─── Export PDF ─── */
   const handleExportPDF = () => {
+    if (filtered.length === 0) {
+      setModalConfig({
+        isOpen: true,
+        type: "warning",
+        title: "لا توجد بيانات",
+        message: "لا توجد بيانات حضور مطابقة لتصديرها كـ PDF.",
+        onConfirm: null,
+      });
+      return;
+    }
     exportAttendanceToPDF(filtered, "كشف الحاضرين الفعلي - إيفنت أطباء الخير");
   };
 
@@ -544,7 +611,7 @@ const AdminAttendance = () => {
         </div>
       </div>
 
-      {/* ── Attendance Table Card ── */}
+      {/* ── Attendance Container: Table (Desktop) / Cards Grid (Mobile) ── */}
       <div className={styles.tableCard}>
         {loading ? (
           <div className={styles.emptyState}>
@@ -572,320 +639,439 @@ const AdminAttendance = () => {
             )}
           </div>
         ) : (
-          <div className={styles.tableScroll}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th className={styles.thIdx}>#</th>
-                  <th className={styles.thSortable} onClick={() => handleSort("name")}>
-                    بيانات الطالب <SortIndicator field="name" />
-                  </th>
-                  <th className={styles.thSortable} onClick={() => handleSort("university")}>
-                    الجامعة / الفرقة <SortIndicator field="university" />
-                  </th>
-                  <th>نقطة التجمع</th>
-                  <th className={styles.thSortable} onClick={() => handleSort("isApproved")}>
-                    الحالة <SortIndicator field="isApproved" />
-                  </th>
-                  <th className={styles.thSortable} onClick={() => handleSort("scannedAt")}>
-                    وقت الحضور <SortIndicator field="scannedAt" />
-                  </th>
-                  <th>المشرف</th>
-                  <th className={styles.thCenter}>إجراءات</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filtered.map((student, idx) => {
-                  const expanded = expandedId === student.id;
-                  const isActing = actionLoading?.startsWith(student.id);
-                  const waLink = getWhatsAppLink(student.phone, student.name);
-                  const shortId = student.id?.split("-")[0]?.toUpperCase();
+          <>
+            {/* Desktop Table View */}
+            <div className={styles.tableScroll}>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th className={styles.thIdx}>#</th>
+                    <th className={styles.thSortable} onClick={() => handleSort("name")}>
+                      بيانات الطالب <SortIndicator field="name" />
+                    </th>
+                    <th className={styles.thSortable} onClick={() => handleSort("university")}>
+                      الجامعة / الفرقة <SortIndicator field="university" />
+                    </th>
+                    <th>نقطة التجمع</th>
+                    <th className={styles.thSortable} onClick={() => handleSort("isApproved")}>
+                      الحالة <SortIndicator field="isApproved" />
+                    </th>
+                    <th className={styles.thSortable} onClick={() => handleSort("scannedAt")}>
+                      وقت الحضور <SortIndicator field="scannedAt" />
+                    </th>
+                    <th>المشرف</th>
+                    <th className={styles.thCenter}>إجراءات</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.map((student, idx) => {
+                    const expanded = expandedId === student.id;
+                    const isActing = actionLoading?.startsWith(student.id);
+                    const waLink = getWhatsAppLink(student.phone, student.name);
+                    const shortId = student.id ? student.id.split("-")[0].toUpperCase() : "";
 
-                  return (
-                    <React.Fragment key={student.id}>
-                      <tr
-                        className={`${styles.row} ${expanded ? styles.rowActive : ""}`}
-                        onClick={() => setExpandedId(expanded ? null : student.id)}
-                      >
-                        {/* # */}
-                        <td className={styles.tdIdx}>{idx + 1}</td>
+                    return (
+                      <React.Fragment key={student.id}>
+                        <tr
+                          className={`${styles.row} ${expanded ? styles.rowActive : ""}`}
+                          onClick={() => setExpandedId(expanded ? null : student.id)}
+                        >
+                          {/* # */}
+                          <td className={styles.tdIdx}>{idx + 1}</td>
 
-                        {/* Student Info */}
-                        <td className={styles.tdStudent}>
-                          <div className={styles.studentCell}>
-                            <div
-                              className={`${styles.avatar} ${
-                                student.isApproved ? styles.avatarGreen : styles.avatarGray
-                              }`}
-                            >
-                              {student.name?.charAt(0) ?? "؟"}
-                            </div>
-                            <div>
-                              <div className={styles.studentName}>{student.name}</div>
-                              <div className={styles.studentSub}>
-                                <span className={styles.hashCode}>#{shortId}</span>
-                                <span className={styles.dot}>·</span>
-                                <span>{student.phone || "—"}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-
-                        {/* University & Academic Year */}
-                        <td className={styles.tdUni}>
-                          <div className={styles.uniName}>{student.university || "—"}</div>
-                          {student.academicYear && (
-                            <span className={styles.yearChip}>{student.academicYear}</span>
-                          )}
-                        </td>
-
-                        {/* Gathering Place */}
-                        <td>
-                          <span className={styles.placeText}>
-                            <MapPin size={12} style={{ color: "#94a3b8" }} />
-                            {student.place || "—"}
-                          </span>
-                        </td>
-
-                        {/* Approval Status */}
-                        <td>
-                          <span
-                            className={`${styles.statusBadge} ${
-                              student.isApproved ? styles.badgeApproved : styles.badgePending
-                            }`}
-                          >
-                            {student.isApproved ? (
-                              <>
-                                <CheckCircle2 size={12} /> مقبول
-                              </>
-                            ) : (
-                              <>
-                                <Clock size={12} /> قيد المراجعة
-                              </>
-                            )}
-                          </span>
-                        </td>
-
-                        {/* Scanned Time */}
-                        <td className={styles.tdTime}>
-                          <div className={styles.timeMain}>{fmtTime(student.scannedAt)}</div>
-                          <div className={styles.timeSub}>{fmtDate(student.scannedAt)}</div>
-                        </td>
-
-                        {/* Admin Scanner */}
-                        <td>
-                          <span className={styles.adminName}>
-                            <Shield size={11} style={{ color: "#3ab9ac" }} />
-                            {student.adminScanner || "—"}
-                          </span>
-                        </td>
-
-                        {/* Actions */}
-                        <td className={styles.tdActions} onClick={(e) => e.stopPropagation()}>
-                          <div className={styles.actionBtns}>
-                            <button
-                              type="button"
-                              className={styles.btnEye}
-                              onClick={() => setDetailsStudent(student)}
-                              title="عرض السجل الكامل"
-                            >
-                              <Eye size={14} />
-                            </button>
-
-                            {waLink && (
-                              <a
-                                href={waLink}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className={styles.btnWa}
-                                title="إرسال واتساب"
-                                onClick={(e) => e.stopPropagation()}
+                          {/* Student Info */}
+                          <td className={styles.tdStudent}>
+                            <div className={styles.studentCell}>
+                              <div
+                                className={`${styles.avatar} ${
+                                  student.isApproved ? styles.avatarGreen : styles.avatarGray
+                                }`}
                               >
-                                <MessageCircle size={14} />
-                              </a>
-                            )}
-
-                            {!student.isApproved && (
-                              <button
-                                type="button"
-                                className={styles.btnApprove}
-                                onClick={() => handleApprove(student)}
-                                disabled={isActing}
-                                title="قبول الطالب"
-                              >
-                                {actionLoading === student.id + "_approve" ? (
-                                  <Loader2 size={13} className={styles.spin} />
-                                ) : (
-                                  <CheckCircle2 size={14} />
-                                )}
-                              </button>
-                            )}
-
-                            <button
-                              type="button"
-                              className={styles.btnUndo}
-                              onClick={() => handleUndoAttendance(student)}
-                              disabled={isActing}
-                              title="إلغاء تسجيل الحضور"
-                            >
-                              {actionLoading === student.id + "_undo" ? (
-                                <Loader2 size={13} className={styles.spin} />
-                              ) : (
-                                <Undo2 size={14} />
-                              )}
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-
-                      {/* ─ Expanded Drawer ─ */}
-                      {expanded && (
-                        <tr className={styles.drawerRow}>
-                          <td colSpan={8}>
-                            <div className={styles.drawer}>
-                              <div className={styles.drawerGrid}>
-                                {/* ID & Attendance Code */}
-                                <div className={styles.drawerBlock}>
-                                  <div className={styles.drawerBlockTitle}>
-                                    <Hash size={13} /> كود الطالب
-                                  </div>
-                                  <div className={styles.drawerKV}>
-                                    <span className={styles.drawerKey}>كود الحضور</span>
-                                    <code className={styles.drawerCode}>#{shortId}</code>
-                                  </div>
-                                  <div className={styles.drawerKV}>
-                                    <span className={styles.drawerKey}>المعرّف الكامل</span>
-                                    <code className={styles.drawerUUID}>{student.id}</code>
-                                  </div>
-                                </div>
-
-                                {/* Contact Information */}
-                                <div className={styles.drawerBlock}>
-                                  <div className={styles.drawerBlockTitle}>
-                                    <Phone size={13} /> التواصل
-                                  </div>
-                                  <div className={styles.drawerKV}>
-                                    <span className={styles.drawerKey}>الهاتف</span>
-                                    <a
-                                      href={`tel:${student.phone}`}
-                                      className={styles.drawerLink}
-                                      dir="ltr"
-                                    >
-                                      {student.phone || "—"} <ExternalLink size={10} />
-                                    </a>
-                                  </div>
-                                  <div className={styles.drawerKV}>
-                                    <span className={styles.drawerKey}>الإيميل</span>
-                                    <a
-                                      href={`mailto:${student.email}`}
-                                      className={styles.drawerLink}
-                                      dir="ltr"
-                                    >
-                                      {student.email || "—"} <ExternalLink size={10} />
-                                    </a>
-                                  </div>
-                                </div>
-
-                                {/* Academic Information */}
-                                <div className={styles.drawerBlock}>
-                                  <div className={styles.drawerBlockTitle}>
-                                    <GraduationCap size={13} /> الأكاديمية
-                                  </div>
-                                  <div className={styles.drawerKV}>
-                                    <span className={styles.drawerKey}>الجامعة</span>
-                                    <span className={styles.drawerVal}>
-                                      <Building2 size={11} /> {student.university || "—"}
-                                    </span>
-                                  </div>
-                                  <div className={styles.drawerKV}>
-                                    <span className={styles.drawerKey}>الفرقة</span>
-                                    <span className={styles.drawerVal}>
-                                      {student.academicYear || "—"}
-                                    </span>
-                                  </div>
-                                  <div className={styles.drawerKV}>
-                                    <span className={styles.drawerKey}>التجمع</span>
-                                    <span className={styles.drawerVal}>
-                                      <MapPin size={11} /> {student.place || "—"}
-                                    </span>
-                                  </div>
-                                </div>
-
-                                {/* Attendance Information */}
-                                <div className={styles.drawerBlock}>
-                                  <div className={styles.drawerBlockTitle}>
-                                    <ScanLine size={13} /> بيانات الحضور
-                                  </div>
-                                  <div className={styles.drawerKV}>
-                                    <span className={styles.drawerKey}>تسجيل الحضور</span>
-                                    <span className={styles.drawerVal}>
-                                      {fmtFull(student.scannedAt)}
-                                    </span>
-                                  </div>
-                                  <div className={styles.drawerKV}>
-                                    <span className={styles.drawerKey}>تاريخ التقديم</span>
-                                    <span className={styles.drawerVal}>
-                                      {fmtDate(student.created_at)}
-                                    </span>
-                                  </div>
-                                  <div className={styles.drawerKV}>
-                                    <span className={styles.drawerKey}>المشرف</span>
-                                    <span className={styles.drawerVal}>
-                                      <Shield size={11} style={{ color: "#3ab9ac" }} />{" "}
-                                      {student.adminScanner || "—"}
-                                    </span>
-                                  </div>
-                                </div>
+                                {student.name?.charAt(0) ?? "؟"}
                               </div>
-
-                              {/* Drawer Action Buttons */}
-                              <div className={styles.drawerActions}>
-                                <button
-                                  type="button"
-                                  className={styles.drawerBtnView}
-                                  onClick={() => setDetailsStudent(student)}
-                                >
-                                  <Eye size={14} /> عرض السجل الكامل
-                                </button>
-                                {!student.isApproved && (
-                                  <button
-                                    type="button"
-                                    className={styles.drawerBtnApprove}
-                                    onClick={() => handleApprove(student)}
-                                    disabled={isActing}
-                                  >
-                                    <CheckCircle2 size={14} /> قبول الطالب الآن
-                                  </button>
-                                )}
-                                {waLink && (
-                                  <a
-                                    href={waLink}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className={styles.drawerBtnWa}
-                                  >
-                                    <MessageCircle size={14} /> إرسال واتساب
-                                  </a>
-                                )}
-                                <button
-                                  type="button"
-                                  className={styles.drawerBtnUndo}
-                                  onClick={() => handleUndoAttendance(student)}
-                                  disabled={isActing}
-                                >
-                                  <Undo2 size={14} /> إلغاء تسجيل الحضور
-                                </button>
+                              <div>
+                                <div className={styles.studentName}>{student.name}</div>
+                                <div className={styles.studentSub}>
+                                  <span className={styles.hashCode}>#{shortId}</span>
+                                  <span className={styles.dot}>·</span>
+                                  <span>{student.phone || "—"}</span>
+                                </div>
                               </div>
                             </div>
                           </td>
+
+                          {/* University & Academic Year */}
+                          <td className={styles.tdUni}>
+                            <div className={styles.uniName}>{student.university || "—"}</div>
+                            {student.academicYear && (
+                              <span className={styles.yearChip}>{student.academicYear}</span>
+                            )}
+                          </td>
+
+                          {/* Gathering Place */}
+                          <td>
+                            <span className={styles.placeText}>
+                              <MapPin size={12} style={{ color: "#94a3b8" }} />
+                              {student.place || "—"}
+                            </span>
+                          </td>
+
+                          {/* Approval Status */}
+                          <td>
+                            <span
+                              className={`${styles.statusBadge} ${
+                                student.isApproved ? styles.badgeApproved : styles.badgePending
+                              }`}
+                            >
+                              {student.isApproved ? (
+                                <>
+                                  <CheckCircle2 size={12} /> مقبول
+                                </>
+                              ) : (
+                                <>
+                                  <Clock size={12} /> قيد المراجعة
+                                </>
+                              )}
+                            </span>
+                          </td>
+
+                          {/* Scanned Time */}
+                          <td className={styles.tdTime}>
+                            <div className={styles.timeMain}>{fmtTime(student.scannedAt)}</div>
+                            <div className={styles.timeSub}>{fmtDate(student.scannedAt)}</div>
+                          </td>
+
+                          {/* Admin Scanner */}
+                          <td>
+                            <span className={styles.adminName}>
+                              <Shield size={11} style={{ color: "#3ab9ac" }} />
+                              {student.adminScanner || "—"}
+                            </span>
+                          </td>
+
+                          {/* Actions */}
+                          <td className={styles.tdActions} onClick={(e) => e.stopPropagation()}>
+                            <div className={styles.actionBtns}>
+                              <button
+                                type="button"
+                                className={styles.btnEye}
+                                onClick={() => setDetailsStudent(student)}
+                                title="عرض السجل الكامل"
+                              >
+                                <Eye size={14} />
+                              </button>
+
+                              {waLink && (
+                                <a
+                                  href={waLink}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className={styles.btnWa}
+                                  title="إرسال واتساب"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <MessageCircle size={14} />
+                                </a>
+                              )}
+
+                              {!student.isApproved && (
+                                <button
+                                  type="button"
+                                  className={styles.btnApprove}
+                                  onClick={() => handleApprove(student)}
+                                  disabled={isActing}
+                                  title="قبول الطالب"
+                                >
+                                  {actionLoading === student.id + "_approve" ? (
+                                    <Loader2 size={13} className={styles.spin} />
+                                  ) : (
+                                    <CheckCircle2 size={14} />
+                                  )}
+                                </button>
+                              )}
+
+                              <button
+                                type="button"
+                                className={styles.btnUndo}
+                                onClick={() => requestUndoAttendance(student)}
+                                disabled={isActing}
+                                title="إلغاء تسجيل الحضور"
+                              >
+                                {actionLoading === student.id + "_undo" ? (
+                                  <Loader2 size={13} className={styles.spin} />
+                                ) : (
+                                  <Undo2 size={14} />
+                                )}
+                              </button>
+                            </div>
+                          </td>
                         </tr>
+
+                        {/* ─ Expanded Drawer ─ */}
+                        {expanded && (
+                          <tr className={styles.drawerRow}>
+                            <td colSpan={8}>
+                              <div className={styles.drawer}>
+                                <div className={styles.drawerGrid}>
+                                  {/* ID & Attendance Code */}
+                                  <div className={styles.drawerBlock}>
+                                    <div className={styles.drawerBlockTitle}>
+                                      <Hash size={13} /> كود الطالب
+                                    </div>
+                                    <div className={styles.drawerKV}>
+                                      <span className={styles.drawerKey}>كود الحضور</span>
+                                      <code className={styles.drawerCode}>#{shortId}</code>
+                                    </div>
+                                    <div className={styles.drawerKV}>
+                                      <span className={styles.drawerKey}>المعرّف الكامل</span>
+                                      <code className={styles.drawerUUID}>{student.id}</code>
+                                    </div>
+                                  </div>
+
+                                  {/* Contact Information */}
+                                  <div className={styles.drawerBlock}>
+                                    <div className={styles.drawerBlockTitle}>
+                                      <Phone size={13} /> التواصل
+                                    </div>
+                                    <div className={styles.drawerKV}>
+                                      <span className={styles.drawerKey}>الهاتف</span>
+                                      <a
+                                        href={`tel:${student.phone}`}
+                                        className={styles.drawerLink}
+                                        dir="ltr"
+                                      >
+                                        {student.phone || "—"} <ExternalLink size={10} />
+                                      </a>
+                                    </div>
+                                    <div className={styles.drawerKV}>
+                                      <span className={styles.drawerKey}>الإيميل</span>
+                                      <a
+                                        href={`mailto:${student.email}`}
+                                        className={styles.drawerLink}
+                                        dir="ltr"
+                                      >
+                                        {student.email || "—"} <ExternalLink size={10} />
+                                      </a>
+                                    </div>
+                                  </div>
+
+                                  {/* Academic Information */}
+                                  <div className={styles.drawerBlock}>
+                                    <div className={styles.drawerBlockTitle}>
+                                      <GraduationCap size={13} /> الأكاديمية
+                                    </div>
+                                    <div className={styles.drawerKV}>
+                                      <span className={styles.drawerKey}>الجامعة</span>
+                                      <span className={styles.drawerVal}>
+                                        <Building2 size={11} /> {student.university || "—"}
+                                      </span>
+                                    </div>
+                                    <div className={styles.drawerKV}>
+                                      <span className={styles.drawerKey}>الفرقة</span>
+                                      <span className={styles.drawerVal}>
+                                        {student.academicYear || "—"}
+                                      </span>
+                                    </div>
+                                    <div className={styles.drawerKV}>
+                                      <span className={styles.drawerKey}>التجمع</span>
+                                      <span className={styles.drawerVal}>
+                                        <MapPin size={11} /> {student.place || "—"}
+                                      </span>
+                                    </div>
+                                  </div>
+
+                                  {/* Attendance Information */}
+                                  <div className={styles.drawerBlock}>
+                                    <div className={styles.drawerBlockTitle}>
+                                      <ScanLine size={13} /> بيانات الحضور
+                                    </div>
+                                    <div className={styles.drawerKV}>
+                                      <span className={styles.drawerKey}>تسجيل الحضور</span>
+                                      <span className={styles.drawerVal}>
+                                        {fmtFull(student.scannedAt)}
+                                      </span>
+                                    </div>
+                                    <div className={styles.drawerKV}>
+                                      <span className={styles.drawerKey}>تاريخ التقديم</span>
+                                      <span className={styles.drawerVal}>
+                                        {fmtDate(student.created_at)}
+                                      </span>
+                                    </div>
+                                    <div className={styles.drawerKV}>
+                                      <span className={styles.drawerKey}>المشرف</span>
+                                      <span className={styles.drawerVal}>
+                                        <Shield size={11} style={{ color: "#3ab9ac" }} />{" "}
+                                        {student.adminScanner || "—"}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Drawer Action Buttons */}
+                                <div className={styles.drawerActions}>
+                                  <button
+                                    type="button"
+                                    className={styles.drawerBtnView}
+                                    onClick={() => setDetailsStudent(student)}
+                                  >
+                                    <Eye size={14} /> عرض السجل الكامل
+                                  </button>
+                                  {!student.isApproved && (
+                                    <button
+                                      type="button"
+                                      className={styles.drawerBtnApprove}
+                                      onClick={() => handleApprove(student)}
+                                      disabled={isActing}
+                                    >
+                                      <CheckCircle2 size={14} /> قبول الطالب الآن
+                                    </button>
+                                  )}
+                                  {waLink && (
+                                    <a
+                                      href={waLink}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className={styles.drawerBtnWa}
+                                    >
+                                      <MessageCircle size={14} /> إرسال واتساب
+                                    </a>
+                                  )}
+                                  <button
+                                    type="button"
+                                    className={styles.drawerBtnUndo}
+                                    onClick={() => requestUndoAttendance(student)}
+                                    disabled={isActing}
+                                  >
+                                    <Undo2 size={14} /> إلغاء تسجيل الحضور
+                                  </button>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards View (displayed on phones instead of table) */}
+            <div className={styles.mobileCardsGrid}>
+              {filtered.map((student, idx) => {
+                const isActing = actionLoading?.startsWith(student.id);
+                const waLink = getWhatsAppLink(student.phone, student.name);
+                const shortId = student.id ? student.id.split("-")[0].toUpperCase() : "";
+
+                return (
+                  <div key={student.id} className={styles.mobileCard}>
+                    {/* Card Top */}
+                    <div className={styles.mobileCardHeader}>
+                      <div className={styles.mobileCardUser}>
+                        <div
+                          className={`${styles.avatar} ${
+                            student.isApproved ? styles.avatarGreen : styles.avatarGray
+                          }`}
+                        >
+                          {student.name?.charAt(0) ?? "؟"}
+                        </div>
+                        <div>
+                          <div className={styles.mobileCardName}>{student.name}</div>
+                          <div className={styles.mobileCardSub}>
+                            <span className={styles.hashCode}>#{shortId}</span>
+                            <span className={styles.dot}>·</span>
+                            <span>{student.phone || "—"}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <span
+                        className={`${styles.statusBadge} ${
+                          student.isApproved ? styles.badgeApproved : styles.badgePending
+                        }`}
+                      >
+                        {student.isApproved ? "مقبول" : "قيد المراجعة"}
+                      </span>
+                    </div>
+
+                    {/* Card Details Grid */}
+                    <div className={styles.mobileCardBody}>
+                      <div className={styles.mobileInfoItem}>
+                        <Building2 size={13} className={styles.mobileInfoIcon} />
+                        <span>{student.university || "—"}</span>
+                      </div>
+                      {student.academicYear && (
+                        <div className={styles.mobileInfoItem}>
+                          <GraduationCap size={13} className={styles.mobileInfoIcon} />
+                          <span>{student.academicYear}</span>
+                        </div>
                       )}
-                    </React.Fragment>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                      <div className={styles.mobileInfoItem}>
+                        <MapPin size={13} className={styles.mobileInfoIcon} />
+                        <span>{student.place || "—"}</span>
+                      </div>
+                      <div className={styles.mobileInfoItem}>
+                        <Clock size={13} className={styles.mobileInfoIcon} />
+                        <span>{fmtFull(student.scannedAt)}</span>
+                      </div>
+                      {student.adminScanner && (
+                        <div className={styles.mobileInfoItem}>
+                          <Shield size={13} className={styles.mobileInfoIcon} />
+                          <span>المشرف: {student.adminScanner}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Card Actions Bar */}
+                    <div className={styles.mobileCardActions}>
+                      <button
+                        type="button"
+                        className={styles.mobileBtnView}
+                        onClick={() => setDetailsStudent(student)}
+                      >
+                        <Eye size={14} />
+                        <span>التفاصيل</span>
+                      </button>
+
+                      {waLink && (
+                        <a
+                          href={waLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={styles.mobileBtnWa}
+                        >
+                          <MessageCircle size={14} />
+                          <span>واتساب</span>
+                        </a>
+                      )}
+
+                      {!student.isApproved && (
+                        <button
+                          type="button"
+                          className={styles.mobileBtnApprove}
+                          onClick={() => handleApprove(student)}
+                          disabled={isActing}
+                        >
+                          <CheckCircle2 size={14} />
+                          <span>قبول</span>
+                        </button>
+                      )}
+
+                      <button
+                        type="button"
+                        className={styles.mobileBtnUndo}
+                        onClick={() => requestUndoAttendance(student)}
+                        disabled={isActing}
+                      >
+                        <Undo2 size={14} />
+                        <span>إلغاء</span>
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
         )}
 
         {/* Table footer */}
@@ -905,6 +1091,18 @@ const AdminAttendance = () => {
         onClose={() => setDetailsStudent(null)}
         student={detailsStudent}
         onApprovalChange={fetchData}
+      />
+
+      {/* Universal Beautiful Admin Confirmation / Alert Modal */}
+      <AdminModal
+        isOpen={modalConfig.isOpen}
+        onClose={closeModal}
+        onConfirm={modalConfig.onConfirm}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        type={modalConfig.type}
+        confirmText={modalConfig.confirmText}
+        cancelText={modalConfig.cancelText}
       />
     </div>
   );

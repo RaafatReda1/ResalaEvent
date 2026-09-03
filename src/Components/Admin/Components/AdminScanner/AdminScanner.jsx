@@ -6,6 +6,7 @@ import StudentScanPreview from "./components/StudentScanPreview";
 import ScannerStatsHeader from "./components/ScannerStatsHeader";
 import RecentScansList from "./components/RecentScansList";
 import StudentDetailsModal from "../AdminControls/components/StudentDetailsModal";
+import AdminModal from "../Common/AdminModal";
 import {
   playSuccessSound,
   playWarningSound,
@@ -42,6 +43,21 @@ const AdminScanner = () => {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [modalStudent, setModalStudent] = useState(null);
 
+  // Alert / Confirm Modal
+  const [modalConfig, setModalConfig] = useState({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "info",
+    confirmText: "تأكيد",
+    cancelText: "إلغاء",
+    onConfirm: null,
+  });
+
+  const closeModal = () => {
+    setModalConfig((prev) => ({ ...prev, isOpen: false }));
+  };
+
   // Scanner Settings (persisted in localStorage)
   const [soundEnabled, setSoundEnabled] = useState(() => {
     return localStorage.getItem("admin_scanner_sound") !== "false";
@@ -59,58 +75,82 @@ const AdminScanner = () => {
 
   // 1. Fetch current logged-in admin identity
   useEffect(() => {
-    const fetchAdmin = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session) return;
-      setAdminUserId(session.user.id);
+    const fetchAdminIdentity = async () => {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        if (session?.user) {
+          setAdminUserId(session.user.id);
 
-      const { data: adminRecord } = await supabase
-        .from("admins")
-        .select("name")
-        .eq("user_id", session.user.id)
-        .maybeSingle();
+          // Priority 1: admins table name
+          const { data: adminRow } = await supabase
+            .from("admins")
+            .select("name")
+            .eq("user_id", session.user.id)
+            .maybeSingle();
 
-      const name =
-        adminRecord?.name || session.user.user_metadata?.name || "المشرف";
-      setAdminName(name);
+          if (adminRow?.name) {
+            setAdminName(adminRow.name);
+            return;
+          }
+
+          // Priority 2: Google OAuth metadata fields
+          const meta = session.user.user_metadata || {};
+          const resolvedName =
+            meta.full_name ||          // Google OAuth standard
+            meta.name ||               // Generic OAuth
+            meta.display_name ||       // Some providers
+            meta.given_name ||         // First name only fallback
+            (session.user.email        // Email prefix as last resort
+              ? session.user.email.split("@")[0]
+              : null);
+
+          if (resolvedName) {
+            setAdminName(resolvedName);
+          }
+        }
+      } catch (e) {
+        console.warn("Could not fetch admin identity:", e);
+      }
     };
-
-    fetchAdmin();
+    fetchAdminIdentity();
   }, []);
 
-  // 2. Fetch Aggregated Attendance Stats from Supabase
-  const loadStats = useCallback(async () => {
+  // 2. Fetch Aggregated Live Counts
+  const fetchStats = useCallback(async () => {
     setIsRefreshingStats(true);
     try {
-      // Count scanned attendees
-      const { count: scannedCount } = await supabase
-        .from("students")
-        .select("id", { count: "exact", head: true })
-        .eq("hasScannedQr", true);
+      const [scannedRes, approvedRes] = await Promise.all([
+        supabase
+          .from("students")
+          .select("id", { count: "exact", head: true })
+          .eq("hasScannedQr", true),
+        supabase
+          .from("students")
+          .select("id", { count: "exact", head: true })
+          .eq("isApproved", true),
+      ]);
 
-      // Count approved students
-      const { count: approvedCount } = await supabase
-        .from("students")
-        .select("id", { count: "exact", head: true })
-        .eq("isApproved", true);
-
-      setTotalScannedCount(scannedCount || 0);
-      setTotalApprovedCount(approvedCount || 0);
-    } catch (err) {
-      console.error("Failed to load scanner stats:", err);
+      if (!scannedRes.error && scannedRes.count !== null) {
+        setTotalScannedCount(scannedRes.count);
+      }
+      if (!approvedRes.error && approvedRes.count !== null) {
+        setTotalApprovedCount(approvedRes.count);
+      }
+    } catch (e) {
+      console.warn("Stats fetch failed:", e);
     } finally {
       setIsRefreshingStats(false);
     }
   }, []);
 
   useEffect(() => {
-    loadStats();
-  }, [loadStats]);
+    fetchStats();
+  }, [fetchStats]);
 
-  // Persist settings to localStorage
-  const handleToggleSound = () => {
+  // Persist Settings
+  const toggleSound = () => {
     setSoundEnabled((prev) => {
       const next = !prev;
       localStorage.setItem("admin_scanner_sound", String(next));
@@ -118,7 +158,7 @@ const AdminScanner = () => {
     });
   };
 
-  const handleToggleAutoCheckIn = () => {
+  const toggleAutoCheckIn = () => {
     setAutoCheckIn((prev) => {
       const next = !prev;
       localStorage.setItem("admin_scanner_autocheck", String(next));
@@ -126,7 +166,7 @@ const AdminScanner = () => {
     });
   };
 
-  const handleToggleAutoNext = () => {
+  const toggleAutoNext = () => {
     setAutoNext((prev) => {
       const next = !prev;
       localStorage.setItem("admin_scanner_autonext", String(next));
@@ -134,44 +174,11 @@ const AdminScanner = () => {
     });
   };
 
-  // Clear any existing auto-next timer
-  const clearAutoNextTimer = useCallback(() => {
-    if (autoNextTimerRef.current) {
-      clearInterval(autoNextTimerRef.current);
-      autoNextTimerRef.current = null;
-    }
-    setAutoNextCountdown(0);
-  }, []);
-
-  // Resume camera & ready for next scan
-  const handleScanNext = useCallback(() => {
-    clearAutoNextTimer();
-    setActiveStudent(null);
-    setIsNotFound(false);
-    setRawScannedCode(null);
-    setIsPaused(false);
-  }, [clearAutoNextTimer]);
-
-  // Start 3-second countdown for auto next
-  const triggerAutoNextCountdown = useCallback(() => {
-    clearAutoNextTimer();
-    let secondsLeft = 3;
-    setAutoNextCountdown(secondsLeft);
-
-    autoNextTimerRef.current = setInterval(() => {
-      secondsLeft -= 1;
-      setAutoNextCountdown(secondsLeft);
-
-      if (secondsLeft <= 0) {
-        clearAutoNextTimer();
-        handleScanNext();
-      }
-    }, 1000);
-  }, [clearAutoNextTimer, handleScanNext]);
-
-  // 3. Main QR Code Scan Processor
+  // 3. Process Code Lookup
   const processStudentLookup = async (identifier, rawText) => {
-    clearAutoNextTimer();
+    if (!identifier) return;
+
+    // Pause camera stream & show loading
     setIsPaused(true);
     setIsLoadingStudent(true);
     setIsNotFound(false);
@@ -248,73 +255,106 @@ const AdminScanner = () => {
         return;
       }
 
-      // Student FOUND
+      // If FOUND
       setActiveStudent(foundStudent);
       setSessionScansCount((c) => c + 1);
 
-      const alreadyScanned = Boolean(foundStudent.hasScannedQr);
-
-      if (alreadyScanned) {
-        // Duplicate scan alert
+      // Check for Duplicate / Prior Scan
+      if (foundStudent.hasScannedQr) {
+        setDuplicatesBlockedCount((c) => c + 1);
         if (soundEnabled) playWarningSound();
         triggerHaptic("warning");
-        setDuplicatesBlockedCount((c) => c + 1);
 
         setRecentScans((prev) => [
           {
-            id: foundStudent.id,
+            id: `${foundStudent.id}_${Date.now()}`,
             student: foundStudent,
             rawCode: rawText || identifier,
             timestamp: new Date().toISOString(),
             type: "duplicate",
           },
-          ...prev.slice(0, 19),
+          ...prev.filter((i) => i.student?.id !== foundStudent.id).slice(0, 19),
         ]);
       } else {
-        // First-time valid scan
+        // Valid First-Time Pass!
         if (soundEnabled) playSuccessSound();
         triggerHaptic("success");
 
-        // If autoCheckIn is enabled, automatically mark attendance in DB
+        setRecentScans((prev) => [
+          {
+            id: `${foundStudent.id}_${Date.now()}`,
+            student: foundStudent,
+            rawCode: rawText || identifier,
+            timestamp: new Date().toISOString(),
+            type: "success",
+          },
+          ...prev.filter((i) => i.student?.id !== foundStudent.id).slice(0, 19),
+        ]);
+
+        // Auto Check-In Trigger if enabled
         if (autoCheckIn) {
-          await handleConfirmAttendance(foundStudent.id, foundStudent);
-        } else {
-          setRecentScans((prev) => [
-            {
-              id: foundStudent.id,
-              student: foundStudent,
-              rawCode: rawText || identifier,
-              timestamp: new Date().toISOString(),
-              type: "success",
-            },
-            ...prev.slice(0, 19),
-          ]);
+          handleConfirmAttendance(foundStudent.id);
         }
       }
 
-      // If auto-next mode is active, start the countdown
+      // Start Auto-Next timer if enabled
       if (autoNext) {
-        triggerAutoNextCountdown();
+        startAutoNextTimer();
       }
     } catch (err) {
-      console.error("Student scan lookup error:", err);
-      setIsNotFound(true);
+      console.error("Scanner lookup error:", err);
+      setModalConfig({
+        isOpen: true,
+        type: "error",
+        title: "خطأ في البحث",
+        message: "حدث خطأ أثناء البحث في قاعدة البيانات: " + err.message,
+        onConfirm: null,
+      });
     } finally {
       setIsLoadingStudent(false);
     }
   };
 
+  // Start Auto-Next Countdown (3 seconds)
+  const startAutoNextTimer = () => {
+    if (autoNextTimerRef.current) clearInterval(autoNextTimerRef.current);
+    setAutoNextCountdown(3);
+
+    autoNextTimerRef.current = setInterval(() => {
+      setAutoNextCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(autoNextTimerRef.current);
+          handleScanNext();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  // Stop Auto-Next Countdown
+  const stopAutoNextTimer = () => {
+    if (autoNextTimerRef.current) {
+      clearInterval(autoNextTimerRef.current);
+      autoNextTimerRef.current = null;
+    }
+    setAutoNextCountdown(0);
+  };
+
+  // Camera Decoded Event Handler
   const handleScanSuccess = (decodedText) => {
     const studentId = extractStudentIdFromScan(decodedText);
     processStudentLookup(studentId, decodedText);
   };
 
+  // Manual Search Handler
   const handleManualSearch = (inputText) => {
-    processStudentLookup(inputText.trim(), inputText.trim());
+    processStudentLookup(inputText, inputText);
   };
 
-  // 4. Action: Confirm Attendance (Check-in)
-  const handleConfirmAttendance = async (studentId, currentStudentObj) => {
+  // 4. Action: Confirm Student Attendance
+  const handleConfirmAttendance = async (studentId) => {
+    stopAutoNextTimer();
     setIsProcessingAction(true);
     const nowIso = new Date().toISOString();
 
@@ -324,7 +364,7 @@ const AdminScanner = () => {
         .update({
           hasScannedQr: true,
           scannedAt: nowIso,
-          adminScanner: adminName || "مشرف النظام",
+          adminScanner: adminName,
         })
         .eq("id", studentId)
         .select()
@@ -332,40 +372,28 @@ const AdminScanner = () => {
 
       if (error) throw error;
 
-      // Update active student in state
       setActiveStudent((prev) => (prev ? { ...prev, ...data } : data));
       setTotalScannedCount((c) => c + 1);
+      if (soundEnabled) playSuccessSound();
+      triggerHaptic("success");
 
       // Update in recent scans list
-      setRecentScans((prev) => {
-        const targetStudent = data || currentStudentObj;
-        const exists = prev.find((item) => item.student?.id === studentId);
-        if (exists) {
-          return prev.map((item) =>
-            item.student?.id === studentId
-              ? { ...item, student: targetStudent, type: "success" }
-              : item
-          );
-        }
-        return [
-          {
-            id: studentId,
-            student: targetStudent,
-            rawCode: studentId,
-            timestamp: nowIso,
-            type: "success",
-          },
-          ...prev.slice(0, 19),
-        ];
-      });
+      setRecentScans((prev) =>
+        prev.map((item) =>
+          item.student?.id === studentId
+            ? { ...item, student: data, type: "success" }
+            : item
+        )
+      );
 
-      // Log action in activity logger
+      // Log in Activity log
       try {
         await logActivity(
-          "SCAN_STUDENT_ATTENDANCE",
-          ACTION_CATEGORIES.ADMIN_OPERATION,
+          ACTION_TYPES.STUDENT_CHECKIN,
+          ACTION_CATEGORIES.ATTENDANCE,
+          `تم تسجيل حضور الطالب ${data.name || data.id} بواسطة ${adminName}`,
           {
-            studentId,
+            studentId: data.id,
             studentName: data.name,
             adminScanner: adminName,
             scannedAt: nowIso,
@@ -377,7 +405,13 @@ const AdminScanner = () => {
       }
     } catch (err) {
       console.error("Failed to confirm student attendance:", err);
-      alert("حدث خطأ أثناء حفظ تسجيل الحضور: " + err.message);
+      setModalConfig({
+        isOpen: true,
+        type: "error",
+        title: "خطأ في تسجيل الحضور",
+        message: "حدث خطأ أثناء حفظ تسجيل الحضور: " + err.message,
+        onConfirm: null,
+      });
     } finally {
       setIsProcessingAction(false);
     }
@@ -385,42 +419,55 @@ const AdminScanner = () => {
 
   // 5. Action: Reset / Undo Attendance
   const handleResetAttendance = async (studentId) => {
-    if (!window.confirm("هل أنت متأكد من إلغاء تسجيل حضور هذا الطالب؟")) {
-      return;
-    }
+    setModalConfig({
+      isOpen: true,
+      type: "danger",
+      title: "تأكيد إلغاء الحضور",
+      message: "هل أنت متأكد من إلغاء تسجيل حضور هذا الطالب؟",
+      confirmText: "نعم، إلغاء الحضور",
+      cancelText: "تراجع",
+      onConfirm: async () => {
+        closeModal();
+        setIsProcessingAction(true);
+        try {
+          const { data, error } = await supabase
+            .from("students")
+            .update({
+              hasScannedQr: false,
+              scannedAt: null,
+              adminScanner: null,
+            })
+            .eq("id", studentId)
+            .select()
+            .single();
 
-    setIsProcessingAction(true);
-    try {
-      const { data, error } = await supabase
-        .from("students")
-        .update({
-          hasScannedQr: false,
-          scannedAt: null,
-          adminScanner: null,
-        })
-        .eq("id", studentId)
-        .select()
-        .single();
+          if (error) throw error;
 
-      if (error) throw error;
+          setActiveStudent((prev) => (prev ? { ...prev, ...data } : data));
+          setTotalScannedCount((c) => Math.max(0, c - 1));
 
-      setActiveStudent((prev) => (prev ? { ...prev, ...data } : data));
-      setTotalScannedCount((c) => Math.max(0, c - 1));
-
-      // Update in recent scans list
-      setRecentScans((prev) =>
-        prev.map((item) =>
-          item.student?.id === studentId
-            ? { ...item, student: data, type: "success" }
-            : item
-        )
-      );
-    } catch (err) {
-      console.error("Failed to reset student attendance:", err);
-      alert("حدث خطأ أثناء إلغاء الحضور: " + err.message);
-    } finally {
-      setIsProcessingAction(false);
-    }
+          // Update in recent scans list
+          setRecentScans((prev) =>
+            prev.map((item) =>
+              item.student?.id === studentId
+                ? { ...item, student: data, type: "success" }
+                : item
+            )
+          );
+        } catch (err) {
+          console.error("Failed to reset student attendance:", err);
+          setModalConfig({
+            isOpen: true,
+            type: "error",
+            title: "خطأ في إلغاء الحضور",
+            message: "حدث خطأ أثناء إلغاء الحضور: " + err.message,
+            onConfirm: null,
+          });
+        } finally {
+          setIsProcessingAction(false);
+        }
+      },
+    });
   };
 
   // 6. Action: Quick Toggle Approval (Approve student on the spot)
@@ -439,7 +486,13 @@ const AdminScanner = () => {
       setTotalApprovedCount((c) => (isApprovedVal ? c + 1 : Math.max(0, c - 1)));
     } catch (err) {
       console.error("Failed to update approval status:", err);
-      alert("حدث خطأ أثناء تحديث حالة القبول: " + err.message);
+      setModalConfig({
+        isOpen: true,
+        type: "error",
+        title: "خطأ في التحديث",
+        message: "حدث خطأ أثناء تحديث حالة القبول: " + err.message,
+        onConfirm: null,
+      });
     } finally {
       setIsProcessingAction(false);
     }
@@ -451,36 +504,52 @@ const AdminScanner = () => {
     setIsDetailsModalOpen(true);
   };
 
-  // Selecting a student from the recent scans feed
-  const handleSelectRecentStudent = (student) => {
-    clearAutoNextTimer();
-    setIsPaused(true);
-    setActiveStudent(student);
+  // 8. Action: Next Scan / Resume Camera
+  const handleScanNext = () => {
+    stopAutoNextTimer();
+    setActiveStudent(null);
+    setRawScannedCode(null);
     setIsNotFound(false);
-    setRawScannedCode(student.id);
+    setIsPaused(false);
+  };
+
+  // 9. Select a recent student from the history feed
+  const handleSelectRecentStudent = (item) => {
+    stopAutoNextTimer();
+    if (item.student) {
+      setActiveStudent(item.student);
+      setRawScannedCode(item.rawCode || item.student.id);
+      setIsNotFound(false);
+      setIsPaused(true);
+    } else {
+      setActiveStudent(null);
+      setRawScannedCode(item.rawCode);
+      setIsNotFound(true);
+      setIsPaused(true);
+    }
   };
 
   return (
     <div className={styles.scannerLayout}>
-      {/* ── Top Bar: KPIs, Toggles, and Settings ── */}
+      {/* ── Top Metric Stats & Controls Strip ── */}
       <ScannerStatsHeader
         totalScannedCount={totalScannedCount}
         totalApprovedCount={totalApprovedCount}
         sessionScansCount={sessionScansCount}
         duplicatesBlockedCount={duplicatesBlockedCount}
         soundEnabled={soundEnabled}
-        onToggleSound={handleToggleSound}
+        onToggleSound={toggleSound}
         autoCheckIn={autoCheckIn}
-        onToggleAutoCheckIn={handleToggleAutoCheckIn}
+        onToggleAutoCheckIn={toggleAutoCheckIn}
         autoNext={autoNext}
-        onToggleAutoNext={handleToggleAutoNext}
-        onRefreshStats={loadStats}
+        onToggleAutoNext={toggleAutoNext}
+        onRefreshStats={fetchStats}
         isRefreshing={isRefreshingStats}
       />
 
-      {/* ── Main Scanner Workspace: Camera + Verification Card ── */}
+      {/* ── Main Two-Column Workspace ── */}
       <div className={styles.mainWorkspace}>
-        {/* Left Column (Camera + Viewfinder + Manual Input) */}
+        {/* Left Column: Camera Viewport + Search */}
         <div className={styles.cameraColumn}>
           <ScannerCamera
             onScanSuccess={handleScanSuccess}
@@ -488,12 +557,12 @@ const AdminScanner = () => {
             onTogglePause={() => setIsPaused((prev) => !prev)}
             onManualSearch={handleManualSearch}
             isSearching={isLoadingStudent}
-            soundEnabled={soundEnabled}
           />
         </div>
 
-        {/* Right Column (Student Verification Preview + Session History) */}
+        {/* Right Column: Live Student Scan Preview + Session Feed */}
         <div className={styles.previewColumn}>
+          {/* Active Student Card / Result Feedback */}
           <StudentScanPreview
             student={activeStudent}
             rawScannedCode={rawScannedCode}
@@ -535,6 +604,18 @@ const AdminScanner = () => {
           }}
         />
       )}
+
+      {/* ── Universal Admin Confirmation / Alert Modal ── */}
+      <AdminModal
+        isOpen={modalConfig.isOpen}
+        onClose={closeModal}
+        onConfirm={modalConfig.onConfirm}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        type={modalConfig.type}
+        confirmText={modalConfig.confirmText}
+        cancelText={modalConfig.cancelText}
+      />
     </div>
   );
 };
