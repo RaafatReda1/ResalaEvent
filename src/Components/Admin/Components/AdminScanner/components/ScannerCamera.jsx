@@ -1,20 +1,18 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from "html5-qrcode";
 import {
-  Camera,
   Flashlight,
   FlashlightOff,
   SwitchCamera,
   Pause,
   Play,
-  Search,
-  AlertTriangle,
   RefreshCw,
   Upload,
   Monitor,
   Smartphone,
 } from "lucide-react";
 import { decodeQrFromImageFile } from "../utils/imageQrScanner";
+import ScannerSearch from "./ScannerSearch";
 import styles from "./ScannerCamera.module.css";
 
 const READER_ID = "admin-qr-reader-viewport";
@@ -32,7 +30,6 @@ const ScannerCamera = ({
   onTogglePause,
   onManualSearch,
   isSearching,
-  soundEnabled,
 }) => {
   const scannerRef = useRef(null);
   const fileInputRef = useRef(null);
@@ -319,12 +316,6 @@ const ScannerCamera = ({
     }
   };
 
-  const handleManualSubmit = (e) => {
-    e.preventDefault();
-    if (!manualInput.trim()) return;
-    onManualSearch(manualInput.trim());
-  };
-
   return (
     <div className={styles.cameraBox}>
       {/* ── Viewport Header Bar ── */}
@@ -496,28 +487,8 @@ const ScannerCamera = ({
         )}
       </div>
 
-      {/* ── Manual ID / Phone / Email Search ── */}
-      <div className={styles.manualInputCard}>
-        <form onSubmit={handleManualSubmit} className={styles.searchForm}>
-          <input
-            type="text"
-            value={manualInput}
-            onChange={(e) => setManualInput(e.target.value)}
-            placeholder="أو اكتب كود الطالب (UUID)، كود الحضور، رقم الهاتف..."
-            className={styles.searchInput}
-            disabled={isSearching}
-          />
-          <button
-            type="submit"
-            disabled={isSearching || !manualInput.trim()}
-            className={styles.searchBtn}
-            title="بحث يدوي في قاعدة البيانات"
-          >
-            <Search size={16} />
-            <span>{isSearching ? "جاري البحث..." : "بحث يدوي"}</span>
-          </button>
-        </form>
-      </div>
+      {/* ── Intelligent Search Bar ── */}
+      <ScannerSearch onSelect={onManualSearch} isSearching={isSearching} />
     </div>
   );
 };

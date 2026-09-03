@@ -1,0 +1,328 @@
+/* ── Scanner Intelligent Search ── */
+.scannerSearch {
+  position: relative;
+  width: 100%;
+  padding: 14px 16px;
+  background: rgba(8, 18, 32, 0.98);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Form Row */
+.searchForm {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(15, 23, 42, 0.85);
+  border: 1.5px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  padding: 0 8px 0 12px;
+  transition: border-color 0.25s, box-shadow 0.25s;
+  position: relative;
+}
+
+.searchForm:focus-within {
+  border-color: #3ab9ac;
+  box-shadow: 0 0 0 3px rgba(58, 185, 172, 0.18);
+}
+
+.searchIconWrap {
+  display: flex;
+  align-items: center;
+  color: #64748b;
+  flex-shrink: 0;
+  transition: color 0.2s;
+}
+
+.searchForm:focus-within .searchIconWrap {
+  color: #3ab9ac;
+}
+
+.searchIcon {}
+
+.loaderIcon {
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.searchInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 11px 4px;
+  color: #f1f5f9;
+  font-size: 0.9rem;
+  font-family: inherit;
+  min-width: 0;
+}
+
+.searchInput::placeholder {
+  color: #475569;
+  font-size: 0.85rem;
+}
+
+.clearBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.08);
+  border: none;
+  border-radius: 50%;
+  color: #94a3b8;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+
+.clearBtn:hover {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.searchBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, #1fa6a0 0%, #17827d 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 9px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.searchBtn:hover:not(:disabled) {
+  background: #3ab9ac;
+  transform: translateY(-1px);
+}
+
+.searchBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── Dropdown ── */
+.dropdown {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 16px;
+  right: 16px;
+  background: #0d1b2a;
+  border: 1px solid rgba(58, 185, 172, 0.35);
+  border-radius: 14px;
+  box-shadow:
+    0 -8px 30px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(58, 185, 172, 0.1);
+  overflow: hidden;
+  z-index: 999;
+  animation: slideUp 0.18s ease;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.dropdownHeader {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 14px 7px;
+  font-size: 0.72rem;
+  color: #3ab9ac;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.suggestionItem {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: right;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+
+.suggestionItem:hover,
+.suggestionActive {
+  background: rgba(58, 185, 172, 0.1);
+}
+
+/* Avatar */
+.avatarCircle {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #fff;
+}
+
+.avatarApproved {
+  background: linear-gradient(135deg, #10b981, #059669);
+}
+
+.avatarPending {
+  background: linear-gradient(135deg, #64748b, #475569);
+}
+
+/* Info block */
+.studentInfo {
+  flex: 1;
+  min-width: 0;
+  text-align: right;
+  direction: rtl;
+}
+
+.studentName {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: #f1f5f9;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.alreadyScanned {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.68rem;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 999px;
+  padding: 1px 6px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.studentMeta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 3px;
+  flex-wrap: wrap;
+}
+
+.metaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.74rem;
+  color: #64748b;
+}
+
+/* Highlight matched text */
+.highlight {
+  background: rgba(58, 185, 172, 0.25);
+  color: #3ab9ac;
+  border-radius: 3px;
+  padding: 0 1px;
+  font-weight: 700;
+}
+
+/* Right side */
+.suggestionRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  flex-shrink: 0;
+}
+
+.statusBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+.badgeApproved {
+  background: rgba(16, 185, 129, 0.15);
+  color: #10b981;
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.badgePending {
+  background: rgba(245, 158, 11, 0.12);
+  color: #f59e0b;
+  border: 1px solid rgba(245, 158, 11, 0.25);
+}
+
+.matchBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.66rem;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 999px;
+  padding: 1px 6px;
+  white-space: nowrap;
+}
+
+/* Footer hint */
+.dropdownFooter {
+  padding: 7px 14px;
+  font-size: 0.7rem;
+  color: #334155;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  text-align: center;
+  direction: ltr;
+}
+
+/* No results */
+.noResults {
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 16px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #0d1b2a;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  color: #64748b;
+  font-size: 0.85rem;
+  direction: rtl;
+  z-index: 999;
+  animation: slideUp 0.18s ease;
+}
