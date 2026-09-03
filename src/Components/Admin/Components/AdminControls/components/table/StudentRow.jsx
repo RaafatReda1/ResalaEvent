@@ -154,6 +154,27 @@ const StudentRow = ({
             <span>مرفوض</span>
           </span>
         )}
+        {student.hasScannedQr && (
+          <span
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "4px",
+              padding: "2px 6px",
+              fontSize: "0.72rem",
+              fontWeight: 800,
+              borderRadius: "4px",
+              background: "#dcfce7",
+              color: "#15803d",
+              border: "1px solid #86efac",
+              marginTop: "4px",
+            }}
+            title={`تم مسح الحضور: ${student.scannedAt || ""}`}
+          >
+            <Check size={10} />
+            <span>حضر</span>
+          </span>
+        )}
       </td>
 
       {/* Registration Date */}

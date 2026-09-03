@@ -1,0 +1,175 @@
+/* ═══════════════════════════════════════════════════
+   RECENT SCANS LIST COMPONENT
+   ═══════════════════════════════════════════════════ */
+
+.container {
+  background: rgba(14, 26, 45, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.headerIcon {
+  color: #3ab9ac;
+}
+
+.title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #ffffff;
+  flex: 1;
+}
+
+.countBadge {
+  background: rgba(58, 185, 172, 0.15);
+  border: 1px solid rgba(58, 185, 172, 0.3);
+  color: #5eead4;
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.emptyText {
+  font-size: 0.82rem;
+  color: #64748b;
+  text-align: center;
+  padding: 16px;
+}
+
+.scansScrollList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+/* Custom scrollbar */
+.scansScrollList::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scansScrollList::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+
+.scanItem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: rgba(8, 18, 32, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.scanItem:hover:not(.itemDisabled) {
+  background: rgba(58, 185, 172, 0.12);
+  border-color: rgba(58, 185, 172, 0.3);
+  transform: translateX(-2px);
+}
+
+.itemSelected {
+  background: rgba(58, 185, 172, 0.2) !important;
+  border-color: #3ab9ac !important;
+}
+
+.itemDisabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.itemIconWrap {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.iconGreen {
+  color: #10b981;
+}
+
+.iconAmber {
+  color: #f59e0b;
+}
+
+.iconRed {
+  color: #ef4444;
+}
+
+.itemInfo {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow: hidden;
+}
+
+.itemName {
+  font-size: 0.84rem;
+  font-weight: 700;
+  color: #ffffff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.itemSub {
+  font-size: 0.74rem;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.itemMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.statusPill {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.pillGreen {
+  background: rgba(16, 185, 129, 0.15);
+  color: #34d399;
+}
+
+.pillAmber {
+  background: rgba(245, 158, 11, 0.15);
+  color: #fbbf24;
+}
+
+.pillRed {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+}
+
+.timeText {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.68rem;
+  color: #64748b;
+}

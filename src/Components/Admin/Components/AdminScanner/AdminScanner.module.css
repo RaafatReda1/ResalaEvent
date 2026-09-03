@@ -1,0 +1,47 @@
+/* ═══════════════════════════════════════════════════
+   ADMIN SCANNER WORKSPACE LAYOUT
+   ═══════════════════════════════════════════════════ */
+
+.scannerLayout {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding-bottom: 40px;
+  direction: rtl;
+}
+
+.mainWorkspace {
+  display: grid;
+  grid-template-columns: minmax(320px, 460px) minmax(0, 1fr);
+  gap: 20px;
+  align-items: start;
+}
+
+@media (max-width: 960px) {
+  .mainWorkspace {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cameraColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
+  top: 80px;
+}
+
+@media (max-width: 960px) {
+  .cameraColumn {
+    position: static;
+  }
+}
+
+.previewColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}

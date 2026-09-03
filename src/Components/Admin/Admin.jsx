@@ -5,6 +5,7 @@ import { Route, Routes } from "react-router-dom";
 import AdminDashboard from "./Components/AdminDashboard/AdminDashboard";
 import AdminControls from "./Components/AdminControls/AdminControls";
 import AdminReports from "./Components/AdminReports/AdminReports";
+import AdminScanner from "./Components/AdminScanner/AdminScanner";
 const Admin = () => {
   return (
     <div className={styles.adminWrapper}>
@@ -22,6 +23,7 @@ const Admin = () => {
             <Route path="/dashboard" element={<AdminDashboard />} />
             <Route path="/students" element={<AdminControls />} />
             <Route path="/reports" element={<AdminReports />} />
+            <Route path="/scanner" element={<AdminScanner />} />
           </Routes>
         </div>
       </div>

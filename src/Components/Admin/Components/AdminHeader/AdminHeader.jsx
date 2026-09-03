@@ -8,6 +8,7 @@ import supabase from "@/utils/supabaseClient";
 const PAGE_TITLES = {
   "/dashboard": "لوحة التحكم",
   "/students":  "المسجلين",
+  "/scanner":   "ماسح الحضور (QR)",
   "/reports":   "التقارير",
 };
 
