@@ -6,10 +6,11 @@ import supabase from "@/utils/supabaseClient";
 
 // Map route paths to Arabic page titles
 const PAGE_TITLES = {
-  "/dashboard": "لوحة التحكم",
-  "/students":  "المسجلين",
-  "/scanner":   "ماسح الحضور (QR)",
-  "/reports":   "التقارير",
+  "/dashboard":  "لوحة التحكم",
+  "/students":   "المسجلين",
+  "/scanner":    "ماسح الحضور (QR)",
+  "/attendance": "سجل الحاضرين",
+  "/reports":    "التقارير",
 };
 
 const AdminHeader = () => {

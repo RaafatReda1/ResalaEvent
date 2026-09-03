@@ -8,6 +8,7 @@ import {
   LogOut,
   FileText,
   QrCode,
+  ClipboardCheck,
 } from "lucide-react";
 import styles from "./AdminAside.module.css";
 import supabase from "@/utils/supabaseClient";
@@ -30,6 +31,12 @@ const navLinks = [
     icon: <QrCode size={22} />,
     label: "ماسح الحضور",
     path: "/scanner",
+  },
+  {
+    id: "attendance",
+    icon: <ClipboardCheck size={22} />,
+    label: "الحاضرون",
+    path: "/attendance",
   },
   {
     id: "reports",

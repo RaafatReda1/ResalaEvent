@@ -6,6 +6,7 @@ import AdminDashboard from "./Components/AdminDashboard/AdminDashboard";
 import AdminControls from "./Components/AdminControls/AdminControls";
 import AdminReports from "./Components/AdminReports/AdminReports";
 import AdminScanner from "./Components/AdminScanner/AdminScanner";
+import AdminAttendance from "./Components/AdminAttendance/AdminAttendance";
 const Admin = () => {
   return (
     <div className={styles.adminWrapper}>
@@ -24,6 +25,7 @@ const Admin = () => {
             <Route path="/students" element={<AdminControls />} />
             <Route path="/reports" element={<AdminReports />} />
             <Route path="/scanner" element={<AdminScanner />} />
+            <Route path="/attendance" element={<AdminAttendance />} />
           </Routes>
         </div>
       </div>
