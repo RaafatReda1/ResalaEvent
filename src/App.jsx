@@ -12,6 +12,7 @@ import Speakers from "./Components/Speakers/Speakers";
 import Issues from "./Components/Issues/Issues";
 import Agenda from "./Components/Agenda/Agenda";
 import Form from "./Components/Form/Form";
+import ClosedRegistration from "./Components/ClosedRegistration/ClosedRegistration";
 import Footer from "./Components/Footer/Footer";
 import FloatingWhatsApp from "./Components/FloatingWhatsApp/FloatingWhatsApp";
 import { Analytics } from "@vercel/analytics/react";
@@ -102,7 +103,8 @@ function App() {
               <Issues />
               <Speakers />
               <Agenda />
-              <Form />
+              {/* <Form /> */}
+              <ClosedRegistration />
               <Footer />
             </main>
             <FloatingWhatsApp />
